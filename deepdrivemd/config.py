@@ -40,7 +40,7 @@ class MDConfig(BaseSettings):
 
     reference_pdb_file: Optional[Path]
     local_run_dir: Path = Path("/raid/scratch")
-    sim_type: MDSolvent
+    solvent_type: MDSolvent
     simulation_length_ns: float = 10
     report_interval_ps: float = 50
     wrap: bool = False
@@ -57,9 +57,9 @@ class MDRunnerConfig(BaseSettings):
     """
 
     num_jobs: int
-    initial_configs_dir: Path
+    initial_pdb_dir: Path
     reference_pdb_file: Optional[Path]
-    sim_type: MDSolvent
+    solvent_type: MDSolvent
     temperature_kelvin: float = 310.0
     simulation_length_ns: float = 10
     report_interval_ps: float = 50
@@ -171,7 +171,7 @@ def generate_sample_config():
         num_jobs=10,
         initial_configs_dir="/path/to/initial_pdbs_and_tops",
         reference_pdb_file="/path/to/reference.pdb",
-        sim_type="explicit",
+        solvent_type="explicit",
         cpu_reqs=HardwareReqs(
             processes=1,
             process_type="null",

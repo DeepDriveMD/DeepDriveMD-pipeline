@@ -3,8 +3,9 @@ import sys
 import json
 import time
 import uuid
+import itertools
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 import radical.utils as ru
 from radical.entk import Pipeline, Stage, Task, AppManager
@@ -13,26 +14,33 @@ from radical.entk import Pipeline, Stage, Task, AppManager
 from deepdrivemd.config import ExperimentConfig
 
 
-def get_ligand_topology(pdb_file):
+def get_topology(initial_pdb_dir: Path, pdb_file: Path) -> Path:
     # Assume abspath is passed and that ligand ID is enoded in pdb_file name
     # pdb_file: /path/system_<ligid>.pdb
     # topol:    /path/topology_<ligid>.pdb
-    topol_dir = "/gpfs/alpine/med110/scratch/atrifan2/PLPro_ligands/gb_plpro/DrugWorkflows/workflow-2/top_dir/"
-    pdb_filename = os.path.basename(pdb_file)
-    ligid = pdb_filename.split("_")[1]
-    if ".pdb" in ligid:
-        ligid = ligid[:-4]
-    return os.path.join(topol_dir, f"topology_{ligid}.top")
+
+    system_name = pdb_file.with_suffix("").name.split("__")[0]
+    return list(initial_pdb_dir.joinpath(system_name).glob("*.top"))[0]
 
 
-def get_outliers(outlier_filename: Path) -> List[str]:
-    if not os.path.exists(outlier_filename):
-        return []
+def get_outliers(outlier_filename: Path) -> Tuple[List[Path], List[str]]:
     with open(outlier_filename) as f:
-        return json.load(f)
+        return list(map(Path, json.load(f))), []
 
 
-def generate_MD_stage(num_MD=1):
+def get_initial_pdbs(initial_pdb_dir: Path) -> Tuple[List[Path], List[str]]:
+    """Scan input directory for PDBs and optional topologies."""
+
+    pdb_filenames = list(initial_pdb_dir.glob("*/*.pdb"))
+
+    if any("__" in filename.as_posix() for filename in pdb_filenames):
+        raise ValueError("Initial PDB files cannot contain a double underscore __")
+
+    system_names = list(filename.parent.name for filename in pdb_filenames)
+    return pdb_filenames, system_names
+
+
+def generate_MD_stage(cfg: ExperimentConfig) -> Stage:
     """
     Function to generate MD stage.
     """
@@ -41,75 +49,62 @@ def generate_MD_stage(num_MD=1):
 
     # TODO: factor this variable out into the config
     outlier_filename = Path("/Outlier_search/restart_points.json")
-    outliers = get_outliers(outlier_filename)
 
-    # MD tasks
-    global time_stamp
-    time_stamp = int(time.time())
+    if outlier_filename.exists():
+        pdb_filenames, system_names = get_outliers(outlier_filename)
+    else:
+        pdb_filenames, system_names = get_initial_pdbs(cfg.md_runner.initial_pdb_dir)
 
-    for i in range(num_MD):
-        t1 = Task()
+    for i, pdb_filename in zip(
+        range(cfg.md_runner.num_jobs), itertools.cycle(pdb_filenames)
+    ):
+        t = Task()
 
-        # https://github.com/radical-collaboration/hyperspace/blob/MD/microscope/experiments/MD_exps/fs-pep/run_openmm.py
-        t1.pre_exec = cfg.md_runner.pre_exec
+        t.pre_exec = cfg.md_runner.pre_exec
+        # TODO: create MD task dir and cd into dir so copy pdb command will work
 
-        t1.executable = ["%s/bin/python" % cfg["conda_openmm"]]  # run_openmm.py
-        t1.arguments = [
-            "%s/MD_exps/%s/run_openmm.py" % (cfg["base_path"], cfg["system_name"])
-        ]
-        # t1.arguments += ['--topol', '%s/MD_exps/fs-pep/pdb/topol.top' % cfg['base_path']]
+        t.executable = cfg.md_runner.executable
+        t.arguments = cfg.md_runner.base_arguments
 
-        # if 'top_file' in cfg:
-        #    t1.arguments += ['--topol', cfg['top_file']]
+        t.arguments += ["--pdb_file", pdb_filename.as_posix()]
 
-        # pick initial point of simulation
-        if not outliers:
-            # Not used ince outliers is filled from the start
-            t1.arguments += ["--pdb_file", cfg["pdb_file"]]
-            t1.arguments += ["--topol", get_ligand_topology(cfg["pdb_file"])]
-            print("stage 1 error. using pdb in config")
-        elif outliers[i].endswith("pdb"):
-            print("Getting PDB outlier")
-            print("pdb:", outliers[i])
-            print("top:", get_ligand_topology(outliers[i]))
-            t1.arguments += [
-                "--pdb_file",
-                outliers[i],
+        # Optionally add a topology for explicit solvents
+        if cfg.md_runner.solvent_type == "implicit":
+            t.arguments += [
                 "--topol",
-                get_ligand_topology(outliers[i]),
+                get_topology(cfg.md_runner.initial_pdb_dir, pdb_filename).as_posix(),
             ]
-            t1.pre_exec += ["cp %s ./" % outliers[i]]
 
-        # how long to run the simulation
-        t1.arguments += ["--length", cfg.md_runner.simulation_length_ns]
+        # On initial iterations need to change the PDB file names to include
+        # the system information to look up the topology
+        if system_names:
+            copy_to_filename = f"{system_names[i]}__{pdb_filename.name}"
+        else:
+            copy_to_filename = pdb_filename.name
 
-        # assign hardware the task
-        t1.cpu_reqs = {
-            "processes": 1,
-            "process_type": None,
-            "threads_per_process": 4,
-            "thread_type": "OpenMP",
-        }
-        t1.gpu_reqs = {
-            "processes": 1,
-            "process_type": None,
-            "threads_per_process": 1,
-            "thread_type": "CUDA",
-        }
+        # Copy PDB to node-local storage
+        t.pre_exec += ["cp %s ./%s" % (pdb_filename.as_posix(), copy_to_filename)]
+
+        # How long to run the simulation
+        t.arguments += ["--length", cfg.md_runner.simulation_length_ns]
+
+        # Assign hardware requirements
+        t.cpu_reqs = cfg.md_runner.cpu_reqs
+        t.gpu_reqs = cfg.md_runner.gpu_reqs
 
         # Add the MD task to the simulating stage
-        s1.add_tasks(t1)
+        s1.add_tasks(t)
 
     return s1
 
 
-def generate_preprocessing_stage(num_MD=1):
+def generate_preprocessing_stage(cfg: ExperimentConfig) -> Stage:
 
     global time_stamp
     s_1 = Stage()
     s_1.name = "preprocessing"
 
-    for i in range(num_MD):
+    for i in range(cfg.md_runner.num_jobs):
 
         t_1 = Task()
 
@@ -164,7 +159,7 @@ def generate_preprocessing_stage(num_MD=1):
     return s_1
 
 
-def generate_aggregating_stage():
+def generate_aggregating_stage(cfg: ExperimentConfig) -> Stage:
     """
     Function to concatenate the MD trajectory (h5 contact map)
     """
@@ -229,13 +224,15 @@ def generate_aggregating_stage():
     return s2
 
 
-def generate_ML_stage(num_ML=1):
+def generate_ML_stage(cfg: ExperimentConfig) -> Stage:
     """
     Function to generate the learning stage
     """
     # learn task
     time_stamp = int(time.time())
     stages = []
+    # TODO: update config to include hpo
+    num_ML = 1
     for i in range(num_ML):
         s3 = Stage()
         s3.name = "learning"
@@ -335,7 +332,7 @@ def generate_ML_stage(num_ML=1):
     return stages
 
 
-def generate_interfacing_stage():
+def generate_interfacing_stage(cfg: ExperimentConfig) -> Stage:
     s4 = Stage()
     s4.name = "scanning"
 
@@ -431,34 +428,25 @@ class PipelineManager:
     def _generate_pipeline_iteration(self):
 
         s1 = generate_MD_stage(cfg)
-        # Add simulating stage to the training pipeline
         self.pipeline.add_stages(s1)
 
-        # Data Preprocessing stage
         s_1 = generate_preprocessing_stage(cfg)
         self.pipeline.add_stages(s_1)
 
-        # --------------------------
-        # Aggregate stage
         s2 = generate_aggregating_stage(cfg)
         self.pipeline.add_stages(s2)
 
         if self.cur_iteration % cfg["RETRAIN_FREQ"] == 0:
-            # --------------------------
-            # Learning stage
             s3 = generate_ML_stage(cfg)
-            # Add the learning stage to the pipeline
             self.pipeline.add_stages(s3)
 
-        # --------------------------
-        # Outlier identification stage
         s4 = generate_interfacing_stage(cfg)
         s4.post_exec = self.func_condition
         self.pipeline.add_stages(s4)
 
         self.cur_iteration += 1
 
-    def generate_pipeline(self):
+    def generate_pipeline(self) -> Pipeline:
         self._generate_pipeline_iteration()
         return self.pipeline
 
