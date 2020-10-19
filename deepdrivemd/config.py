@@ -158,7 +158,7 @@ class ExperimentConfig(BaseSettings):
     project: str
     cpus_per_node: int
     gpus_per_node: int
-    iterations: int
+    max_iteration: int
     experiment_directory: Path
     walltime_min: int
     md_runner: MDRunnerConfig
@@ -197,7 +197,7 @@ def generate_sample_config():
         walltime_min=360,
         cpus_per_node=42,
         gpus_per_node=6,
-        iterations=4,
+        max_iteration=4,
         experiment_directory="/path/to/experiment",
         md_runner=md_runner,
         outlier_detection=outlier_detection,
