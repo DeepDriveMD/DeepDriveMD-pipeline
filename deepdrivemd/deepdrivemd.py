@@ -3,10 +3,14 @@ import sys
 import json
 import time
 import uuid
+from pathlib import Path
+from typing import List
 
 import radical.utils as ru
-
 from radical.entk import Pipeline, Stage, Task, AppManager
+
+
+from deepdrivemd.config import ExperimentConfig
 
 
 def get_ligand_topology(pdb_file):
@@ -19,6 +23,13 @@ def get_ligand_topology(pdb_file):
     if ".pdb" in ligid:
         ligid = ligid[:-4]
     return os.path.join(topol_dir, f"topology_{ligid}.top")
+
+
+def get_outliers(outlier_filename: Path) -> List[str]:
+    if not os.path.exists(outlier_filename):
+        return []
+    with open(outlier_filename) as f:
+        return json.load(f)
 
 
 def generate_training_pipeline(cfg):
@@ -35,16 +46,11 @@ def generate_training_pipeline(cfg):
         s1 = Stage()
         s1.name = "MD"
 
-        initial_MD = True
-        outlier_filepath = "%s/Outlier_search/restart_points.json" % cfg["base_path"]
+        # TODO: factor this variable out into the config
+        outlier_filename = Path("/Outlier_search/restart_points.json")
+        outliers = get_outliers(outlier_filename)
 
-        if os.path.exists(outlier_filepath):
-            initial_MD = False
-            outlier_file = open(outlier_filepath, "r")
-            outlier_list = json.load(outlier_file)
-            outlier_file.close()
-
-        print("Number of outliers in stage 1:", len(outlier_list))
+        print("Number of outliers in stage 1:", len(outliers))
 
         # MD tasks
         global time_stamp
@@ -81,38 +87,35 @@ def generate_training_pipeline(cfg):
             #    t1.arguments += ['--topol', cfg['top_file']]
 
             # pick initial point of simulation
-            if initial_MD or i >= len(outlier_list):
-                # Not used ince outlier_list is filled from the start
+            if not outliers:
+                # Not used ince outliers is filled from the start
                 t1.arguments += ["--pdb_file", cfg["pdb_file"]]
                 t1.arguments += ["--topol", get_ligand_topology(cfg["pdb_file"])]
                 print("stage 1 error. using pdb in config")
-            elif outlier_list[i].endswith("pdb"):
+            elif outliers[i].endswith("pdb"):
                 print("Getting PDB outlier")
-                print("pdb:", outlier_list[i])
-                print("top:", get_ligand_topology(outlier_list[i]))
+                print("pdb:", outliers[i])
+                print("top:", get_ligand_topology(outliers[i]))
                 t1.arguments += [
                     "--pdb_file",
-                    outlier_list[i],
+                    outliers[i],
                     "--topol",
-                    get_ligand_topology(outlier_list[i]),
+                    get_ligand_topology(outliers[i]),
                 ]
-                t1.pre_exec += ["cp %s ./" % outlier_list[i]]
-            elif outlier_list[i].endswith("chk"):
+                t1.pre_exec += ["cp %s ./" % outliers[i]]
+            elif outliers[i].endswith("chk"):
                 t1.arguments += [
                     "--pdb_file",
                     cfg["pdb_file"],
                     "-c",
-                    outlier_list[i],
+                    outliers[i],
                     "--topol",
-                    get_ligand_topology(outlier_list[i]),
+                    get_ligand_topology(outliers[i]),
                 ]
-                t1.pre_exec += ["cp %s ./" % outlier_list[i]]
+                t1.pre_exec += ["cp %s ./" % outliers[i]]
 
             # how long to run the simulation
-            if initial_MD:
-                t1.arguments += ["--length", cfg["LEN_initial"]]
-            else:
-                t1.arguments += ["--length", cfg["LEN_iter"]]
+            t1.arguments += ["--length", cfg.md_runner.simulation_length_ns]
 
             # assign hardware the task
             t1.cpu_reqs = {
@@ -525,39 +528,43 @@ def generate_training_pipeline(cfg):
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
 
+    # Read YAML configuration file from stdin
+    try:
+        config_filename = sys.argv[1]
+    except Exception:
+        raise ValueError(f"Usage:\tpython {sys.argv[0]} [config.json]\n\n")
+
+    cfg = ExperimentConfig.from_yaml(config_filename)
+
     reporter = ru.Reporter(name="radical.entk")
-    reporter.title("COVID-19 - Workflow2")
-
-    # resource specified as argument
-    if len(sys.argv) == 2:
-        cfg_file = sys.argv[1]
-    elif sys.argv[0] == "molecules_adrp.py":
-        cfg_file = "adrp_system.json"
-    elif sys.argv[0] == "molecules_3clpro.py":
-        cfg_file = "3clpro_system.json"
-    else:
-        reporter.exit("Usage:\t%s [config.json]\n\n" % sys.argv[0])
-
-    cfg = ru.Config(cfg=ru.read_json(cfg_file))
-    cfg["node_counts"] = max(1, cfg["md_counts"] // cfg["gpu_per_node"])
-
-    res_dict = {
-        "resource": cfg["resource"],
-        "queue": cfg["queue"],
-        "schema": cfg["schema"],
-        "walltime": cfg["walltime"],
-        "project": cfg["project"],
-        "cpus": 42 * 4 * cfg["node_counts"],
-        "gpus": 6 * cfg["node_counts"],
-    }
+    reporter.title(cfg.title)
 
     # Create Application Manager
-    appman = AppManager(
-        hostname=os.environ.get("RMQ_HOSTNAME"),
-        port=int(os.environ.get("RMQ_PORT")),
-        username=os.environ.get("RMQ_USERNAME"),
-        password=os.environ.get("RMQ_PASSWORD"),
-    )
+    try:
+        appman = AppManager(
+            hostname=os.environ["RMQ_HOSTNAME"],
+            port=int(os.environ["RMQ_PORT"]),
+            username=os.environ["RMQ_USERNAME"],
+            password=os.environ["RMQ_PASSWORD"],
+        )
+    except KeyError:
+        raise ValueError(
+            "Invalid RMQ environment. Please see README.md for configuring environment."
+        )
+
+    # Calculate total number of nodes required. Assumes 1 MD job per GPU
+    num_nodes = max(1, cfg.md_runner.num_jobs // cfg.gpus_per_node)
+
+    res_dict = {
+        "resource": cfg.resource,
+        "queue": cfg.queue,
+        "schema": cfg.schema_,
+        "walltime": cfg.walltime_min,
+        "project": cfg.project,
+        "cpus": 42 * 4 * num_nodes,
+        "gpus": 6 * num_nodes,
+    }
+
     appman.resource_desc = res_dict
 
     p1 = generate_training_pipeline(cfg)
