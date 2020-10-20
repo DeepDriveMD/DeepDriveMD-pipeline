@@ -52,7 +52,7 @@ class MDConfig(BaseSettings):
     omm_dir_prefix: str
 
 
-class MDRunnerConfig(BaseSettings):
+class MDStageConfig(BaseSettings):
     """
     Global MD configuration (written one per experiment)
     """
@@ -73,7 +73,7 @@ class MDRunnerConfig(BaseSettings):
         "export PYTHONPATH=/path/to/run_openmm/directory:$PYTHONPATH",
     ]
     executable: List[str] = ["/gpfs/alpine/proj-shared/med110/conda/openmm/bin/python"]
-    base_arguments: List[str] = ["/path/to/run_openmm/run_openmm.py"]
+    arguments: List[str] = ["/path/to/run_openmm/run_openmm.py"]
     cpu_reqs: HardwareReqs
     gpu_reqs: HardwareReqs
 
@@ -163,13 +163,13 @@ class ExperimentConfig(BaseSettings):
     max_iteration: int
     experiment_directory: Path
     walltime_min: int
-    md_runner: MDRunnerConfig
-    outlier_detection: OutlierDetectionUserConfig
-    model: AAEModelConfig
+    md_stage: MDStageConfig
+    ml_stage: AAEModelConfig
+    od_stage: OutlierDetectionUserConfig
 
 
 def generate_sample_config():
-    md_runner = MDRunnerConfig(
+    md_stage = MDStageConfig(
         num_jobs=10,
         initial_configs_dir="/path/to/initial_pdbs_and_tops",
         reference_pdb_file="/path/to/reference.pdb",
@@ -187,8 +187,8 @@ def generate_sample_config():
             thread_type="CUDA",
         ),
     )
-    model = AAEModelConfig()
-    outlier_detection = OutlierDetectionUserConfig()
+    ml_stage = AAEModelConfig()
+    od_stage = OutlierDetectionUserConfig()
 
     return ExperimentConfig(
         title="COVID-19 - Workflow2",
@@ -202,9 +202,9 @@ def generate_sample_config():
         gpus_per_node=6,
         max_iteration=4,
         experiment_directory="/path/to/experiment",
-        md_runner=md_runner,
-        outlier_detection=outlier_detection,
-        model=model,
+        md_stage=md_stage,
+        ml_stage=ml_stage,
+        od_stage=od_stage,
     )
 
 

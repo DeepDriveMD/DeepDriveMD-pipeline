@@ -30,12 +30,12 @@ def get_initial_pdbs(initial_pdb_dir: Path) -> List[Path]:
     return pdb_filenames
 
 
-def generate_MD_stage(cfg: ExperimentConfig) -> Stage:
+def generate_MD_stage(cfg: ExperimentConfig, iteration: int) -> Stage:
     """
     Function to generate MD stage.
     """
-    s1 = Stage()
-    s1.name = "MD"
+    s = Stage()
+    s.name = "MD"
 
     # TODO: factor this variable out into the config
     outlier_filename = Path("/Outlier_search/restart_points.json")
@@ -43,46 +43,48 @@ def generate_MD_stage(cfg: ExperimentConfig) -> Stage:
     if outlier_filename.exists():
         pdb_filenames = get_outlier_pdbs(outlier_filename)
     else:
-        pdb_filenames = get_initial_pdbs(cfg.md_runner.initial_pdb_dir)
+        pdb_filenames = get_initial_pdbs(cfg.md_stage.initial_pdb_dir)
 
-    for _, pdb_filename in zip(range(cfg.md_runner.num_jobs), cycle(pdb_filenames)):
+    for i, pdb_filename in zip(range(cfg.md_stage.num_jobs), cycle(pdb_filenames)):
         t = Task()
 
-        t.pre_exec = cfg.md_runner.pre_exec
-        t.executable = cfg.md_runner.executable
-        t.arguments = cfg.md_runner.base_arguments
+        t.pre_exec = cfg.md_stage.pre_exec
+        t.executable = cfg.md_stage.executable
+        t.arguments = cfg.md_stage.arguments
 
-        omm_dir_prefix = "run001"
-        md_dir = "md_dir"
-        input_dir = Path("fixme")
+        omm_dir_prefix = f"run_{iteration:03d}_{i:04d}"
+        md_dir = cfg.experiment_directory.joinpath("md_runs")
 
         run_config = MDConfig(
             pdb_file=pdb_filename,
-            initial_pdb_dir=cfg.md_runner.initial_pdb_dir,
-            reference_pdb_file=cfg.md_runner.reference_pdb_file,
-            solvent_type=cfg.md_runner.solvent_type,
-            temperature_kelvin=cfg.md_runner.temperature_kelvin,
-            simulation_length_ns=cfg.md_runner.simulation_length_ns,
-            report_interval_ps=cfg.md_runner.report_interval_ps,
-            omm_dir_prefix=omm_dir_prefix,  # like "run058",
-            local_run_dir=cfg.md_runner.local_run_dir,
+            initial_pdb_dir=cfg.md_stage.initial_pdb_dir,
+            reference_pdb_file=cfg.md_stage.reference_pdb_file,
+            solvent_type=cfg.md_stage.solvent_type,
+            temperature_kelvin=cfg.md_stage.temperature_kelvin,
+            simulation_length_ns=cfg.md_stage.simulation_length_ns,
+            report_interval_ps=cfg.md_stage.report_interval_ps,
+            omm_dir_prefix=omm_dir_prefix,  # like "run_002_055",
+            local_run_dir=cfg.md_stage.local_run_dir,
             result_dir=md_dir,
-            wrap=cfg.md_runner.wrap,
+            wrap=cfg.md_stage.wrap,
         )
 
-        # Push the YAML over to node-local storage, then start run
-        cfg_path = input_dir.joinpath("omm.yaml")
+        # Write MD yaml to tmp directory to be picked up and moved by MD job
+        cfg_path = cfg.experiment_directory.joinpath("tmp", f"md-{uuid.uuid4()}.yaml")
+
         with open(cfg_path, mode="w") as fp:
             run_config.dump_yaml(fp)
 
+        t.arguments += ["-c", cfg_path]
+
         # Assign hardware requirements
-        t.cpu_reqs = cfg.md_runner.cpu_reqs
-        t.gpu_reqs = cfg.md_runner.gpu_reqs
+        t.cpu_reqs = cfg.md_stage.cpu_reqs
+        t.gpu_reqs = cfg.md_stage.gpu_reqs
 
         # Add the MD task to the simulating stage
-        s1.add_tasks(t)
+        s.add_tasks(t)
 
-    return s1
+    return s
 
 
 def generate_preprocessing_stage(cfg: ExperimentConfig) -> Stage:
@@ -91,7 +93,7 @@ def generate_preprocessing_stage(cfg: ExperimentConfig) -> Stage:
     s_1 = Stage()
     s_1.name = "preprocessing"
 
-    for i in range(cfg.md_runner.num_jobs):
+    for i in range(cfg.md_stage.num_jobs):
 
         t_1 = Task()
 
@@ -399,6 +401,11 @@ class PipelineManager:
         self.pipeline = Pipeline()
         pipeline.name = "DeepDriveMD"
 
+    def _init_experiment_dir(self):
+        self.cfg.experiment_directory.mkdir()
+        for dirname in ["md_runs", "ml_runs", "outlier_runs", "tmp"]:
+            self.cfg.experiment_directory.joinpath(dirname).mkdir()
+
     def func_condition(self):
         if self.cur_iteration < self.cfg.max_iteration:
             self.func_on_true()
@@ -465,7 +472,7 @@ if __name__ == "__main__":
         )
 
     # Calculate total number of nodes required. Assumes 1 MD job per GPU
-    num_nodes = max(1, cfg.md_runner.num_jobs // cfg.gpus_per_node)
+    num_nodes = max(1, cfg.md_stage.num_jobs // cfg.gpus_per_node)
 
     res_dict = {
         "resource": cfg.resource,
