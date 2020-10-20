@@ -3,7 +3,7 @@ import sys
 import json
 import time
 import uuid
-import itertools
+from itertools import cycle
 from pathlib import Path
 from typing import List, Tuple
 
@@ -11,21 +11,28 @@ import radical.utils as ru
 from radical.entk import Pipeline, Stage, Task, AppManager
 
 
-from deepdrivemd.config import ExperimentConfig
+from deepdrivemd.config import ExperimentConfig, MDConfig
+
+
+def get_system_name(pdb_file: Path) -> str:
+    # pdb_file: /path/to/pdb/<system-name>__<everything-else>.pdb
+    return pdb_file.with_suffix("").name.split("__")[0]
 
 
 def get_topology(initial_pdb_dir: Path, pdb_file: Path) -> Path:
-    # Assume abspath is passed and that ligand ID is enoded in pdb_file name
-    # pdb_file: /path/system_<ligid>.pdb
-    # topol:    /path/topology_<ligid>.pdb
-
-    system_name = pdb_file.with_suffix("").name.split("__")[0]
+    # pdb_file: /path/to/pdb/<system-name>__<everything-else>.pdb
+    # top_file: initial_pdb_dir/<system-name>/*.top
+    system_name = get_system_name(pdb_file)
     return list(initial_pdb_dir.joinpath(system_name).glob("*.top"))[0]
 
 
-def get_outliers(outlier_filename: Path) -> Tuple[List[Path], List[str]]:
+def get_outlier_pdbs(outlier_filename: Path) -> Tuple[List[Path], List[str]]:
     with open(outlier_filename) as f:
-        return list(map(Path, json.load(f))), []
+        pdb_filenames = list(map(Path, json.load(f)))
+
+    system_names = list(map(get_system_name, pdb_filenames))
+
+    return pdb_filenames, system_names
 
 
 def get_initial_pdbs(initial_pdb_dir: Path) -> Tuple[List[Path], List[str]]:
@@ -36,6 +43,7 @@ def get_initial_pdbs(initial_pdb_dir: Path) -> Tuple[List[Path], List[str]]:
     if any("__" in filename.as_posix() for filename in pdb_filenames):
         raise ValueError("Initial PDB files cannot contain a double underscore __")
 
+    # Define system name as the subdirectory name containing the PDB,top files
     system_names = list(filename.parent.name for filename in pdb_filenames)
     return pdb_filenames, system_names
 
@@ -51,42 +59,41 @@ def generate_MD_stage(cfg: ExperimentConfig) -> Stage:
     outlier_filename = Path("/Outlier_search/restart_points.json")
 
     if outlier_filename.exists():
-        pdb_filenames, system_names = get_outliers(outlier_filename)
+        pdb_filenames, system_names = get_outlier_pdbs(outlier_filename)
     else:
         pdb_filenames, system_names = get_initial_pdbs(cfg.md_runner.initial_pdb_dir)
 
-    for i, pdb_filename in zip(
-        range(cfg.md_runner.num_jobs), itertools.cycle(pdb_filenames)
+    for _, pdb_filename, system_name in zip(
+        range(cfg.md_runner.num_jobs), cycle(pdb_filenames), cycle(system_names)
     ):
         t = Task()
 
         t.pre_exec = cfg.md_runner.pre_exec
-        # TODO: create MD task dir and cd into dir so copy pdb command will work
-
         t.executable = cfg.md_runner.executable
         t.arguments = cfg.md_runner.base_arguments
 
-        t.arguments += ["--pdb_file", pdb_filename.as_posix()]
+        omm_dir_prefix = "run001"
+        md_dir = "md_dir"
+        input_dir = Path("fixme")
 
-        # Optionally add a topology for explicit solvents
-        if cfg.md_runner.solvent_type == "implicit":
-            t.arguments += [
-                "--topol",
-                get_topology(cfg.md_runner.initial_pdb_dir, pdb_filename).as_posix(),
-            ]
+        run_config = MDConfig(
+            pdb_file=pdb_filename,
+            initial_pdb_dir=cfg.md_runner.initial_pdb_dir,
+            reference_pdb_file=cfg.md_runner.reference_pdb_file,
+            solvent_type=cfg.md_runner.solvent_type,
+            temperature_kelvin=cfg.md_runner.temperature_kelvin,
+            simulation_length_ns=cfg.md_runner.simulation_length_ns,
+            report_interval_ps=cfg.md_runner.report_interval_ps,
+            omm_dir_prefix=omm_dir_prefix,  # like "run058",
+            local_run_dir=cfg.md_runner.local_run_dir,
+            result_dir=md_dir,
+            wrap=cfg.md_runner.wrap,
+        )
 
-        # On initial iterations need to change the PDB file names to include
-        # the system information to look up the topology
-        if system_names:
-            copy_to_filename = f"{system_names[i]}__{pdb_filename.name}"
-        else:
-            copy_to_filename = pdb_filename.name
-
-        # Copy PDB to node-local storage
-        t.pre_exec += ["cp %s ./%s" % (pdb_filename.as_posix(), copy_to_filename)]
-
-        # How long to run the simulation
-        t.arguments += ["--length", cfg.md_runner.simulation_length_ns]
+        # Push the YAML over to node-local storage, then start run
+        cfg_path = input_dir.joinpath("omm.yaml")
+        with open(cfg_path, mode="w") as fp:
+            run_config.dump_yaml(fp)
 
         # Assign hardware requirements
         t.cpu_reqs = cfg.md_runner.cpu_reqs
@@ -405,12 +412,12 @@ def generate_interfacing_stage(cfg: ExperimentConfig) -> Stage:
 
 
 class PipelineManager:
-    def __init__(self, cfg: ExperimentConfig, pipeline_name: str):
+    def __init__(self, cfg: ExperimentConfig):
         self.cfg = cfg
         self.cur_iteration = 0
 
         self.pipeline = Pipeline()
-        pipeline.name = pipeline_name
+        pipeline.name = "DeepDriveMD"
 
     def func_condition(self):
         if self.cur_iteration < self.cfg.max_iteration:
@@ -486,13 +493,13 @@ if __name__ == "__main__":
         "schema": cfg.schema_,
         "walltime": cfg.walltime_min,
         "project": cfg.project,
-        "cpus": 42 * 4 * num_nodes,
-        "gpus": 6 * num_nodes,
+        "cpus": cfg.cpus_per_node * cfg.hardware_threads_per_cpu * num_nodes,
+        "gpus": cfg.gpus_per_node * num_nodes,
     }
 
     appman.resource_desc = res_dict
 
-    pipeline_manager = PipelineManager(cfg, "DeepDriveMD")
+    pipeline_manager = PipelineManager(cfg)
     pipeline = pipeline_manager.generate_pipeline()
 
     pipelines = [pipeline]

@@ -38,8 +38,10 @@ class MDConfig(BaseSettings):
     Auto-generates configuration file for run_openmm.py
     """
 
+    pdb_file: Path
+    initial_pdb_dir: Path
     reference_pdb_file: Optional[Path]
-    local_run_dir: Path = Path("/raid/scratch")
+    local_run_dir: Path = Path("/mnt/bb/$USER/")
     solvent_type: MDSolvent
     simulation_length_ns: float = 10
     report_interval_ps: float = 50
@@ -48,7 +50,6 @@ class MDConfig(BaseSettings):
     temperature_kelvin: float = 310.0
     result_dir: Path
     omm_dir_prefix: str
-    initial_configs_dir: Path
 
 
 class MDRunnerConfig(BaseSettings):
@@ -64,7 +65,7 @@ class MDRunnerConfig(BaseSettings):
     simulation_length_ns: float = 10
     report_interval_ps: float = 50
     wrap: bool = False
-    local_run_dir: Path = Path("/raid/scratch")
+    local_run_dir: Path = Path("/mnt/bb/$USER/")
     pre_exec: List[str] = [
         ". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh",
         "module load cuda/9.1.85",
@@ -158,6 +159,7 @@ class ExperimentConfig(BaseSettings):
     project: str
     cpus_per_node: int
     gpus_per_node: int
+    hardware_threads_per_cpu: int
     max_iteration: int
     experiment_directory: Path
     walltime_min: int
@@ -196,6 +198,7 @@ def generate_sample_config():
         project="MED110",
         walltime_min=360,
         cpus_per_node=42,
+        hardware_threads_per_cpu=4,
         gpus_per_node=6,
         max_iteration=4,
         experiment_directory="/path/to/experiment",
