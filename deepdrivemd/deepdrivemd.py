@@ -5,7 +5,7 @@ import time
 import uuid
 from itertools import cycle
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
 
 import radical.utils as ru
 from radical.entk import Pipeline, Stage, Task, AppManager
@@ -14,28 +14,12 @@ from radical.entk import Pipeline, Stage, Task, AppManager
 from deepdrivemd.config import ExperimentConfig, MDConfig
 
 
-def get_system_name(pdb_file: Path) -> str:
-    # pdb_file: /path/to/pdb/<system-name>__<everything-else>.pdb
-    return pdb_file.with_suffix("").name.split("__")[0]
-
-
-def get_topology(initial_pdb_dir: Path, pdb_file: Path) -> Path:
-    # pdb_file: /path/to/pdb/<system-name>__<everything-else>.pdb
-    # top_file: initial_pdb_dir/<system-name>/*.top
-    system_name = get_system_name(pdb_file)
-    return list(initial_pdb_dir.joinpath(system_name).glob("*.top"))[0]
-
-
-def get_outlier_pdbs(outlier_filename: Path) -> Tuple[List[Path], List[str]]:
+def get_outlier_pdbs(outlier_filename: Path) -> List[Path]:
     with open(outlier_filename) as f:
-        pdb_filenames = list(map(Path, json.load(f)))
-
-    system_names = list(map(get_system_name, pdb_filenames))
-
-    return pdb_filenames, system_names
+        return list(map(Path, json.load(f)))
 
 
-def get_initial_pdbs(initial_pdb_dir: Path) -> Tuple[List[Path], List[str]]:
+def get_initial_pdbs(initial_pdb_dir: Path) -> List[Path]:
     """Scan input directory for PDBs and optional topologies."""
 
     pdb_filenames = list(initial_pdb_dir.glob("*/*.pdb"))
@@ -43,9 +27,7 @@ def get_initial_pdbs(initial_pdb_dir: Path) -> Tuple[List[Path], List[str]]:
     if any("__" in filename.as_posix() for filename in pdb_filenames):
         raise ValueError("Initial PDB files cannot contain a double underscore __")
 
-    # Define system name as the subdirectory name containing the PDB,top files
-    system_names = list(filename.parent.name for filename in pdb_filenames)
-    return pdb_filenames, system_names
+    return pdb_filenames
 
 
 def generate_MD_stage(cfg: ExperimentConfig) -> Stage:
@@ -59,13 +41,11 @@ def generate_MD_stage(cfg: ExperimentConfig) -> Stage:
     outlier_filename = Path("/Outlier_search/restart_points.json")
 
     if outlier_filename.exists():
-        pdb_filenames, system_names = get_outlier_pdbs(outlier_filename)
+        pdb_filenames = get_outlier_pdbs(outlier_filename)
     else:
-        pdb_filenames, system_names = get_initial_pdbs(cfg.md_runner.initial_pdb_dir)
+        pdb_filenames = get_initial_pdbs(cfg.md_runner.initial_pdb_dir)
 
-    for _, pdb_filename, system_name in zip(
-        range(cfg.md_runner.num_jobs), cycle(pdb_filenames), cycle(system_names)
-    ):
+    for _, pdb_filename in zip(range(cfg.md_runner.num_jobs), cycle(pdb_filenames)):
         t = Task()
 
         t.pre_exec = cfg.md_runner.pre_exec
