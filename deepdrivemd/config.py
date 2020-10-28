@@ -12,8 +12,9 @@ _T = TypeVar("_T")
 
 
 class BaseSettings(_BaseSettings):
-    def dump_yaml(self, file):
-        yaml.dump(json.loads(self.json()), file, indent=4)
+    def dump_yaml(self, cfg_path):
+        with open(cfg_path, mode="w") as fp:
+            yaml.dump(json.loads(self.json()), fp, indent=4)
 
     @classmethod
     def from_yaml(cls: Type[_T], filename: Union[str, Path]) -> _T:
@@ -50,7 +51,6 @@ class MDConfig(BaseSettings):
     dt_ps: float = 0.002
     temperature_kelvin: float = 310.0
     result_dir: Path
-    h5_cp_path: Path
     omm_dir_prefix: str
 
 
@@ -78,6 +78,45 @@ class MDStageConfig(BaseSettings):
     arguments: List[str] = ["/path/to/run_openmm/run_openmm.py"]
     cpu_reqs: HardwareReqs
     gpu_reqs: HardwareReqs
+
+
+class AggregationConfig(BaseSettings):
+    """
+    Auto-generates configuration file
+    """
+
+    rmsd: bool = True
+    fnc: bool = False
+    contact_map: bool = False
+    point_cloud: bool = True
+    verbose: bool = True
+    last_n_h5_files: Optional[int]
+
+    experiment_directory: Path
+    out_path: str
+
+
+class AggregationStageConfig(BaseSettings):
+    """
+    Global aggregation configuration (written one per experiment)
+    """
+
+    pre_exec: List[str] = [
+        ". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh",
+        "conda activate /gpfs/alpine/proj-shared/med110/conda/pytorch",
+        "export LANG=en_US.utf-8",
+        "export LC_ALL=en_US.utf-8",
+    ]
+    executable: List[str] = ["/gpfs/alpine/proj-shared/med110/conda/pytorch/bin/python"]
+    arguments: List[str] = ["/path/to/data/aggregation/script/aggregate.py"]
+    cpu_reqs: HardwareReqs
+
+    rmsd: bool = True
+    fnc: bool = False
+    contact_map: bool = False
+    point_cloud: bool = True
+    verbose: bool = True
+    last_n_h5_files: Optional[int]
 
 
 class AAEModelConfig(BaseSettings):
@@ -166,6 +205,7 @@ class ExperimentConfig(BaseSettings):
     experiment_directory: Path
     walltime_min: int
     md_stage: MDStageConfig
+    aggregation_stage: AggregationStageConfig
     ml_stage: AAEModelConfig
     od_stage: OutlierDetectionUserConfig
 
@@ -189,6 +229,14 @@ def generate_sample_config():
             thread_type="CUDA",
         ),
     )
+    aggregation_stage = AggregationStageConfig(
+        cpu_reqs=HardwareReqs(
+            processes=1,
+            process_type="null",
+            threads_per_process=26,
+            thread_type="OpenMP",
+        ),
+    )
     ml_stage = AAEModelConfig()
     od_stage = OutlierDetectionUserConfig()
 
@@ -205,6 +253,7 @@ def generate_sample_config():
         max_iteration=4,
         experiment_directory="/path/to/experiment",
         md_stage=md_stage,
+        aggregation_stage=aggregation_stage,
         ml_stage=ml_stage,
         od_stage=od_stage,
     )

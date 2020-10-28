@@ -61,15 +61,15 @@ class SimulationContext:
         result_dir,
         initial_pdb_dir,
         solvent_type,
-        h5_cp_path,
     ):
 
         self.result_dir = result_dir
         self.reference_pdb_file = reference_pdb_file
-        self.h5_cp_path = h5_cp_path
         self.workdir = Path(omm_parent_dir).joinpath(omm_dir_prefix)
 
         self._init_workdir(Path(pdb_file), Path(initial_pdb_dir), solvent_type)
+
+        self.h5_prefix = self.workdir.joinpath(omm_dir_prefix).as_posix()
 
     def _init_workdir(self, pdb_file, initial_pdb_dir, solvent_type):
         # Make node-local dir
@@ -101,11 +101,6 @@ class SimulationContext:
         local_top_file = shutil.copy(top_file, self.workdir.joinpath(copy_to_file))
         return local_top_file
 
-    def copy_hdf5(self):
-        # Each simulation produces a single HDF5 file
-        h5_file = list(self.workdir.glob("*.h5"))[0]
-        shutil.copy(h5_file, self.h5_cp_path)
-
     def move_results(self):
         shutil.move(self.workdir.as_posix(), self.result_dir)
 
@@ -123,7 +118,6 @@ def run_simulation(
     temperature_kelvin: float,
     result_dir: str,
     initial_pdb_dir: str,
-    h5_cp_path: str,
     wrap: bool,
 ):
 
@@ -136,7 +130,6 @@ def run_simulation(
         result_dir=result_dir,
         initial_pdb_dir=initial_pdb_dir,
         solvent_type=solvent_type,
-        h5_cp_path=h5_cp_path,
     )
 
     # Create openmm simulation object
@@ -159,9 +152,6 @@ def run_simulation(
 
     sim.step(nsteps)
 
-    # Copy HDF5 file to machine learning input directory
-    ctx.copy_hdf5()
-
     # Move simulation data to persistent storage
     ctx.move_results()
 
@@ -181,7 +171,6 @@ def build_simulation_params(cfg: dict) -> dict:
         temperature_kelvin=float(cfg["temperature_kelvin"]) * u.kelvin,
         result_dir=cfg["result_dir"],
         initial_pdb_dir=cfg["initial_pdb_dir"],
-        h5_cp_path=cfg[" h5_cp_path"],
         wrap=cfg["wrap"],
     )
 

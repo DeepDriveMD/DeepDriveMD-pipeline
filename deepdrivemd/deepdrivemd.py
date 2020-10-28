@@ -11,7 +11,7 @@ import radical.utils as ru
 from radical.entk import Pipeline, Stage, Task, AppManager
 
 
-from deepdrivemd.config import ExperimentConfig, MDConfig
+from deepdrivemd.config import ExperimentConfig, MDConfig, AggregationConfig
 
 
 def get_outlier_pdbs(outlier_filename: Path) -> List[Path]:
@@ -287,13 +287,26 @@ class PipelineManager:
         # Name experiment directories
         self.experiment_dirs = {
             dir_name: self.cfg.experiment_directory.joinpath(dir_name)
-            for dir_name in ["md_runs", "ml_runs", "agent_runs", "tmp", "h5_tmp"]
+            for dir_name in [
+                "md_runs",
+                "ml_runs",
+                "aggregation_runs",
+                "agent_runs",
+                "tmp",
+            ]
         }
 
         # Make experiment directories
         self.cfg.experiment_directory.mkdir()
         for dir_path in self.experiment_dirs.values():
             dir_path.mkdir()
+
+    @property
+    def aggregated_data_path(self):
+        # Used my aggregation and ml stage
+        return self.experiment_dirs["aggregation_runs"].joinpath(
+            f"data_{self.cur_iteration}.h5"
+        )
 
     def func_condition(self):
         if self.cur_iteration < self.cfg.max_iteration:
@@ -336,7 +349,7 @@ class PipelineManager:
         """
         s = Stage()
         s.name = "MD"
-        md_cfg = self.cfg.md_stage
+        cfg = self.cfg.md_stage
 
         # TODO: factor this variable out into the config
         outlier_filename = Path("/Outlier_search/restart_points.json")
@@ -344,46 +357,77 @@ class PipelineManager:
         if outlier_filename.exists():
             pdb_filenames = get_outlier_pdbs(outlier_filename)
         else:
-            pdb_filenames = get_initial_pdbs(md_cfg.initial_pdb_dir)
+            pdb_filenames = get_initial_pdbs(cfg.initial_pdb_dir)
 
-        for i, pdb_filename in zip(range(md_cfg.num_jobs), cycle(pdb_filenames)):
+        for i, pdb_filename in zip(range(cfg.num_jobs), cycle(pdb_filenames)):
             t = Task()
-
-            t.pre_exec = md_cfg.pre_exec
-            t.executable = md_cfg.executable
-            t.arguments = md_cfg.arguments
+            t.cpu_reqs = cfg.cpu_reqs.dict()
+            t.gpu_reqs = cfg.gpu_reqs.dict()
+            t.pre_exec = cfg.pre_exec
+            t.executable = cfg.executable
+            t.arguments = cfg.arguments
 
             omm_dir_prefix = f"run_{self.cur_iteration:03d}_{i:04d}"
 
             run_config = MDConfig(
                 pdb_file=pdb_filename,
-                initial_pdb_dir=md_cfg.initial_pdb_dir,
-                reference_pdb_file=md_cfg.reference_pdb_file,
-                solvent_type=md_cfg.solvent_type,
-                temperature_kelvin=md_cfg.temperature_kelvin,
-                simulation_length_ns=md_cfg.simulation_length_ns,
-                report_interval_ps=md_cfg.report_interval_ps,
+                initial_pdb_dir=cfg.initial_pdb_dir,
+                reference_pdb_file=cfg.reference_pdb_file,
+                solvent_type=cfg.solvent_type,
+                temperature_kelvin=cfg.temperature_kelvin,
+                simulation_length_ns=cfg.simulation_length_ns,
+                report_interval_ps=cfg.report_interval_ps,
                 omm_dir_prefix=omm_dir_prefix,  # like "run_002_055",
-                local_run_dir=md_cfg.local_run_dir,
+                local_run_dir=cfg.local_run_dir,
                 result_dir=self.experiment_dirs["md_runs"],
-                h5_cp_path=self.experiment_dirs["h5_tmp"],
-                wrap=md_cfg.wrap,
+                wrap=cfg.wrap,
             )
 
             # Write MD yaml to tmp directory to be picked up and moved by MD job
             cfg_path = self.experiment_dirs["tmp"].joinpath(f"md-{uuid.uuid4()}.yaml")
-
-            with open(cfg_path, mode="w") as fp:
-                run_config.dump_yaml(fp)
+            run_config.dump_yaml(cfg_path)
 
             t.arguments += ["-c", cfg_path]
-
-            # Assign hardware requirements
-            t.cpu_reqs = md_cfg.cpu_reqs
-            t.gpu_reqs = md_cfg.gpu_reqs
-
-            # Add the MD task to the simulating stage
             s.add_tasks(t)
+
+        return s
+
+    def generate_aggregating_stage(self) -> Stage:
+        """
+        Function to concatenate the MD trajectory (h5 contact map)
+        """
+        s = Stage()
+        s.name = "aggregating"
+        cfg = self.cfg.aggregation_stage
+
+        # Aggregation task
+        t = Task()
+
+        t.cpu_reqs = cfg.cpu_reqs.dict()
+        t.pre_exec = cfg.pre_exec
+        t.executable = cfg.executable
+        t.arguments = cfg.arguments
+
+        run_config = AggregationConfig(
+            rmsd=cfg.rmsd,
+            fnc=cfg.fnc,
+            contact_map=cfg.contact_map,
+            point_cloud=cfg.point_cloud,
+            last_n_h5_files=cfg.last_n_h5_files,
+            verbose=cfg.verbose,
+            experiment_directory=self.cfg.experiment_directory,
+            out_path=self.aggregated_data_path,
+        )
+
+        # Write MD yaml to tmp directory to be picked up and moved by MD job
+        cfg_path = self.experiment_dirs["aggregation_runs"].joinpath(
+            f"aggregation_{self.cur_iteration}.yaml"
+        )
+
+        run_config.dump_yaml(cfg_path)
+
+        t.arguments += ["-c", cfg_path]
+        s.add_tasks(t)
 
         return s
 
