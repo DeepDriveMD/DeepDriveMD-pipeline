@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-from deepdrivemd.api import DeepDriveMD_API
+from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.config import get_config, AggregationConfig
 
 
