@@ -30,71 +30,6 @@ def get_initial_pdbs(initial_pdb_dir: Path) -> List[Path]:
     return pdb_filenames
 
 
-def generate_aggregating_stage(cfg: ExperimentConfig) -> Stage:
-    """
-    Function to concatenate the MD trajectory (h5 contact map)
-    """
-    s2 = Stage()
-    s2.name = "aggregating"
-
-    # Aggregation task
-    t2 = Task()
-
-    # https://github.com/radical-collaboration/hyperspace/blob/MD/microscope/experiments/MD_to_CVAE/MD_to_CVAE.py
-    t2.pre_exec = [
-        ". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh",
-        "conda activate %s" % cfg["conda_pytorch"],
-        "export LANG=en_US.utf-8",
-        "export LC_ALL=en_US.utf-8",
-    ]
-    # preprocessing for molecules' script, it needs files in a single
-    # directory
-    # the following pre-processing does:
-    # 1) find all (.dcd) files from openmm results
-    # 2) create a temp directory
-    # 3) symlink them in the temp directory
-    #
-
-    # t2.pre_exec += [
-    #        'export dcd_list=(`ls %s/MD_exps/%s/omm_runs_*/*dcd`)' % (cfg['base_path'], cfg['system_name']),
-    #        'export tmp_path=`mktemp -p %s/MD_to_CVAE/ -d`' % cfg['base_path'],
-    #        'for dcd in ${dcd_list[@]}; do tmp=$(basename $(dirname $dcd)); ln -s $dcd $tmp_path/$tmp.dcd; done',
-    #        'ln -s %s $tmp_path/prot.pdb' % cfg['pdb_file'],
-    #        'ls ${tmp_path}']
-
-    # t2.pre_exec += ['unset CUDA_VISIBLE_DEVICES', 'export OMP_NUM_THREADS=4']
-
-    # node_cnt_constraint = cfg['md_counts'] * max(1, CUR_STAGE) // 12
-    # cmd_cat    = 'cat /dev/null'
-    # cmd_jsrun  = 'jsrun -n %s -r 1 -a 6 -c 7 -d packed' % min(cfg['node_counts'], node_cnt_constraint)
-
-    t2.executable = ["%s/bin/python" % cfg["conda_pytorch"]]  # MD_to_CVAE.py
-
-    t2.arguments = [
-        "%s/scripts/concat_dsets.py" % cfg["molecules_path"],
-        "-d",
-        cfg["h5_tmp_dir"],
-        "-o",
-        "%s/MD_to_CVAE/cvae_input.h5" % cfg["base_path"],
-        "--rmsd",
-        "--fnc",
-        "--contact_map",
-        "--point_cloud",
-        "--verbose",
-    ]
-
-    # Add the aggregation task to the aggreagating stage
-    t2.cpu_reqs = {
-        "processes": 1,
-        "process_type": None,
-        "threads_per_process": 26,
-        "thread_type": "OpenMP",
-    }
-
-    s2.add_tasks(t2)
-    return s2
-
-
 def generate_ML_stage(cfg: ExperimentConfig) -> Stage:
     """
     Function to generate the learning stage
@@ -323,19 +258,16 @@ class PipelineManager:
 
     def _generate_pipeline_iteration(self):
 
-        md_stage = self.generate_MD_stage()
-        self.pipeline.add_stages(md_stage)
+        self.pipeline.add_stages(self.generate_md_stage())
 
-        s2 = generate_aggregating_stage(cfg)
-        self.pipeline.add_stages(s2)
+        self.pipeline.add_stages(self.generate_aggregating_stage())
 
-        if self.cur_iteration % cfg["RETRAIN_FREQ"] == 0:
-            s3 = generate_ML_stage(cfg)
-            self.pipeline.add_stages(s3)
+        if self.cur_iteration % cfg.ml_stage.retrain_freq == 0:
+            self.pipeline.add_stages(self.generate_ml_stage())
 
-        s4 = generate_interfacing_stage(cfg)
-        s4.post_exec = self.func_condition
-        self.pipeline.add_stages(s4)
+        agent_stage = self.generate_agent_stage()
+        agent_stage.post_exec = self.func_condition
+        self.pipeline.add_stages(agent_stage)
 
         self.cur_iteration += 1
 
@@ -343,7 +275,7 @@ class PipelineManager:
         self._generate_pipeline_iteration()
         return self.pipeline
 
-    def generate_MD_stage(self) -> Stage:
+    def generate_md_stage(self) -> Stage:
         """
         Function to generate MD stage.
         """
@@ -430,6 +362,12 @@ class PipelineManager:
         s.add_tasks(t)
 
         return s
+
+    def generate_ml_stage(self) -> Stage:
+        return Stage()
+
+    def generate_agent_stage(self) -> Stage:
+        return Stage()
 
 
 if __name__ == "__main__":
