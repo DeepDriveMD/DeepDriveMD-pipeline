@@ -30,63 +30,6 @@ def get_initial_pdbs(initial_pdb_dir: Path) -> List[Path]:
     return pdb_filenames
 
 
-def generate_MD_stage(cfg: ExperimentConfig, iteration: int) -> Stage:
-    """
-    Function to generate MD stage.
-    """
-    s = Stage()
-    s.name = "MD"
-
-    # TODO: factor this variable out into the config
-    outlier_filename = Path("/Outlier_search/restart_points.json")
-
-    if outlier_filename.exists():
-        pdb_filenames = get_outlier_pdbs(outlier_filename)
-    else:
-        pdb_filenames = get_initial_pdbs(cfg.md_stage.initial_pdb_dir)
-
-    for i, pdb_filename in zip(range(cfg.md_stage.num_jobs), cycle(pdb_filenames)):
-        t = Task()
-
-        t.pre_exec = cfg.md_stage.pre_exec
-        t.executable = cfg.md_stage.executable
-        t.arguments = cfg.md_stage.arguments
-
-        omm_dir_prefix = f"run_{iteration:03d}_{i:04d}"
-        md_dir = cfg.experiment_directory.joinpath("md_runs")
-
-        run_config = MDConfig(
-            pdb_file=pdb_filename,
-            initial_pdb_dir=cfg.md_stage.initial_pdb_dir,
-            reference_pdb_file=cfg.md_stage.reference_pdb_file,
-            solvent_type=cfg.md_stage.solvent_type,
-            temperature_kelvin=cfg.md_stage.temperature_kelvin,
-            simulation_length_ns=cfg.md_stage.simulation_length_ns,
-            report_interval_ps=cfg.md_stage.report_interval_ps,
-            omm_dir_prefix=omm_dir_prefix,  # like "run_002_055",
-            local_run_dir=cfg.md_stage.local_run_dir,
-            result_dir=md_dir,
-            wrap=cfg.md_stage.wrap,
-        )
-
-        # Write MD yaml to tmp directory to be picked up and moved by MD job
-        cfg_path = cfg.experiment_directory.joinpath("tmp", f"md-{uuid.uuid4()}.yaml")
-
-        with open(cfg_path, mode="w") as fp:
-            run_config.dump_yaml(fp)
-
-        t.arguments += ["-c", cfg_path]
-
-        # Assign hardware requirements
-        t.cpu_reqs = cfg.md_stage.cpu_reqs
-        t.gpu_reqs = cfg.md_stage.gpu_reqs
-
-        # Add the MD task to the simulating stage
-        s.add_tasks(t)
-
-    return s
-
-
 def generate_preprocessing_stage(cfg: ExperimentConfig) -> Stage:
 
     global time_stamp
@@ -402,9 +345,16 @@ class PipelineManager:
         pipeline.name = "DeepDriveMD"
 
     def _init_experiment_dir(self):
+        # Name experiment directories
+        self.experiment_dirs = {
+            dir_name: self.cfg.experiment_directory.joinpath(dir_name)
+            for dir_name in ["md_runs", "ml_runs", "agent_runs", "tmp", "h5_tmp"]
+        }
+
+        # Make experiment directories
         self.cfg.experiment_directory.mkdir()
-        for dirname in ["md_runs", "ml_runs", "outlier_runs", "tmp"]:
-            self.cfg.experiment_directory.joinpath(dirname).mkdir()
+        for dir_path in self.experiment_dirs.values():
+            dir_path.mkdir()
 
     def func_condition(self):
         if self.cur_iteration < self.cfg.max_iteration:
@@ -421,7 +371,7 @@ class PipelineManager:
 
     def _generate_pipeline_iteration(self):
 
-        s1 = generate_MD_stage(cfg)
+        s1 = self.generate_MD_stage()
         self.pipeline.add_stages(s1)
 
         s_1 = generate_preprocessing_stage(cfg)
@@ -443,6 +393,63 @@ class PipelineManager:
     def generate_pipeline(self) -> Pipeline:
         self._generate_pipeline_iteration()
         return self.pipeline
+
+    def generate_MD_stage(self) -> Stage:
+        """
+        Function to generate MD stage.
+        """
+        s = Stage()
+        s.name = "MD"
+        md_cfg = self.cfg.md_stage
+
+        # TODO: factor this variable out into the config
+        outlier_filename = Path("/Outlier_search/restart_points.json")
+
+        if outlier_filename.exists():
+            pdb_filenames = get_outlier_pdbs(outlier_filename)
+        else:
+            pdb_filenames = get_initial_pdbs(md_cfg.initial_pdb_dir)
+
+        for i, pdb_filename in zip(range(md_cfg.num_jobs), cycle(pdb_filenames)):
+            t = Task()
+
+            t.pre_exec = md_cfg.pre_exec
+            t.executable = md_cfg.executable
+            t.arguments = md_cfg.arguments
+
+            omm_dir_prefix = f"run_{self.cur_iteration:03d}_{i:04d}"
+
+            run_config = MDConfig(
+                pdb_file=pdb_filename,
+                initial_pdb_dir=md_cfg.initial_pdb_dir,
+                reference_pdb_file=md_cfg.reference_pdb_file,
+                solvent_type=md_cfg.solvent_type,
+                temperature_kelvin=md_cfg.temperature_kelvin,
+                simulation_length_ns=md_cfg.simulation_length_ns,
+                report_interval_ps=md_cfg.report_interval_ps,
+                omm_dir_prefix=omm_dir_prefix,  # like "run_002_055",
+                local_run_dir=md_cfg.local_run_dir,
+                result_dir=self.experiment_dirs["md_runs"],
+                h5_cp_path=self.experiment_dirs["h5_tmp"],
+                wrap=md_cfg.wrap,
+            )
+
+            # Write MD yaml to tmp directory to be picked up and moved by MD job
+            cfg_path = self.experiment_dirs["tmp"].joinpath(f"md-{uuid.uuid4()}.yaml")
+
+            with open(cfg_path, mode="w") as fp:
+                run_config.dump_yaml(fp)
+
+            t.arguments += ["-c", cfg_path]
+
+            # Assign hardware requirements
+            t.cpu_reqs = md_cfg.cpu_reqs
+            t.gpu_reqs = md_cfg.gpu_reqs
+
+            # Add the MD task to the simulating stage
+            s.add_tasks(t)
+
+        return s
 
 
 if __name__ == "__main__":
