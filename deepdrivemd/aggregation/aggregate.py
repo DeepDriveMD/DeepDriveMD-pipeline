@@ -4,7 +4,7 @@ from deepdrivemd.api import DeepDriveMD_API
 from deepdrivemd.config import get_config, AggregationConfig
 
 
-def concatenate_all(cfg: AggregationConfig):
+def concatenate_last_n_h5(cfg: AggregationConfig):
 
     fields = []
     if cfg.rmsd:
@@ -82,4 +82,4 @@ def concatenate_all(cfg: AggregationConfig):
 if __name__ == "__main__":
     cfg = get_config()
     cfg = AggregationConfig.from_yaml(**cfg)
-    concatenate_all(cfg)
+    concatenate_last_n_h5(cfg)
