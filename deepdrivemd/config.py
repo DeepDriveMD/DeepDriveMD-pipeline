@@ -120,6 +120,10 @@ class AggregationStageConfig(BaseSettings):
 
 
 class AAEModelConfig(BaseSettings):
+
+    # Retrain every i deepdrivemd iterations
+    retrain_freq: int = 1
+
     fraction: float = 0.2
     last_n_files: int = 1
     last_n_files_eval: int = 1
@@ -158,6 +162,34 @@ class AAEModelConfig(BaseSettings):
     allowed_optimizers: List[str] = ["sgd", "sgdm", "adam", "rmsprop"]
     learning_rate: float = 2.0e-5
     loss_scale: float = 1
+
+
+class MLStageConfig(BaseSettings):
+    """
+    Global ML configuration (written one per experiment)
+    """
+
+    pre_exec: List[str] = [
+        ". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh",
+        "conda activate /gpfs/alpine/proj-shared/med110/conda/pytorch",
+        "module load gcc/7.4.0",
+        "module load cuda/10.1.243",
+        "module load hdf5/1.10.4",
+        "export LANG=en_US.utf-8",
+        "export LC_ALL=en_US.utf-8",
+        "export LD_LIBRARY_PATH=/gpfs/alpine/proj-shared/med110/atrifan/scripts/cuda/targets/ppc64le-linux/lib/:$LD_LIBRARY_PATH",
+        # DDP settings
+        "unset CUDA_VISIBLE_DEVICES",
+        "export OMP_NUM_THREADS=4",
+    ]
+    executable: List[str] = [
+        "cat /dev/null; jsrun -n 1 -r 1 -g 6 -a 6 -c 42 -d packed /path/to/deepdrivemd/models/aae/bin/summit.sh"
+    ]
+    arguments: List[str] = []
+    cpu_reqs: HardwareReqs
+    gpu_reqs: HardwareReqs
+
+    model_cfg: AAEModelConfig
 
 
 class ExtrinsicScore(str, Enum):
@@ -206,7 +238,7 @@ class ExperimentConfig(BaseSettings):
     walltime_min: int
     md_stage: MDStageConfig
     aggregation_stage: AggregationStageConfig
-    ml_stage: AAEModelConfig
+    ml_stage: MLStageConfig
     od_stage: OutlierDetectionUserConfig
 
 
@@ -237,7 +269,20 @@ def generate_sample_config():
             thread_type="OpenMP",
         ),
     )
-    ml_stage = AAEModelConfig()
+    ml_stage = MLStageConfig(
+        cpu_reqs=HardwareReqs(
+            processes=1,
+            process_type="MPI",
+            threads_per_process=4,
+            thread_type="OpenMP",
+        ),
+        gpu_reqs=HardwareReqs(
+            processes=1,
+            process_type="null",
+            threads_per_process=1,
+            thread_type="CUDA",
+        ),
+    )
     od_stage = OutlierDetectionUserConfig()
 
     return ExperimentConfig(

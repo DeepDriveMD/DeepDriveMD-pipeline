@@ -1,7 +1,6 @@
 import os
 import sys
 import json
-import time
 import uuid
 from itertools import cycle
 from pathlib import Path
@@ -28,114 +27,6 @@ def get_initial_pdbs(initial_pdb_dir: Path) -> List[Path]:
         raise ValueError("Initial PDB files cannot contain a double underscore __")
 
     return pdb_filenames
-
-
-def generate_ML_stage(cfg: ExperimentConfig) -> Stage:
-    """
-    Function to generate the learning stage
-    """
-    # learn task
-    time_stamp = int(time.time())
-    stages = []
-    # TODO: update config to include hpo
-    num_ML = 1
-    for i in range(num_ML):
-        s3 = Stage()
-        s3.name = "learning"
-
-        t3 = Task()
-        # https://github.com/radical-collaboration/hyperspace/blob/MD/microscope/experiments/CVAE_exps/train_cvae.py
-        t3.pre_exec = [". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh"]
-        t3.pre_exec += [
-            "module load gcc/7.4.0",
-            "module load cuda/10.1.243",
-            "module load hdf5/1.10.4",
-            "export LANG=en_US.utf-8",
-            "export LC_ALL=en_US.utf-8",
-        ]
-        t3.pre_exec += ["conda activate %s" % cfg["conda_pytorch"]]
-        dim = i + 3
-        cvae_dir = "cvae_runs_%.2d_%d" % (dim, time_stamp + i)
-        t3.pre_exec += ["cd %s/CVAE_exps" % cfg["base_path"]]
-        t3.pre_exec += [
-            "export LD_LIBRARY_PATH=/gpfs/alpine/proj-shared/med110/atrifan/scripts/cuda/targets/ppc64le-linux/lib/:$LD_LIBRARY_PATH"
-        ]
-        # t3.pre_exec += ['mkdir -p %s && cd %s' % (cvae_dir, cvae_dir)] # model_id creates sub-dir
-        # this is for ddp, distributed
-        t3.pre_exec += ["unset CUDA_VISIBLE_DEVICES", "export OMP_NUM_THREADS=4"]
-        # pnodes = cfg['node_counts'] // num_ML # partition
-        pnodes = 1  # max(1, pnodes)
-
-        hp = cfg["ml_hpo"][i]
-        cmd_cat = "cat /dev/null"
-        cmd_jsrun = "jsrun -n %s -r 1 -g 6 -a 6 -c 42 -d packed" % pnodes
-
-        # VAE config
-        # cmd_vae    = '%s/examples/run_vae_dist_summit_entk.sh' % cfg['molecules_path']
-        # cmd_sparse = ' '.join(['%s/MD_to_CVAE/cvae_input.h5' % cfg["base_path"],
-        #                        "./", cvae_dir, 'sparse-concat', 'resnet',
-        #                        str(cfg['residues']), str(cfg['residues']),
-        #                        str(hp['latent_dim']), 'amp', 'non-distributed',
-        #                        str(hp['batch_size']), str(cfg['epoch']),
-        #                        str(cfg['sample_interval']),
-        #                        hp['optimizer'], cfg['init_weights']])
-
-        # AAE config
-        cmd_vae = (
-            "%s/examples/bin/summit/run_aae_dist_summit_entk.sh" % cfg["molecules_path"]
-        )
-        t3.executable = ["%s; %s %s" % (cmd_cat, cmd_jsrun, cmd_vae)]
-        t3.arguments = [
-            "%s/MD_to_CVAE/cvae_input.h5" % cfg["base_path"],
-            "./",
-            cvae_dir,
-            str(cfg["residues"]),
-            str(hp["latent_dim"]),
-            "non-amp",
-            "distributed",
-            str(hp["batch_size"]),
-            str(cfg["epoch"]),
-            str(cfg["sample_interval"]),
-            hp["optimizer"],
-            hp["loss_weights"],
-            cfg["init_weights"],
-        ]
-
-        # + f'{cfg['molecules_path']}/examples/run_vae_dist_summit.sh -i {sparse_matrix_path} -o ./ --model_id {cvae_dir} -f sparse-concat -t resnet --dim1 168 --dim2 168 -d 21 --amp --distributed -b {batch_size} -e {epoch} -S 3']
-        #     ,
-        #             '-i', sparse_matrix_path,
-        #             '-o', './',
-        #             '--model_id', cvae_dir,
-        #             '-f', 'sparse-concat',
-        #             '-t', 'resnet',
-        #             # fs-pep
-        #             '--dim1', 168,
-        #             '--dim2', 168,
-        #             '-d', 21,
-        #             '--amp',      # sparse matrix
-        #             '--distributed',
-        #             '-b', batch_size, # batch size
-        #             '-e', epoch,# epoch
-        #             '-S', 3
-        #             ]
-
-        t3.cpu_reqs = {
-            "processes": 1,
-            "process_type": "MPI",
-            "threads_per_process": 4,
-            "thread_type": "OpenMP",
-        }
-        t3.gpu_reqs = {
-            "processes": 1,
-            "process_type": None,
-            "threads_per_process": 1,
-            "thread_type": "CUDA",
-        }
-
-        # Add the learn task to the learning stage
-        s3.add_tasks(t3)
-        stages.append(s3)
-    return stages
 
 
 def generate_interfacing_stage(cfg: ExperimentConfig) -> Stage:
@@ -279,8 +170,8 @@ class PipelineManager:
         """
         Function to generate MD stage.
         """
-        s = Stage()
-        s.name = "MD"
+        stage = Stage()
+        stage.name = "MD"
         cfg = self.cfg.md_stage
 
         # TODO: factor this variable out into the config
@@ -292,12 +183,12 @@ class PipelineManager:
             pdb_filenames = get_initial_pdbs(cfg.initial_pdb_dir)
 
         for i, pdb_filename in zip(range(cfg.num_jobs), cycle(pdb_filenames)):
-            t = Task()
-            t.cpu_reqs = cfg.cpu_reqs.dict()
-            t.gpu_reqs = cfg.gpu_reqs.dict()
-            t.pre_exec = cfg.pre_exec
-            t.executable = cfg.executable
-            t.arguments = cfg.arguments
+            task = Task()
+            task.cpu_reqs = cfg.cpu_reqs.dict()
+            task.gpu_reqs = cfg.gpu_reqs.dict()
+            task.pre_exec = cfg.pre_exec
+            task.executable = cfg.executable
+            task.arguments = cfg.arguments
 
             omm_dir_prefix = f"run_{self.cur_iteration:03d}_{i:04d}"
 
@@ -319,26 +210,26 @@ class PipelineManager:
             cfg_path = self.experiment_dirs["tmp"].joinpath(f"md-{uuid.uuid4()}.yaml")
             run_config.dump_yaml(cfg_path)
 
-            t.arguments += ["-c", cfg_path]
-            s.add_tasks(t)
+            task.arguments += ["-c", cfg_path]
+            stage.add_tasks(task)
 
-        return s
+        return stage
 
     def generate_aggregating_stage(self) -> Stage:
         """
         Function to concatenate the MD trajectory (h5 contact map)
         """
-        s = Stage()
-        s.name = "aggregating"
+        stage = Stage()
+        stage.name = "aggregating"
         cfg = self.cfg.aggregation_stage
 
         # Aggregation task
-        t = Task()
+        task = Task()
 
-        t.cpu_reqs = cfg.cpu_reqs.dict()
-        t.pre_exec = cfg.pre_exec
-        t.executable = cfg.executable
-        t.arguments = cfg.arguments
+        task.cpu_reqs = cfg.cpu_reqs.dict()
+        task.pre_exec = cfg.pre_exec
+        task.executable = cfg.executable
+        task.arguments = cfg.arguments
 
         run_config = AggregationConfig(
             rmsd=cfg.rmsd,
@@ -355,16 +246,51 @@ class PipelineManager:
         cfg_path = self.experiment_dirs["aggregation_runs"].joinpath(
             f"aggregation_{self.cur_iteration}.yaml"
         )
-
         run_config.dump_yaml(cfg_path)
 
-        t.arguments += ["-c", cfg_path]
-        s.add_tasks(t)
+        task.arguments += ["-c", cfg_path]
+        stage.add_tasks(task)
 
-        return s
+        return stage
 
     def generate_ml_stage(self) -> Stage:
-        return Stage()
+        """
+        Function to generate the learning stage
+        """
+        stage = Stage()
+        stage.name = "learning"
+        cfg = self.cfg.ml_stage
+
+        num_ML = 1
+        for i in range(num_ML):
+
+            task = Task()
+            task.cpu_reqs = cfg.cpu_reqs.dict()
+            task.gpu_reqs = cfg.gpu_reqs.dict()
+            task.pre_exec = cfg.pre_exec
+            task.executable = cfg.executable
+
+            cvae_dir = "fixme"
+            hp = cfg["ml_hpo"][i]
+            task.arguments = [
+                "%s/MD_to_CVAE/cvae_input.h5" % cfg["base_path"],
+                "./",
+                cvae_dir,
+                str(cfg["residues"]),
+                str(hp["latent_dim"]),
+                "non-amp",
+                "distributed",
+                str(hp["batch_size"]),
+                str(cfg["epoch"]),
+                str(cfg["sample_interval"]),
+                hp["optimizer"],
+                hp["loss_weights"],
+                cfg["init_weights"],
+            ]
+
+            stage.add_tasks(task)
+
+        return stage
 
     def generate_agent_stage(self) -> Stage:
         return Stage()
