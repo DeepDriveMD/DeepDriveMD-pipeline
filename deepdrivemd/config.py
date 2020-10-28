@@ -50,6 +50,7 @@ class MDConfig(BaseSettings):
     dt_ps: float = 0.002
     temperature_kelvin: float = 310.0
     result_dir: Path
+    h5_cp_path: Path
     omm_dir_prefix: str
 
 
