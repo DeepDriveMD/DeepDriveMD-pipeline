@@ -30,67 +30,6 @@ def get_initial_pdbs(initial_pdb_dir: Path) -> List[Path]:
     return pdb_filenames
 
 
-def generate_preprocessing_stage(cfg: ExperimentConfig) -> Stage:
-
-    global time_stamp
-    s_1 = Stage()
-    s_1.name = "preprocessing"
-
-    for i in range(cfg.md_stage.num_jobs):
-
-        t_1 = Task()
-
-        omm_dir = "omm_runs_%s" % (time_stamp + i)
-
-        print("omm_dir", omm_dir)
-
-        t_1.pre_exec = [
-            ". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh",
-            "conda activate %s" % cfg["conda_pytorch"],
-            "export LANG=en_US.utf-8",
-            "export LC_ALL=en_US.utf-8",
-            "cd %s/MD_exps/%s/%s/" % (cfg["base_path"], cfg["system_name"], omm_dir),
-            "export PDB_FILE=$(ls | grep .pdb)",
-        ]
-
-        t_1.executable = ["%s/bin/python" % (cfg["conda_pytorch"])]
-
-        output_h5 = f'{cfg["h5_tmp_dir"]}/output_{uuid.uuid4()}.h5'
-
-        t_1.arguments = [
-            "%s/scripts/traj_to_dset.py" % cfg["molecules_path"],
-            "-t",
-            ".",  # 'output.dcd',
-            "-p",
-            "${PDB_FILE}",
-            "-r",
-            "${PDB_FILE}",
-            "-o",
-            "%s" % output_h5,
-            "--contact_maps_parameters",
-            "kernel_type=threshold,threshold=%s" % cfg["cutoff"],
-            "-s",
-            cfg["selection"],
-            "--rmsd",
-            "--fnc",
-            "--contact_map",
-            "--point_cloud",
-            "--verbose",
-        ]
-
-        # Add the aggregation task to the aggreagating stage
-        t_1.cpu_reqs = {
-            "processes": 1,
-            "process_type": None,
-            "threads_per_process": 26,
-            "thread_type": "OpenMP",
-        }
-
-        s_1.add_tasks(t_1)
-
-    return s_1
-
-
 def generate_aggregating_stage(cfg: ExperimentConfig) -> Stage:
     """
     Function to concatenate the MD trajectory (h5 contact map)
@@ -371,11 +310,8 @@ class PipelineManager:
 
     def _generate_pipeline_iteration(self):
 
-        s1 = self.generate_MD_stage()
-        self.pipeline.add_stages(s1)
-
-        s_1 = generate_preprocessing_stage(cfg)
-        self.pipeline.add_stages(s_1)
+        md_stage = self.generate_MD_stage()
+        self.pipeline.add_stages(md_stage)
 
         s2 = generate_aggregating_stage(cfg)
         self.pipeline.add_stages(s2)
