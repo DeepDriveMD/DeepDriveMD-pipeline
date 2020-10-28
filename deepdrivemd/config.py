@@ -1,6 +1,7 @@
 # Schema of the YAML experiment file
 import json
 import yaml
+import argparse
 from enum import Enum
 from pydantic import BaseSettings as _BaseSettings
 from pathlib import Path
@@ -206,6 +207,15 @@ def generate_sample_config():
         ml_stage=ml_stage,
         od_stage=od_stage,
     )
+
+
+def get_config() -> dict:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--config", help="YAML config file", required=True)
+    path = parser.parse_args().config
+    with open(path) as fp:
+        config = yaml.safe_load(fp)
+    return config
 
 
 if __name__ == "__main__":
