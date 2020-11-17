@@ -38,3 +38,18 @@ python -m deepdrivemd.deepdrivemd <experiment_config.yaml>
 ```
 
 This experiment should be launched
+
+### Note on input data
+
+The input PDB and topology files should have the following structure:
+
+```
+ls data/sys*
+
+data/sys1:
+comp.pdb comp.top
+
+data/sys2:
+comp.pdb comp.top
+```
+Where the topology files are optional and only used when `md_stage.solvent_type` is "explicit". Only one system directory is needed but an arbitrary number is supported. Also note that the system directory names are arbitrary. The path to the `data` directory should be passed into the config via `md_stage.initial_configs_dir`.
