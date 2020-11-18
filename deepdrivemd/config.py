@@ -207,12 +207,6 @@ class AAEModelConfig(ModelBaseConfig):
     num_features: int = 0
     # Encoder kernel sizes
     encoder_kernel_sizes: list = [5, 5, 3, 1, 1]
-    # Encoder GPU id
-    encoder_gpu: Optional[int]
-    # Generator GPU id
-    generator_gpu: Optional[int]
-    # Discriminator GPU id
-    discriminator_gpu: Optional[int]
     # Number of epochs to train
     epochs: int = 10
     # Training batch size
