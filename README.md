@@ -27,7 +27,7 @@ pre-commit autoupdate
 First, run this command to get a _sample_ YAML config file:
 
 ```
- python -m deepdrivemd.config
+python -m deepdrivemd.config
 ```
 
 This will write a file named `deepdrivemd_template.yaml` which should be adapted for the experiment at hand. You should configure the `md_stage`, `aggregation_stage`, `ml_stage` and `od_stage` sections to use the appropriate run commands and environment setups.
