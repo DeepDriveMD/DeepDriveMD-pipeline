@@ -284,7 +284,7 @@ class PipelineManager:
                     #       currently it always uses the pretrained weights.
                 }
             )
-            # TODO: test possible bug here. Might not allowarbitrary input keys
+
             run_config = MLConfig(**ml_cfg)
 
             cfg_path = self.experiment_dirs["ml_runs"].joinpath(
