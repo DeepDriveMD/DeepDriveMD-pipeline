@@ -10,7 +10,7 @@ import radical.utils as ru
 from radical.entk import Pipeline, Stage, Task, AppManager
 
 
-from deepdrivemd.config import ExperimentConfig, MDConfig, AggregationConfig
+from deepdrivemd.config import ExperimentConfig, MDConfig, AggregationConfig, MLConfig
 
 
 def get_outlier_pdbs(outlier_filename: Path) -> List[Path]:
@@ -129,10 +129,15 @@ class PipelineManager:
 
     @property
     def aggregated_data_path(self):
-        # Used my aggregation and ml stage
+        # Used by aggregation and ml stage
         return self.experiment_dirs["aggregation_runs"].joinpath(
             f"data_{self.cur_iteration}.h5"
         )
+
+    @property
+    def model_path(self):
+        # Used by ml and od stage
+        return self.experiment_dirs["ml_runs"].joinpath(f"model_{self.cur_iteration}")
 
     def func_condition(self):
         if self.cur_iteration < self.cfg.max_iteration:
@@ -242,7 +247,6 @@ class PipelineManager:
             out_path=self.aggregated_data_path,
         )
 
-        # Write MD yaml to tmp directory to be picked up and moved by MD job
         cfg_path = self.experiment_dirs["aggregation_runs"].joinpath(
             f"aggregation_{self.cur_iteration}.yaml"
         )
@@ -262,31 +266,33 @@ class PipelineManager:
         cfg = self.cfg.ml_stage
 
         num_ML = 1
-        for i in range(num_ML):
+        for _ in range(num_ML):
 
             task = Task()
             task.cpu_reqs = cfg.cpu_reqs.dict()
             task.gpu_reqs = cfg.gpu_reqs.dict()
             task.pre_exec = cfg.pre_exec
             task.executable = cfg.executable
+            task.arguments = cfg.arguments
 
-            cvae_dir = "fixme"
-            hp = cfg["ml_hpo"][i]
-            task.arguments = [
-                "%s/MD_to_CVAE/cvae_input.h5" % cfg["base_path"],
-                "./",
-                cvae_dir,
-                str(cfg["residues"]),
-                str(hp["latent_dim"]),
-                "non-amp",
-                "distributed",
-                str(hp["batch_size"]),
-                str(cfg["epoch"]),
-                str(cfg["sample_interval"]),
-                hp["optimizer"],
-                hp["loss_weights"],
-                cfg["init_weights"],
-            ]
+            ml_cfg = cfg.model_cfg.dict()
+            ml_cfg.update(
+                {
+                    "input_path": self.aggregated_data_path,
+                    "output_path": self.model_path,
+                    # TODO: add logic for updating init_weights_path
+                    #       currently it always uses the pretrained weights.
+                }
+            )
+            # TODO: test possible bug here. Might not allowarbitrary input keys
+            run_config = MLConfig(**ml_cfg)
+
+            cfg_path = self.experiment_dirs["ml_runs"].joinpath(
+                f"ml_{self.cur_iteration}.yaml"
+            )
+            run_config.dump_yaml(cfg_path)
+
+            task.arguments += ["-c", cfg_path]
 
             stage.add_tasks(task)
 
