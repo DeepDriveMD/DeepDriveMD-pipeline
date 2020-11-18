@@ -9,6 +9,9 @@ DeepDriveMD: Deep-Learning Driven Adaptive Molecular Simulations
 Install `deepdrivemd` into a virtualenv with:
 
 ```
+python3 -m venv env
+source env/bin/activate
+pip install --upgrade pip setuptools wheel
 pip install -e .
 ```
 
