@@ -14,7 +14,7 @@ _T = TypeVar("_T")
 class BaseSettings(_BaseSettings):
     def dump_yaml(self, cfg_path):
         with open(cfg_path, mode="w") as fp:
-            yaml.dump(json.loads(self.json()), fp, indent=4)
+            yaml.dump(json.loads(self.json()), fp, indent=4, sort_keys=False)
 
     @classmethod
     def from_yaml(cls: Type[_T], filename: Union[str, Path]) -> _T:
@@ -119,49 +119,36 @@ class AggregationStageConfig(BaseSettings):
     last_n_h5_files: Optional[int]
 
 
-class AAEModelConfig(BaseSettings):
+class Optimizer(BaseSettings):
+    """ML training optimizer."""
 
-    # Retrain every i deepdrivemd iterations
-    retrain_freq: int = 1
+    # PyTorch Optimizer name
+    name: str = "Adam"
+    # Learning rate
+    lr: float = 0.0001
 
-    fraction: float = 0.2
-    last_n_files: int = 1
-    last_n_files_eval: int = 1
-    batch_size: int = 1
-    input_shape: List[int] = [1, 32, 32]
-    itemsize: int = 1
-    mixed_precision: bool = True
 
-    # Model params
-    enc_conv_kernels: List[int] = [5, 5, 5, 5]
-    # Encoder filters define OUTPUT filters per layer
-    enc_conv_filters: List[int] = [100, 100, 100, 100]  # 64, 64, 64, 32
-    enc_conv_strides: List[int] = [1, 1, 2, 1]
-    dec_conv_kernels: List[int] = [5, 5, 5, 5]
-    # Decoder filters define INPUT filters per layer
-    dec_conv_filters: List[int] = [100, 100, 100, 100]
-    dec_conv_strides: List[int] = [1, 2, 1, 1]
-    dense_units: int = 64  # 128
-    latent_ndim: int = 10  # 3
-    mixed_precision: bool = True
-    activation: str = "relu"
-    # Setting full_precision_loss to False as we do not support it yet.
-    full_precision_loss: bool = False
-    reconstruction_loss_reduction_type: str = "sum"
-    kl_loss_reduction_type: str = "sum"
-    model_random_seed: Optional[int] = None
-    data_random_seed: Optional[int] = None
+class ModelBaseConfig(BaseSettings):
+    """Base class for specific model configs to inherit."""
 
-    # Optimizer params
-    epsilon: float = 1.0e-8
-    beta1: float = 0.2
-    beta2: float = 0.9
-    decay: float = 0.9
-    momentum: float = 0.9
-    optimizer_name: str = "rmsprop"
-    allowed_optimizers: List[str] = ["sgd", "sgdm", "adam", "rmsprop"]
-    learning_rate: float = 2.0e-5
-    loss_scale: float = 1
+
+class MLConfig(BaseSettings):
+    """Auto-generates configuration file."""
+
+    # Path to file containing preprocessed data
+    input_path: Path
+    # Output directory for model data
+    output_path: Path
+    # Model checkpoint file to resume training. Checkpoint files saved as .pt by CheckpointCallback.
+    checkpoint: Optional[Path]
+    # Resume from last checkpoint
+    resume: bool = False
+    # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
+    init_weights_path: Optional[Path]
+    # Project name for wandb logging
+    wandb_project_name: Optional[str]
+    # Arbitrary model parameters
+    model_cfg: ModelBaseConfig
 
 
 class MLStageConfig(BaseSettings):
@@ -189,7 +176,65 @@ class MLStageConfig(BaseSettings):
     cpu_reqs: HardwareReqs
     gpu_reqs: HardwareReqs
 
-    model_cfg: AAEModelConfig
+    # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
+    init_weights_path: Optional[Path]
+    # Project name for wandb logging
+    wandb_project_name: Optional[str]
+    # Arbitrary model parameters
+    model_cfg: ModelBaseConfig
+    # Retrain every i deepdrivemd iterations
+    retrain_freq: int = 1
+
+
+class AAEModelConfig(ModelBaseConfig):
+    # TODO: move to model implementation
+
+    class LossWeights(BaseSettings):
+        lambda_rec: float = 0.5
+        lambda_gp: float = 10
+
+    # Name of the dataset in the HDF5 file.
+    dataset_name: str = "point_cloud"
+    # Name of the RMSD data in the HDF5 file.
+    rmsd_name: str = "rmsd"
+    # Name of the fraction of contacts data in the HDF5 file.
+    fnc_name: str = "fnc"
+    # Model ID in for file naming
+    model_id: str = "model_name"
+    # Number of input points in point cloud
+    num_points: int = 3375
+    # Number of features per point in addition to 3D coordinates
+    num_features: int = 0
+    # Encoder kernel sizes
+    encoder_kernel_sizes: list = [5, 5, 3, 1, 1]
+    # Encoder GPU id
+    encoder_gpu: Optional[int]
+    # Generator GPU id
+    generator_gpu: Optional[int]
+    # Discriminator GPU id
+    discriminator_gpu: Optional[int]
+    # Number of epochs to train
+    epochs: int = 10
+    # Training batch size
+    batch_size: int = 32
+    # Optimizer params
+    optimizer: Optimizer = Optimizer()
+    # Latent dimension of the AAE
+    latent_dim: int = 64
+    # Hyperparameters weighting different elements of the loss
+    loss_weights: LossWeights = LossWeights()
+    # Standard deviation of the prior distribution
+    noise_std: float = 0.2
+    # Saves embeddings every embed_interval'th epoch
+    embed_interval: int = 1
+    # Saves tsne plots every tsne_interval'th epoch
+    tsne_interval: int = 5
+    # For saving and plotting embeddings. Saves len(validation_set) / sample_interval points.
+    sample_interval: int = 20
+    # Number of data loaders for training
+    num_data_workers: int = 0
+    # String which specifies from where to feed the dataset. Valid choices are `storage` and `cpu-memory`.
+    dataset_location: str = "storage"
 
 
 class ExtrinsicScore(str, Enum):
@@ -213,7 +258,7 @@ class OutlierDetectionUserConfig(BaseSettings):
 
 class OutlierDetectionRunConfig(OutlierDetectionUserConfig):
     outlier_results_dir: Path
-    model_params: AAEModelConfig
+    model_params: ModelBaseConfig
     md_dir: Path
     model_weights_dir: Path
     walltime_min: int
@@ -230,12 +275,12 @@ class ExperimentConfig(BaseSettings):
     queue: str
     schema_: str
     project: str
+    walltime_min: int
+    max_iteration: int
     cpus_per_node: int
     gpus_per_node: int
     hardware_threads_per_cpu: int
-    max_iteration: int
     experiment_directory: Path
-    walltime_min: int
     md_stage: MDStageConfig
     aggregation_stage: AggregationStageConfig
     ml_stage: MLStageConfig
@@ -245,7 +290,7 @@ class ExperimentConfig(BaseSettings):
 def generate_sample_config():
     md_stage = MDStageConfig(
         num_jobs=10,
-        initial_configs_dir="/path/to/initial_pdbs_and_tops",
+        initial_pdb_dir="/path/to/initial_pdbs_and_tops",
         reference_pdb_file="/path/to/reference.pdb",
         solvent_type="explicit",
         cpu_reqs=HardwareReqs(
@@ -282,6 +327,7 @@ def generate_sample_config():
             threads_per_process=1,
             thread_type="CUDA",
         ),
+        model_cfg=AAEModelConfig(),
     )
     od_stage = OutlierDetectionUserConfig()
 
@@ -314,6 +360,5 @@ def get_config() -> dict:
 
 
 if __name__ == "__main__":
-    with open("deepdrivemd_template.yaml", "w") as fp:
-        config = generate_sample_config()
-        config.dump_yaml(fp)
+    config = generate_sample_config()
+    config.dump_yaml("deepdrivemd_template.yaml")
