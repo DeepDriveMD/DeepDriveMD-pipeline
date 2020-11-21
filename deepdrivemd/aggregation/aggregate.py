@@ -1,10 +1,10 @@
 import h5py
 import numpy as np
 from deepdrivemd.data.api import DeepDriveMD_API
-from deepdrivemd.config import get_config, AggregationConfig
+from deepdrivemd.config import get_config, BasicAggegation
 
 
-def concatenate_last_n_h5(cfg: AggregationConfig):
+def concatenate_last_n_h5(cfg: BasicAggegation):
 
     fields = []
     if cfg.rmsd:
@@ -18,13 +18,14 @@ def concatenate_last_n_h5(cfg: AggregationConfig):
 
     # Get list of input h5 files
     api = DeepDriveMD_API(cfg.experiment_directory)
-    files = api.get_last_n_hdf5(n=cfg.last_n_h5_files)
+    md_data = api.get_last_n_md_runs(n=cfg.last_n_h5_files)
+    files = md_data["h5_files"]
 
     if cfg.verbose:
         print(f"Collected {len(files)} h5 files.")
 
     # Open output file
-    fout = h5py.File(cfg.out_path, "w", libver="latest")
+    fout = h5py.File(cfg.output_path, "w", libver="latest")
 
     # Initialize data buffers
     data = {x: [] for x in fields}
@@ -81,5 +82,5 @@ def concatenate_last_n_h5(cfg: AggregationConfig):
 
 if __name__ == "__main__":
     cfg = get_config()
-    cfg = AggregationConfig.from_yaml(**cfg)
+    cfg = BasicAggegation.from_yaml(**cfg)
     concatenate_last_n_h5(cfg)

@@ -30,28 +30,21 @@ class HardwareReqs(BaseSettings):
     thread_type: str
 
 
-class MDSolvent(str, Enum):
-    implicit = "implicit"
-    explicit = "explicit"
-
-
-class MDConfig(BaseSettings):
+class MDBaseConfig(BaseSettings):
     """
     Auto-generates configuration file for run_openmm.py
     """
 
-    pdb_file: Path
-    initial_pdb_dir: Path
-    reference_pdb_file: Optional[Path]
+    # Directory to store output MD data (set by DeepDriveMD)
+    result_dir: Path = Path("set_by_deepdrivemd")
+    # Unique name for each MD run directory (set by DeepDriveMD)
+    dir_prefix: str = "set_by_deepdrivemd"
+    # PDB file used to start MD run (set by DeepDriveMD)
+    pdb_file: Path = Path("set_by_deepdrivemd")
+    # Node local storage path for MD run
     local_run_dir: Path = Path("/mnt/bb/$USER/")
-    solvent_type: MDSolvent
-    simulation_length_ns: float = 10
-    report_interval_ps: float = 50
-    wrap: bool = False
-    dt_ps: float = 0.002
-    temperature_kelvin: float = 310.0
-    result_dir: Path
-    omm_dir_prefix: str
+    # Initial data directory passed containing PDBs and optional topologies
+    initial_pdb_dir: Path
 
 
 class MDStageConfig(BaseSettings):
@@ -59,15 +52,6 @@ class MDStageConfig(BaseSettings):
     Global MD configuration (written one per experiment)
     """
 
-    num_jobs: int
-    initial_pdb_dir: Path
-    reference_pdb_file: Optional[Path]
-    solvent_type: MDSolvent
-    temperature_kelvin: float = 310.0
-    simulation_length_ns: float = 10
-    report_interval_ps: float = 50
-    wrap: bool = False
-    local_run_dir: Path = Path("/mnt/bb/$USER/")
     pre_exec: List[str] = [
         ". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh",
         "module load cuda/9.1.85",
@@ -78,22 +62,33 @@ class MDStageConfig(BaseSettings):
     arguments: List[str] = ["/path/to/run_openmm/run_openmm.py"]
     cpu_reqs: HardwareReqs
     gpu_reqs: HardwareReqs
+    num_jobs: int
+    # Arbitrary job parameters
+    run_config: MDBaseConfig
 
 
-class AggregationConfig(BaseSettings):
-    """
-    Auto-generates configuration file
-    """
+class OpenMMConfig(MDBaseConfig):
+    class MDSolvent(str, Enum):
+        implicit = "implicit"
+        explicit = "explicit"
 
-    rmsd: bool = True
-    fnc: bool = False
-    contact_map: bool = False
-    point_cloud: bool = True
-    verbose: bool = True
+    solvent_type: MDSolvent
+    simulation_length_ns: float = 10
+    report_interval_ps: float = 50
+    wrap: bool = False
+    dt_ps: float = 0.002
+    temperature_kelvin: float = 310.0
+    # Reference PDB file used to compute RMSD and align point cloud
+    reference_pdb_file: Optional[Path]
+
+
+class AggregationBaseConfig(BaseSettings):
+    """Base class for specific aggregation configs to inherit."""
+
+    # Path to experiment directory in order to access data API (set by DeepDriveMD)
+    experiment_directory: Path = Path("set_by_deepdrivemd")
     last_n_h5_files: Optional[int]
-
-    experiment_directory: Path
-    out_path: str
+    output_path: Path = Path("set_by_deepdrivemd")
 
 
 class AggregationStageConfig(BaseSettings):
@@ -110,45 +105,35 @@ class AggregationStageConfig(BaseSettings):
     executable: List[str] = ["/gpfs/alpine/proj-shared/med110/conda/pytorch/bin/python"]
     arguments: List[str] = ["/path/to/data/aggregation/script/aggregate.py"]
     cpu_reqs: HardwareReqs
+    # Arbitrary job parameters
+    run_config: AggregationBaseConfig
 
+
+class BasicAggegation(AggregationBaseConfig):
     rmsd: bool = True
     fnc: bool = False
     contact_map: bool = False
     point_cloud: bool = True
     verbose: bool = True
-    last_n_h5_files: Optional[int]
 
 
-class Optimizer(BaseSettings):
-    """ML training optimizer."""
-
-    # PyTorch Optimizer name
-    name: str = "Adam"
-    # Learning rate
-    lr: float = 0.0001
-
-
-class ModelBaseConfig(BaseSettings):
+class MLBaseConfig(BaseSettings):
     """Base class for specific model configs to inherit."""
 
-
-class MLConfig(BaseSettings):
-    """Auto-generates configuration file."""
-
-    # Path to file containing preprocessed data
-    input_path: Path
-    # Output directory for model data
-    output_path: Path
-    # Model checkpoint file to resume training. Checkpoint files saved as .pt by CheckpointCallback.
-    checkpoint: Optional[Path]
-    # Resume from last checkpoint
-    resume: bool = False
+    # Path to file containing preprocessed data (set by DeepDriveMD)
+    input_path: Path = Path("set_by_deepdrivemd")
+    # Output directory for model data (set by DeepDriveMD)
+    output_path: Path = Path("set_by_deepdrivemd")
     # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
     init_weights_path: Optional[Path]
-    # Project name for wandb logging
-    wandb_project_name: Optional[str]
-    # Arbitrary model parameters
-    model_cfg: ModelBaseConfig
+
+    class Optimizer(BaseSettings):
+        """ML training optimizer."""
+
+        # PyTorch Optimizer name
+        name: str = "Adam"
+        # Learning rate
+        lr: float = 0.0001
 
 
 class MLStageConfig(BaseSettings):
@@ -175,18 +160,13 @@ class MLStageConfig(BaseSettings):
     arguments: List[str] = []
     cpu_reqs: HardwareReqs
     gpu_reqs: HardwareReqs
-
-    # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
-    init_weights_path: Optional[Path]
-    # Project name for wandb logging
-    wandb_project_name: Optional[str]
-    # Arbitrary model parameters
-    model_cfg: ModelBaseConfig
     # Retrain every i deepdrivemd iterations
     retrain_freq: int = 1
+    # Arbitrary job parameters
+    run_config: MLBaseConfig
 
 
-class AAEModelConfig(ModelBaseConfig):
+class AAEModelConfig(MLBaseConfig):
     # TODO: move to model implementation
 
     class LossWeights(BaseSettings):
@@ -212,7 +192,7 @@ class AAEModelConfig(ModelBaseConfig):
     # Training batch size
     batch_size: int = 32
     # Optimizer params
-    optimizer: Optimizer = Optimizer()
+    optimizer: MLBaseConfig.Optimizer = MLBaseConfig.Optimizer()
     # Latent dimension of the AAE
     latent_dim: int = 64
     # Hyperparameters weighting different elements of the loss
@@ -229,34 +209,59 @@ class AAEModelConfig(ModelBaseConfig):
     num_data_workers: int = 0
     # String which specifies from where to feed the dataset. Valid choices are `storage` and `cpu-memory`.
     dataset_location: str = "storage"
+    # Project name for wandb logging
+    wandb_project_name: Optional[str]
 
 
-class ExtrinsicScore(str, Enum):
-    none = "none"
-    rmsd_to_reference_state = "rmsd_to_reference_state"
+class ODBaseConfig(BaseSettings):
+
+    # Path to file containing preprocessed data (set by DeepDriveMD)
+    input_path: Path = Path("set_by_deepdrivemd")
+    # Output directory for model data (set by DeepDriveMD)
+    output_path: Path = Path("set_by_deepdrivemd")
+    # Model checkpoint file to load model weights for inference.
+    # Saved as .pt by CheckpointCallback. (set by DeepDriveMD)
+    weights_path: Path = Path("set_by_deepdrivemd")
+    # Path to JSON file containing restart PDB paths (set by DeepDriveMD)
+    restart_points_path: Path = Path("set_by_deepdrivemd")
+    # Path to experiment directory in order to access data API (set by DeepDriveMD)
+    experiment_directory: Path = Path("set_by_deepdrivemd")
+    last_n_h5_files: Optional[int]
 
 
-class OutlierDetectionUserConfig(BaseSettings):
-    num_outliers: int = 500
-    extrinsic_outlier_score: ExtrinsicScore = ExtrinsicScore.none
-    sklearn_num_cpus: int = 16
-    local_scratch_dir: Path = Path("/raid/scratch")
-    max_num_old_h5_files: int = 1000
-    # Run parameters
-    run_command: str = ""
-    environ_setup: List[str] = []
-    num_nodes: int = 1
-    ranks_per_node: int = 1
-    gpus_per_node: int = 8
+class ODStageConfig(BaseSettings):
+    """
+    Global outlier detection configuration (written one per experiment)
+    """
+
+    pre_exec: List[str] = [
+        ". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh || true",
+        "conda activate /gpfs/alpine/proj-shared/med110/conda/pytorch",
+        "export LANG=en_US.utf-8",
+        "export LC_ALL=en_US.utf-8",
+        "unset CUDA_VISIBLE_DEVICES",
+        "export OMP_NUM_THREADS=4",
+    ]
+    executable: List[str] = [
+        "cat /dev/null; jsrun -n 1 -a 6 -g 6 -r 1 -c 7 /path/to/deepdrivemd/outlier_detection/optics.sh"
+    ]
+    arguments: List[str] = []
+    cpu_reqs: HardwareReqs
+    gpu_reqs: HardwareReqs
+    # Arbitrary job parameters
+    run_config: ODBaseConfig
 
 
-class OutlierDetectionRunConfig(OutlierDetectionUserConfig):
-    outlier_results_dir: Path
-    model_params: ModelBaseConfig
-    md_dir: Path
-    model_weights_dir: Path
-    walltime_min: int
-    outlier_predict_batch_size: int
+class OPTICSConfig(ODBaseConfig):
+    """OPTICS outlier detection algorithm configuration."""
+
+    # TODO: move to OPTICS implementation
+    # Number of outliers to detect (should be number of MD jobs + 1, incase errors)
+    num_outliers: int
+    # Number of points in point cloud AAE
+    num_points: int
+    # Inference batch size for encoder forward pass
+    inference_batch_size: int = 128
 
 
 class ExperimentConfig(BaseSettings):
@@ -278,15 +283,12 @@ class ExperimentConfig(BaseSettings):
     md_stage: MDStageConfig
     aggregation_stage: AggregationStageConfig
     ml_stage: MLStageConfig
-    od_stage: OutlierDetectionUserConfig
+    od_stage: ODStageConfig
 
 
 def generate_sample_config():
     md_stage = MDStageConfig(
         num_jobs=10,
-        initial_pdb_dir="/path/to/initial_pdbs_and_tops",
-        reference_pdb_file="/path/to/reference.pdb",
-        solvent_type="explicit",
         cpu_reqs=HardwareReqs(
             processes=1,
             process_type="null",
@@ -299,6 +301,11 @@ def generate_sample_config():
             threads_per_process=1,
             thread_type="CUDA",
         ),
+        run_config=OpenMMConfig(
+            initial_pdb_dir="/path/to/initial_pdbs_and_tops",
+            reference_pdb_file="/path/to/reference.pdb",
+            solvent_type="explicit",
+        ),
     )
     aggregation_stage = AggregationStageConfig(
         cpu_reqs=HardwareReqs(
@@ -307,6 +314,7 @@ def generate_sample_config():
             threads_per_process=26,
             thread_type="OpenMP",
         ),
+        run_config=BasicAggegation(),
     )
     ml_stage = MLStageConfig(
         cpu_reqs=HardwareReqs(
@@ -321,9 +329,26 @@ def generate_sample_config():
             threads_per_process=1,
             thread_type="CUDA",
         ),
-        model_cfg=AAEModelConfig(),
+        run_config=AAEModelConfig(),
     )
-    od_stage = OutlierDetectionUserConfig()
+    od_stage = ODStageConfig(
+        cpu_reqs=HardwareReqs(
+            processes=1,
+            process_type="null",
+            threads_per_process=12,
+            thread_type="OpenMP",
+        ),
+        gpu_reqs=HardwareReqs(
+            processes=1,
+            process_type="null",
+            threads_per_process=1,
+            thread_type="CUDA",
+        ),
+        run_config=OPTICSConfig(
+            num_outliers=11,
+            num_points=304,
+        ),
+    )
 
     return ExperimentConfig(
         title="COVID-19 - Workflow2",

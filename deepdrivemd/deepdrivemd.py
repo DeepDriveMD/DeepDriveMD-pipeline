@@ -1,16 +1,14 @@
+import json
 import os
 import sys
-import json
-import uuid
 from itertools import cycle
 from pathlib import Path
 from typing import List
 
 import radical.utils as ru
-from radical.entk import Pipeline, Stage, Task, AppManager
+from radical.entk import AppManager, Pipeline, Stage, Task
 
-
-from deepdrivemd.config import ExperimentConfig, MDConfig, AggregationConfig, MLConfig
+from deepdrivemd.config import ExperimentConfig
 
 
 def get_outlier_pdbs(outlier_filename: Path) -> List[Path]:
@@ -29,78 +27,6 @@ def get_initial_pdbs(initial_pdb_dir: Path) -> List[Path]:
     return pdb_filenames
 
 
-def generate_interfacing_stage(cfg: ExperimentConfig) -> Stage:
-    s4 = Stage()
-    s4.name = "scanning"
-
-    # Scaning for outliers and prepare the next stage of MDs
-    t4 = Task()
-
-    t4.pre_exec = [". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh"]
-    t4.pre_exec += ["conda activate %s" % cfg["conda_pytorch"]]
-    t4.pre_exec += ["mkdir -p %s/Outlier_search/outlier_pdbs" % cfg["base_path"]]
-    t4.pre_exec += [
-        'export models=""; for i in `ls -d %s/CVAE_exps/model-cvae_runs*/`; do if [ "$models" != "" ]; then    models=$models","$i; else models=$i; fi; done;cat /dev/null'
-        % cfg["base_path"]
-    ]
-    t4.pre_exec += ["export LANG=en_US.utf-8", "export LC_ALL=en_US.utf-8"]
-    t4.pre_exec += ["unset CUDA_VISIBLE_DEVICES", "export OMP_NUM_THREADS=4"]
-
-    cmd_cat = "cat /dev/null"
-    cmd_jsrun = "jsrun -n %s -a 6 -g 6 -r 1 -c 7" % cfg["node_counts"]
-
-    # molecules_path = '/gpfs/alpine/world-shared/ven201/tkurth/molecules/'
-    t4.executable = [
-        " %s; %s %s/examples/outlier_detection/run_optics_dist_summit_entk.sh"
-        % (cmd_cat, cmd_jsrun, cfg["molecules_path"])
-    ]
-    t4.arguments = ["%s/bin/python" % cfg["conda_pytorch"]]
-    t4.arguments += [
-        "%s/examples/outlier_detection/optics.py" % cfg["molecules_path"],
-        "--sim_path",
-        "%s/MD_exps/%s" % (cfg["base_path"], cfg["system_name"]),
-        "--pdb_out_path",
-        "%s/Outlier_search/outlier_pdbs" % cfg["base_path"],
-        "--restart_points_path",
-        "%s/Outlier_search/restart_points.json" % cfg["base_path"],
-        "--data_path",
-        "%s/MD_to_CVAE/cvae_input.h5" % cfg["base_path"],
-        "--model_paths",
-        "$models",
-        "--model_type",
-        cfg["model_type"],
-        "--min_samples",
-        10,
-        "--n_outliers",
-        cfg["md_counts"] + 1,
-        "--dim1",
-        cfg["residues"],
-        "--dim2",
-        cfg["residues"],
-        "--cm_format",
-        "sparse-concat",
-        "--batch_size",
-        cfg["batch_size"],
-        "--distributed",
-    ]
-
-    t4.cpu_reqs = {
-        "processes": 1,
-        "process_type": None,
-        "threads_per_process": 12,
-        "thread_type": "OpenMP",
-    }
-    t4.gpu_reqs = {
-        "processes": 1,
-        "process_type": None,
-        "threads_per_process": 1,
-        "thread_type": "CUDA",
-    }
-
-    s4.add_tasks(t4)
-    return s4
-
-
 class PipelineManager:
     def __init__(self, cfg: ExperimentConfig):
         self.cfg = cfg
@@ -117,7 +43,7 @@ class PipelineManager:
                 "md_runs",
                 "ml_runs",
                 "aggregation_runs",
-                "agent_runs",
+                "od_runs",
                 "tmp",
             ]
         }
@@ -127,17 +53,31 @@ class PipelineManager:
         for dir_path in self.experiment_dirs.values():
             dir_path.mkdir()
 
-    @property
-    def aggregated_data_path(self):
-        # Used by aggregation and ml stage
+    def aggregated_data_path(self, iteration: int) -> Path:
         return self.experiment_dirs["aggregation_runs"].joinpath(
-            f"data_{self.cur_iteration}.h5"
+            f"data_{iteration:03d}.h5"
         )
 
-    @property
-    def model_path(self):
-        # Used by ml and od stage
-        return self.experiment_dirs["ml_runs"].joinpath(f"model_{self.cur_iteration}")
+    def model_path(self, iteration: int) -> Path:
+        return self.experiment_dirs["ml_runs"].joinpath(f"model_{iteration:03d}")
+
+    def latest_ml_checkpoint_path(self, iteration: int) -> Path:
+        # TODO: this code requires specific checkpoint file format
+        #       might want an interface class to implement a latest_checkpoint
+        #       function.
+        checkpoint_files = (
+            self.model_path(iteration).joinpath("checkpoint").glob("*.pt")
+        )
+        # Format: epoch-1-20200922-131947.pt
+        return max(checkpoint_files, key=lambda x: x.as_posix().split("-")[1])
+
+    def restart_points_path(self, iteration: int) -> Path:
+        return self.experiment_dirs["od_runs"].joinpath(
+            f"restart_points_{iteration:03d}.json"
+        )
+
+    def outlier_pdbs_path(self, iteration: int) -> Path:
+        return self.experiment_dirs["od_runs"].joinpath(f"outlier_pdbs_{iteration:03d}")
 
     def func_condition(self):
         if self.cur_iteration < self.cfg.max_iteration:
@@ -146,7 +86,7 @@ class PipelineManager:
             self.func_on_false()
 
     def func_on_true(self):
-        print("finishing stage %d of %d" % (self.cur_iteration, self.cfg.max_iteration))
+        print(f"Finishing stage {self.cur_iteration} of {self.cfg.max_iteration}")
         self._generate_pipeline_iteration()
 
     def func_on_false(self):
@@ -161,9 +101,9 @@ class PipelineManager:
         if self.cur_iteration % cfg.ml_stage.retrain_freq == 0:
             self.pipeline.add_stages(self.generate_ml_stage())
 
-        agent_stage = self.generate_agent_stage()
-        agent_stage.post_exec = self.func_condition
-        self.pipeline.add_stages(agent_stage)
+        od_stage = self.generate_outlier_detection_stage()
+        od_stage.post_exec = self.func_condition
+        self.pipeline.add_stages(od_stage)
 
         self.cur_iteration += 1
 
@@ -172,20 +112,15 @@ class PipelineManager:
         return self.pipeline
 
     def generate_md_stage(self) -> Stage:
-        """
-        Function to generate MD stage.
-        """
         stage = Stage()
         stage.name = "MD"
         cfg = self.cfg.md_stage
 
-        # TODO: factor this variable out into the config
-        outlier_filename = Path("/Outlier_search/restart_points.json")
-
-        if outlier_filename.exists():
+        if self.cur_iteration > 0:
+            outlier_filename = self.restart_points_path(self.cur_iteration - 1)
             pdb_filenames = get_outlier_pdbs(outlier_filename)
         else:
-            pdb_filenames = get_initial_pdbs(cfg.initial_pdb_dir)
+            pdb_filenames = get_initial_pdbs(cfg.run_config.initial_pdb_dir)
 
         for i, pdb_filename in zip(range(cfg.num_jobs), cycle(pdb_filenames)):
             task = Task()
@@ -195,25 +130,17 @@ class PipelineManager:
             task.executable = cfg.executable
             task.arguments = cfg.arguments
 
-            omm_dir_prefix = f"run_{self.cur_iteration:03d}_{i:04d}"
+            # Set unique output directory name for task
+            dir_prefix = f"md_{self.cur_iteration:03d}_{i:04d}"
 
-            run_config = MDConfig(
-                pdb_file=pdb_filename,
-                initial_pdb_dir=cfg.initial_pdb_dir,
-                reference_pdb_file=cfg.reference_pdb_file,
-                solvent_type=cfg.solvent_type,
-                temperature_kelvin=cfg.temperature_kelvin,
-                simulation_length_ns=cfg.simulation_length_ns,
-                report_interval_ps=cfg.report_interval_ps,
-                omm_dir_prefix=omm_dir_prefix,  # like "run_002_055",
-                local_run_dir=cfg.local_run_dir,
-                result_dir=self.experiment_dirs["md_runs"],
-                wrap=cfg.wrap,
-            )
+            # Update base parameters
+            cfg.run_config.result_dir = self.experiment_dirs["md_runs"]
+            cfg.run_config.dir_prefix = dir_prefix
+            cfg.run_config.pdb_file = pdb_filename
 
             # Write MD yaml to tmp directory to be picked up and moved by MD job
-            cfg_path = self.experiment_dirs["tmp"].joinpath(f"md-{uuid.uuid4()}.yaml")
-            run_config.dump_yaml(cfg_path)
+            cfg_path = self.experiment_dirs["tmp"].joinpath(f"{dir_prefix}.yaml")
+            cfg.run_config.dump_yaml(cfg_path)
 
             task.arguments += ["-c", cfg_path]
             stage.add_tasks(task)
@@ -221,9 +148,6 @@ class PipelineManager:
         return stage
 
     def generate_aggregating_stage(self) -> Stage:
-        """
-        Function to concatenate the MD trajectory (h5 contact map)
-        """
         stage = Stage()
         stage.name = "aggregating"
         cfg = self.cfg.aggregation_stage
@@ -236,21 +160,14 @@ class PipelineManager:
         task.executable = cfg.executable
         task.arguments = cfg.arguments
 
-        run_config = AggregationConfig(
-            rmsd=cfg.rmsd,
-            fnc=cfg.fnc,
-            contact_map=cfg.contact_map,
-            point_cloud=cfg.point_cloud,
-            last_n_h5_files=cfg.last_n_h5_files,
-            verbose=cfg.verbose,
-            experiment_directory=self.cfg.experiment_directory,
-            out_path=self.aggregated_data_path,
-        )
+        # Update base parameters
+        cfg.run_config.experiment_directory = self.cfg.experiment_directory
+        cfg.run_config.output_path = self.aggregated_data_path(self.cur_iteration)
 
         cfg_path = self.experiment_dirs["aggregation_runs"].joinpath(
-            f"aggregation_{self.cur_iteration}.yaml"
+            f"aggregation_{self.cur_iteration:03d}.yaml"
         )
-        run_config.dump_yaml(cfg_path)
+        cfg.run_config.dump_yaml(cfg_path)
 
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
@@ -258,48 +175,67 @@ class PipelineManager:
         return stage
 
     def generate_ml_stage(self) -> Stage:
-        """
-        Function to generate the learning stage
-        """
         stage = Stage()
         stage.name = "learning"
         cfg = self.cfg.ml_stage
 
-        num_ML = 1
-        for _ in range(num_ML):
+        task = Task()
+        task.cpu_reqs = cfg.cpu_reqs.dict()
+        task.gpu_reqs = cfg.gpu_reqs.dict()
+        task.pre_exec = cfg.pre_exec
+        task.executable = cfg.executable
+        task.arguments = cfg.arguments
 
-            task = Task()
-            task.cpu_reqs = cfg.cpu_reqs.dict()
-            task.gpu_reqs = cfg.gpu_reqs.dict()
-            task.pre_exec = cfg.pre_exec
-            task.executable = cfg.executable
-            task.arguments = cfg.arguments
-
-            ml_cfg = cfg.model_cfg.dict()
-            ml_cfg.update(
-                {
-                    "input_path": self.aggregated_data_path,
-                    "output_path": self.model_path,
-                    # TODO: add logic for updating init_weights_path
-                    #       currently it always uses the pretrained weights.
-                }
+        # Update base parameters
+        cfg.run_config.input_path = self.aggregated_data_path(self.cur_iteration)
+        cfg.run_config.output_path = self.model_path(self.cur_iteration)
+        if self.cur_iteration > 0:
+            cfg.run_config.init_weights_path = self.latest_ml_checkpoint_path(
+                self.cur_iteration - 1
             )
 
-            run_config = MLConfig(**ml_cfg)
+        cfg_path = self.experiment_dirs["ml_runs"].joinpath(
+            f"ml_{self.cur_iteration:03d}.yaml"
+        )
+        cfg.run_config.dump_yaml(cfg_path)
 
-            cfg_path = self.experiment_dirs["ml_runs"].joinpath(
-                f"ml_{self.cur_iteration}.yaml"
-            )
-            run_config.dump_yaml(cfg_path)
-
-            task.arguments += ["-c", cfg_path]
-
-            stage.add_tasks(task)
+        task.arguments += ["-c", cfg_path]
+        stage.add_tasks(task)
 
         return stage
 
-    def generate_agent_stage(self) -> Stage:
-        return Stage()
+    def generate_outlier_detection_stage(self) -> Stage:
+        stage = Stage()
+        stage.name = "outlier_detection"
+        cfg = self.cfg.od_stage
+
+        task = Task()
+        task.cpu_reqs = cfg.cpu_reqs.dict()
+        task.gpu_reqs = cfg.gpu_reqs.dict()
+        task.pre_exec = cfg.pre_exec
+        task.executable = cfg.executable
+        task.arguments = cfg.arguments
+
+        self.outlier_pdbs_path(self.cur_iteration).mkdir()
+
+        # Update base parameters
+        cfg.run_config.experiment_directory = self.cfg.experiment_directory
+        cfg.run_config.input_path = self.aggregated_data_path(self.cur_iteration)
+        cfg.run_config.output_path = self.outlier_pdbs_path(self.cur_iteration)
+        cfg.run_config.weights_path = self.latest_ml_checkpoint_path(self.cur_iteration)
+        cfg.run_config.restart_points_path = self.restart_points_path(
+            self.cur_iteration
+        )
+
+        cfg_path = self.experiment_dirs["od_runs"].joinpath(
+            f"od_{self.cur_iteration:03d}.yaml"
+        )
+        cfg.run_config.dump_yaml(cfg_path)
+
+        task.arguments += ["-c", cfg_path]
+        stage.add_tasks(task)
+
+        return stage
 
 
 if __name__ == "__main__":
@@ -329,6 +265,7 @@ if __name__ == "__main__":
         )
 
     # Calculate total number of nodes required. Assumes 1 MD job per GPU
+    # TODO: fix this assumption for NAMD
     num_nodes = max(1, cfg.md_stage.num_jobs // cfg.gpus_per_node)
 
     res_dict = {
