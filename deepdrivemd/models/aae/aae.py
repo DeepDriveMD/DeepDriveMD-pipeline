@@ -1,8 +1,9 @@
 import os
-import re
-import click
-from os.path import join
+import yaml
+import argparse
+from pathlib import Path
 import wandb
+from deepdrivemd.config import AAEModelConfig
 
 # torch stuff
 # from torchsummary import summary
@@ -29,29 +30,19 @@ mpi4py.rc.initialize = False
 from mpi4py import MPI  # noqa: E402
 
 
-def parse_dict(ctx, param, value):
-    if value is not None:
-        token = value.split(",")
-        result = {}
-        for item in token:
-            k, v = item.split("=")
-            result[k] = v
-        return result
-
-
 def get_dataset(
-    dataset_location,
-    input_path,
-    dataset_name,
-    rmsd_name,
-    fnc_name,
-    num_points,
-    num_features,
-    split,
-    shard_id=0,
-    num_shards=1,
-    normalize="box",
-    cms_transform=False,
+    dataset_location: str,
+    input_path: Path,
+    dataset_name: str,
+    rmsd_name: str,
+    fnc_name: str,
+    num_points: int,
+    num_features: int,
+    split: str,
+    shard_id: int = 0,
+    num_shards: int = 1,
+    normalize: str = "box",
+    cms_transform: bool = False,
 ):
 
     if dataset_location == "storage":
@@ -59,7 +50,7 @@ def get_dataset(
         from molecules.ml.datasets import PointCloudDataset
 
         dataset = PointCloudDataset(
-            input_path,
+            input_path.as_posix(),
             dataset_name,
             rmsd_name,
             fnc_name,
@@ -81,7 +72,7 @@ def get_dataset(
         from molecules.ml.datasets import PointCloudInMemoryDataset
 
         dataset = PointCloudInMemoryDataset(
-            input_path,
+            input_path.as_posix(),
             dataset_name,
             rmsd_name,
             fnc_name,
@@ -102,174 +93,15 @@ def get_dataset(
     return dataset
 
 
-@click.command()
-@click.option(
-    "-i",
-    "--input",
-    "input_path",
-    required=True,
-    type=click.Path(exists=True),
-    help="Path to file containing preprocessed contact matrix data",
-)
-@click.option(
-    "-dn",
-    "--dataset_name",
-    required=True,
-    type=str,
-    help="Name of the dataset in the HDF5 file.",
-)
-@click.option(
-    "-rn",
-    "--rmsd_name",
-    default="rmsd",
-    type=str,
-    help="Name of the RMSD data in the HDF5 file.",
-)
-@click.option(
-    "-fn",
-    "--fnc_name",
-    default="fnc",
-    type=str,
-    help="Name of the RMSD data in the HDF5 file.",
-)
-@click.option(
-    "-o",
-    "--out",
-    "out_path",
-    required=True,
-    type=click.Path(exists=True),
-    help="Output directory for model data",
-)
-@click.option(
-    "-c",
-    "--checkpoint",
-    type=click.Path(exists=True),
-    help="Model checkpoint file to resume training. "
-    "Checkpoint files saved as .pt by CheckpointCallback.",
-)
-@click.option("-r", "--resume", is_flag=True, help="Resume from latest checkpoint")
-@click.option(
-    "-iw",
-    "--init_weights",
-    type=click.Path(exists=True),
-    help="Model checkpoint file to load model weights fromg. "
-    "Checkpoint files saved as .pt by CheckpointCallback.",
-)
-@click.option(
-    "-m", "--model_id", required=True, type=str, help="Model ID in for file naming"
-)
-@click.option(
-    "-np", "--num_points", required=True, type=int, help="number of input points"
-)
-@click.option(
-    "-nf",
-    "--num_features",
-    default=1,
-    type=int,
-    help="number of features per point in addition to 3D coordinates",
-)
-@click.option(
-    "-eks",
-    "--encoder_kernel_sizes",
-    default=[5, 5, 3, 1, 1],
-    type=int,
-    nargs=5,
-    help="list of encoder kernel sizes",
-)
-@click.option("-E", "--encoder_gpu", default=None, type=int, help="Encoder GPU id")
-@click.option("-G", "--generator_gpu", default=None, type=int, help="Generator GPU id")
-@click.option(
-    "-D", "--discriminator_gpu", default=None, type=int, help="Discriminator GPU id"
-)
-@click.option(
-    "-e", "--epochs", default=10, type=int, help="Number of epochs to train for"
-)
-@click.option(
-    "-b", "--batch_size", default=128, type=int, help="Batch size for training"
-)
-@click.option("-opt", "--optimizer", callback=parse_dict, help="Optimizer parameters")
-@click.option(
-    "-d",
-    "--latent_dim",
-    default=256,
-    type=int,
-    help="Number of dimensions in latent space",
-)
-@click.option("-lw", "--loss_weights", callback=parse_dict, help="Loss parameters")
-@click.option(
-    "-ei",
-    "--embed_interval",
-    default=1,
-    type=int,
-    help="Saves embeddings every interval'th point",
-)
-@click.option(
-    "-ti",
-    "--tsne_interval",
-    default=1,
-    type=int,
-    help="Saves model checkpoints, embeddings, tsne plots every " "interval'th point",
-)
-@click.option(
-    "-S",
-    "--sample_interval",
-    default=20,
-    type=int,
-    help="For embedding plots. Plots every sample_interval'th point",
-)
-@click.option(
-    "-wp",
-    "--wandb_project_name",
-    default=None,
-    type=str,
-    help="Project name for wandb logging",
-)
-@click.option("--distributed", is_flag=True, help="Enable distributed training")
-@click.option(
-    "-ndw",
-    "--num_data_workers",
-    default=0,
-    type=int,
-    help="Number of data loaders for training",
-)
-@click.option(
-    "-dl",
-    "--dataset_location",
-    default="storage",
-    type=str,
-    help="String which specifies from where to feed the dataset. Valid choices are `storage` and `cpu-memory`.",
-)
 def main(
-    input_path,
-    dataset_name,
-    rmsd_name,
-    fnc_name,
-    out_path,
-    checkpoint,
-    resume,
-    init_weights,
-    model_id,
-    num_points,
-    num_features,
-    encoder_kernel_sizes,
-    encoder_gpu,
-    generator_gpu,
-    discriminator_gpu,
-    epochs,
-    batch_size,
-    optimizer,
-    latent_dim,
-    loss_weights,
-    embed_interval,
-    tsne_interval,
-    sample_interval,
-    wandb_project_name,
-    distributed,
-    num_data_workers,
-    dataset_location,
+    cfg: AAEModelConfig,
+    encoder_gpu: int,
+    generator_gpu: int,
+    discriminator_gpu: int,
+    distributed: bool,
 ):
 
-    # do some scaffolding for DDP
+    # Do some scaffolding for DDP
     comm_rank = 0
     comm_size = 1
     comm = None
@@ -289,41 +121,40 @@ def main(
         comm_rank = dist.get_rank()
         comm_size = dist.get_world_size()
 
-    # HP
-    # model
+    # Model hyperparameters
     aae_hparams = {
-        "num_features": num_features,
-        "latent_dim": latent_dim,
-        "encoder_kernel_sizes": encoder_kernel_sizes,
-        "noise_std": 0.2,
-        "lambda_rec": float(loss_weights["lambda_rec"]),
-        "lambda_gp": float(loss_weights["lambda_gp"]),
+        "num_features": cfg.num_features,
+        "latent_dim": cfg.latent_dim,
+        "encoder_kernel_sizes": cfg.encoder_kernel_sizes,
+        "noise_std": cfg.noise_std,
+        "lambda_rec": cfg.loss_weights.lambda_rec,
+        "lambda_gp": cfg.loss_weights.lambda_gp,
     }
     hparams = AAE3dHyperparams(**aae_hparams)
 
     # optimizers
     optimizer_hparams = OptimizerHyperparams(
-        name=optimizer["name"], hparams={"lr": float(optimizer["lr"])}
+        name=cfg.optimizer.name, hparams={"lr": cfg.optimizer.lr}
     )
 
     # create a dir for storing the model
-    model_path = join(out_path, f"model-{model_id}")
+    model_path = cfg.output_path.joinpath(cfg.model_id)
 
     # Save hparams to disk
     if comm_rank == 0:
-        os.makedirs(model_path, exist_ok=True)
-        hparams.save(join(model_path, "model-hparams.json"))
-        optimizer_hparams.save(join(model_path, "optimizer-hparams.json"))
+        model_path.mkdir(exist_ok=True)
+        hparams.save(model_path.joinpath("model-hparams.json"))
+        optimizer_hparams.save(model_path.joinpath("optimizer-hparams.json"))
 
     # construct model
     aae = AAE3d(
-        num_points,
-        num_features,
-        batch_size,
+        cfg.num_points,
+        cfg.num_features,
+        cfg.batch_size,
         hparams,
         optimizer_hparams,
         gpu=(encoder_gpu, generator_gpu, discriminator_gpu),
-        init_weights=init_weights,
+        init_weights=cfg.init_weights_path.as_posix(),
     )
 
     enc_device = torch.device(f"cuda:{encoder_gpu}")
@@ -347,13 +178,13 @@ def main(
 
     # set up dataloaders
     train_dataset = get_dataset(
-        dataset_location,
-        input_path,
-        dataset_name,
-        rmsd_name,
-        fnc_name,
-        num_points,
-        num_features,
+        cfg.dataset_location,
+        cfg.input_path,
+        cfg.dataset_name,
+        cfg.rmsd_name,
+        cfg.fnc_name,
+        cfg.num_points,
+        cfg.num_features,
         split="train",
         shard_id=comm_rank,
         num_shards=comm_size,
@@ -363,21 +194,21 @@ def main(
 
     train_loader = DataLoader(
         train_dataset,
-        batch_size=batch_size,
+        batch_size=cfg.batch_size,
         shuffle=True,
         drop_last=True,
         pin_memory=True,
-        num_workers=num_data_workers,
+        num_workers=cfg.num_data_workers,
     )
 
     valid_dataset = get_dataset(
-        dataset_location,
-        input_path,
-        dataset_name,
-        rmsd_name,
-        fnc_name,
-        num_points,
-        num_features,
+        cfg.dataset_location,
+        cfg.input_path,
+        cfg.dataset_name,
+        cfg.rmsd_name,
+        cfg.fnc_name,
+        cfg.num_points,
+        cfg.num_features,
         split="valid",
         shard_id=comm_rank,
         num_shards=comm_size,
@@ -387,68 +218,54 @@ def main(
 
     valid_loader = DataLoader(
         valid_dataset,
-        batch_size=batch_size,
+        batch_size=cfg.batch_size,
         shuffle=True,
         drop_last=True,
         pin_memory=True,
-        num_workers=num_data_workers,
+        num_workers=cfg.num_data_workers,
     )
 
     print(
         f"Having {len(train_dataset)} training and {len(valid_dataset)} validation samples."
     )
 
-    # do we want wandb
+    # Setup wandb
     wandb_config = None
-    if (comm_rank == 0) and (wandb_project_name is not None):
+    if (comm_rank == 0) and (cfg.wandb_project_name is not None):
         wandb.init(
-            project=wandb_project_name,
-            name=model_id,
-            id=model_id,
-            dir=model_path,
+            project=cfg.wandb_project_name,
+            name=cfg.model_id,
+            id=cfg.model_id,
+            dir=model_path.as_posix(),
+            config=cfg.dict(),
             resume=False,
         )
         wandb_config = wandb.config
-
-        # log HP
-        wandb_config.num_points = num_points
-        wandb_config.num_features = num_features
-        wandb_config.latent_dim = latent_dim
-        wandb_config.lambda_rec = hparams.lambda_rec
-        wandb_config.lambda_gp = hparams.lambda_gp
-        # noise
-        wandb_config.noise_std = hparams.noise_std
-
-        # optimizer
-        wandb_config.optimizer_name = optimizer_hparams.name
-        for param in optimizer_hparams.hparams:
-            wandb_config["optimizer_" + param] = optimizer_hparams.hparams[param]
-
         # watch model
         wandb.watch(aae.model)
 
     # Optional callbacks
     loss_callback = LossCallback(
-        join(model_path, "loss.json"), wandb_config=wandb_config, mpi_comm=comm
+        model_path.joinpath("loss.json"), wandb_config=wandb_config, mpi_comm=comm
     )
 
     checkpoint_callback = CheckpointCallback(
-        out_dir=join(model_path, "checkpoint"), mpi_comm=comm
+        out_dir=model_path.joinpath("checkpoint"), mpi_comm=comm
     )
 
     save_callback = SaveEmbeddingsCallback(
-        out_dir=join(model_path, "embeddings"),
-        interval=embed_interval,
-        sample_interval=sample_interval,
+        out_dir=model_path.joinpath("embeddings"),
+        interval=cfg.embed_interval,
+        sample_interval=cfg.sample_interval,
         mpi_comm=comm,
     )
 
     # TSNEPlotCallback requires SaveEmbeddingsCallback to run first
     tsne_callback = TSNEPlotCallback(
-        out_dir=join(model_path, "embeddings"),
+        out_dir=model_path.joinpath("embeddings"),
         projection_type="3d",
         target_perplexity=100,
-        interval=tsne_interval,
+        interval=cfg.tsne_interval,
         tsne_is_blocking=True,
         wandb_config=wandb_config,
         mpi_comm=comm,
@@ -462,39 +279,17 @@ def main(
         tsne_callback,
     ]
 
-    # see if resume is set
-    if resume and (checkpoint is None):
-        clist = [
-            x for x in os.listdir(join(model_path, "checkpoint")) if x.endswith(".pt")
-        ]
-        checkpoints = sorted(
-            clist, key=lambda x: re.match(r"epoch-\d*?-(\d*?-\d*?).pt", x).groups()[0]
-        )
-        if checkpoints:
-            checkpoint = join(model_path, "checkpoint", checkpoints[-1])
-            if comm_rank == 0:
-                print(f"Resuming from checkpoint {checkpoint}.")
-        else:
-            if comm_rank == 0:
-                print(
-                    f"No checkpoint files in directory {join(model_path, 'checkpoint')}, \
-                       cannot resume training, will start from scratch."
-                )
-
-    # train model with callbacks
-    aae.train(
-        train_loader, valid_loader, epochs, checkpoint=checkpoint, callbacks=callbacks
-    )
+    aae.train(train_loader, valid_loader, cfg.epochs, callbacks=callbacks)
 
     # Save loss history to disk.
     if comm_rank == 0:
-        loss_callback.save(join(model_path, "loss.json"))
+        loss_callback.save(model_path.joinpath("loss.json"))
 
         # Save final model weights to disk
         aae.save_weights(
-            join(model_path, "encoder-weights.pt"),
-            join(model_path, "generator-weights.pt"),
-            join(model_path, "discriminator-weights.pt"),
+            model_path.joinpath("encoder-weights.pt"),
+            model_path.joinpath("generator-weights.pt"),
+            model_path.joinpath("discriminator-weights.pt"),
         )
 
     # Output directory structure
@@ -510,8 +305,39 @@ def main(
     # │   └── optimizer-hparams.pkl
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c", "--config", help="YAML config file", type=str, required=True
+    )
+    parser.add_argument(
+        "-E", "--encoder_gpu", help="GPU to place encoder", type=int, default=0
+    )
+    parser.add_argument(
+        "-G", "--generator_gpu", help="GPU to place generator", type=int, default=0
+    )
+    parser.add_argument(
+        "-D", "--decoder_gpu", help="GPU to place decoder", type=int, default=0
+    )
+    parser.add_argument(
+        "-d", "--decoder_gpu", help="GPU to place decoder", type=int, default=0
+    )
+    parser.add_argument("--distributed", action="store_true")
+    args = parser.parse_args()
+    return args
+
+
+def parse_config(path: str) -> dict:
+    with open(path) as fp:
+        config = yaml.safe_load(fp)
+    return config
+
+
 if __name__ == "__main__":
     # set forkserver (needed for summit runs, may cause errors elsewhere)
     # torch.multiprocessing.set_start_method('forkserver', force = True)
 
-    main()
+    args = parse_args()
+    cfg = parse_config(args.config)
+    cfg = AAEModelConfig.from_yaml(**cfg)
+    main(cfg, args.encoder_gpu, args.generator_gpu, args.decoder_gpu, args.distributed)
