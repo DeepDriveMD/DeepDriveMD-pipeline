@@ -169,10 +169,6 @@ class MLStageConfig(BaseSettings):
 class AAEModelConfig(MLBaseConfig):
     # TODO: move to model implementation
 
-    class LossWeights(BaseSettings):
-        lambda_rec: float = 0.5
-        lambda_gp: float = 10
-
     # Name of the dataset in the HDF5 file.
     dataset_name: str = "point_cloud"
     # Name of the RMSD data in the HDF5 file.
@@ -185,8 +181,6 @@ class AAEModelConfig(MLBaseConfig):
     num_points: int = 3375
     # Number of features per point in addition to 3D coordinates
     num_features: int = 0
-    # Encoder kernel sizes
-    encoder_kernel_sizes: list = [5, 5, 3, 1, 1]
     # Number of epochs to train
     epochs: int = 10
     # Training batch size
@@ -195,10 +189,27 @@ class AAEModelConfig(MLBaseConfig):
     optimizer: MLBaseConfig.Optimizer = MLBaseConfig.Optimizer()
     # Latent dimension of the AAE
     latent_dim: int = 64
-    # Hyperparameters weighting different elements of the loss
-    loss_weights: LossWeights = LossWeights()
+    # Encoder filter sizes
+    encoder_filters: list = [64, 128, 256, 256, 512]
+    # Encoder kernel sizes
+    encoder_kernel_sizes: list = [5, 5, 3, 1, 1]
+    # Generator filter sizes
+    generator_filters: list = [64, 128, 512, 1024]
+    # Discriminator filter sizes
+    discriminator_filters: list = [512, 512, 128, 64]
+    encoder_relu_slope: float = 0.0
+    generator_relu_slope: float = 0.0
+    discriminator_relu_slope: float = 0.0
+    use_encoder_bias: bool = True
+    use_generator_bias: bool = True
+    use_discriminator_bias: bool = True
+    # Mean of the prior distribution
+    noise_mu: float = 0.0
     # Standard deviation of the prior distribution
-    noise_std: float = 0.2
+    noise_std: float = 1.0
+    # Hyperparameters weighting different elements of the loss
+    lambda_rec: float = 0.5
+    lambda_gp: float = 10
     # Saves embeddings every embed_interval'th epoch
     embed_interval: int = 1
     # Saves tsne plots every tsne_interval'th epoch

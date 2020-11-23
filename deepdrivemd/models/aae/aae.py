@@ -2,6 +2,7 @@ import os
 import yaml
 import argparse
 from pathlib import Path
+from typing import Optional
 import wandb
 from deepdrivemd.config import AAEModelConfig
 
@@ -30,6 +31,27 @@ mpi4py.rc.initialize = False
 from mpi4py import MPI  # noqa: E402
 
 
+def setup_wandb(
+    cfg: AAEModelConfig, model: torch.nn.Module, model_path: Path, comm_rank: int
+) -> Optional[wandb.config]:
+    # Setup wandb
+    wandb_config = None
+    if (comm_rank == 0) and (cfg.wandb_project_name is not None):
+        wandb.init(
+            project=cfg.wandb_project_name,
+            name=cfg.model_id,
+            id=cfg.model_id,
+            dir=model_path.as_posix(),
+            config=cfg.dict(),
+            resume=False,
+        )
+        wandb_config = wandb.config
+        # watch model
+        wandb.watch(model)
+
+    return wandb_config
+
+
 def get_dataset(
     dataset_location: str,
     input_path: Path,
@@ -43,7 +65,7 @@ def get_dataset(
     num_shards: int = 1,
     normalize: str = "box",
     cms_transform: bool = False,
-):
+) -> torch.utils.data.Dataset:
 
     if dataset_location == "storage":
         # Load training and validation data
@@ -86,9 +108,7 @@ def get_dataset(
         )
 
     else:
-        raise NotImplementedError(
-            f"Error, dataset_location = {dataset_location} not implemented."
-        )
+        raise ValueError(f"Invalid option for dataset_location: {dataset_location}")
 
     return dataset
 
@@ -121,16 +141,24 @@ def main(
         comm_rank = dist.get_rank()
         comm_size = dist.get_world_size()
 
-    # Model hyperparameters
-    aae_hparams = {
-        "num_features": cfg.num_features,
-        "latent_dim": cfg.latent_dim,
-        "encoder_kernel_sizes": cfg.encoder_kernel_sizes,
-        "noise_std": cfg.noise_std,
-        "lambda_rec": cfg.loss_weights.lambda_rec,
-        "lambda_gp": cfg.loss_weights.lambda_gp,
-    }
-    hparams = AAE3dHyperparams(**aae_hparams)
+    model_hparams = AAE3dHyperparams(
+        num_features=cfg.num_features,
+        encoder_filters=cfg.encoder_filters,
+        encoder_kernel_sizes=cfg.encoder_kernel_sizes,
+        generator_filters=cfg.generator_filters,
+        discriminator_filters=cfg.discriminator_filters,
+        latent_dim=cfg.latent_dim,
+        encoder_relu_slope=cfg.encoder_relu_slope,
+        generator_relu_slope=cfg.generator_relu_slope,
+        discriminator_relu_slope=cfg.discriminator_relu_slope,
+        use_encoder_bias=cfg.use_encoder_bias,
+        use_generator_bias=cfg.use_generator_bias,
+        use_discriminator_bias=cfg.use_discriminator_bias,
+        noise_mu=cfg.noise_mu,
+        noise_std=cfg.noise_std,
+        lambda_rec=cfg.lambda_rec,
+        lambda_gp=cfg.lambda_gp,
+    )
 
     # optimizers
     optimizer_hparams = OptimizerHyperparams(
@@ -143,7 +171,7 @@ def main(
     # Save hparams to disk
     if comm_rank == 0:
         model_path.mkdir(exist_ok=True)
-        hparams.save(model_path.joinpath("model-hparams.json"))
+        model_hparams.save(model_path.joinpath("model-hparams.json"))
         optimizer_hparams.save(model_path.joinpath("optimizer-hparams.json"))
 
     # construct model
@@ -151,7 +179,7 @@ def main(
         cfg.num_points,
         cfg.num_features,
         cfg.batch_size,
-        hparams,
+        model_hparams,
         optimizer_hparams,
         gpu=(encoder_gpu, generator_gpu, discriminator_gpu),
         init_weights=cfg.init_weights_path.as_posix(),
@@ -229,20 +257,7 @@ def main(
         f"Having {len(train_dataset)} training and {len(valid_dataset)} validation samples."
     )
 
-    # Setup wandb
-    wandb_config = None
-    if (comm_rank == 0) and (cfg.wandb_project_name is not None):
-        wandb.init(
-            project=cfg.wandb_project_name,
-            name=cfg.model_id,
-            id=cfg.model_id,
-            dir=model_path.as_posix(),
-            config=cfg.dict(),
-            resume=False,
-        )
-        wandb_config = wandb.config
-        # watch model
-        wandb.watch(aae.model)
+    wandb_config = setup_wandb(cfg, aae.model, model_path, comm_rank)
 
     # Optional callbacks
     loss_callback = LossCallback(
@@ -298,11 +313,12 @@ def main(
     # │   ├── checkpoint
     # │   │   ├── epoch-1-20200606-125334.pt
     # │   │   └── epoch-2-20200606-125338.pt
-    # │   ├── decoder-weights.pt
     # │   ├── encoder-weights.pt
+    # │   ├── generator-weights.pt
+    # │   ├── discriminator-weights.pt
     # │   ├── loss.json
-    # │   ├── model-hparams.pkl
-    # │   └── optimizer-hparams.pkl
+    # │   ├── model-hparams.json
+    # │   └── optimizer-hparams.json
 
 
 def parse_args() -> argparse.Namespace:
