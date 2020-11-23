@@ -35,6 +35,8 @@ class PipelineManager:
         self.pipeline = Pipeline()
         pipeline.name = "DeepDriveMD"
 
+        self._init_experiment_dir()
+
     def _init_experiment_dir(self):
         # Name experiment directories
         self.experiment_dirs = {
