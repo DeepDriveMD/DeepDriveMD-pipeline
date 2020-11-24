@@ -95,21 +95,6 @@ class MDStageConfig(BaseSettings):
     run_config: MDBaseConfig = MDBaseConfig()
 
 
-class OpenMMConfig(MDBaseConfig):
-    class MDSolvent(str, Enum):
-        implicit = "implicit"
-        explicit = "explicit"
-
-    solvent_type: MDSolvent
-    simulation_length_ns: float = 10
-    report_interval_ps: float = 50
-    wrap: bool = False
-    dt_ps: float = 0.002
-    temperature_kelvin: float = 310.0
-    # Reference PDB file used to compute RMSD and align point cloud
-    reference_pdb_file: Optional[Path]
-
-
 class AggregationBaseConfig(BaseSettings):
     """Base class for specific aggregation configs to inherit."""
 

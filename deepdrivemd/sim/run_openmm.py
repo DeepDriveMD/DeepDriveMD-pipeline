@@ -1,10 +1,13 @@
 import shutil
 from pathlib import Path
+from typing import Optional
 import simtk.unit as u
 import simtk.openmm.app as app
 from deepdrivemd.config import get_config
 from molecules.sim.openmm_sim import configure_simulation
 from molecules.sim.openmm_reporter import OfflineReporter
+
+from .config import OpenMMConfig
 
 
 def configure_reporters(sim, ctx, report_interval_ps, dt_ps, frames_per_h5, wrap):
@@ -54,28 +57,32 @@ def get_topology(initial_pdb_dir: Path, pdb_file: Path) -> Path:
 class SimulationContext:
     def __init__(
         self,
-        pdb_file,
-        reference_pdb_file,
-        omm_dir_prefix,
-        omm_parent_dir,
-        result_dir,
-        initial_pdb_dir,
-        solvent_type,
+        pdb_file: Path,
+        reference_pdb_file: Optional[Path],
+        dir_prefix: str,
+        node_local_run_dir: Optional[Path],
+        result_dir: Path,
+        initial_pdb_dir: Path,
+        solvent_type: str,
     ):
 
         self.result_dir = result_dir
         self.reference_pdb_file = reference_pdb_file
-        self.workdir = Path(omm_parent_dir).joinpath(omm_dir_prefix)
+
+        # Use node local storage if available. Otherwise, write to result directory.
+        if node_local_run_dir is not None:
+            self.workdir = node_local_run_dir.joinpath(dir_prefix)
+        else:
+            self.workdir = result_dir.joinpath(dir_prefix)
 
         self._init_workdir(Path(pdb_file), Path(initial_pdb_dir), solvent_type)
 
-        self.h5_prefix = self.workdir.joinpath(omm_dir_prefix).as_posix()
+        self.h5_prefix = self.workdir.joinpath(dir_prefix).as_posix()
 
     def _init_workdir(self, pdb_file, initial_pdb_dir, solvent_type):
-        # Make node-local dir
-        self.workdir.mkdir()
 
-        # Copy files to node-local-dir
+        self.workdir.mkdir()
+        # Copy files to workdir
         self.pdb_file = self._copy_pdb_file(pdb_file)
         if solvent_type == "explicit":
             self.top_file = self._copy_top_file(initial_pdb_dir)
@@ -105,39 +112,31 @@ class SimulationContext:
         shutil.move(self.workdir.as_posix(), self.result_dir)
 
 
-def run_simulation(
-    pdb_file: str,
-    reference_pdb_file: str,
-    omm_dir_prefix: str,
-    local_run_dir: str,
-    gpu_index: int,
-    solvent_type: str,
-    report_interval_ps: float,
-    simulation_length_ns: float,
-    dt_ps: float,
-    temperature_kelvin: float,
-    result_dir: str,
-    initial_pdb_dir: str,
-    wrap: bool,
-):
+def run_simulation(cfg: OpenMMConfig):
+
+    # openmm typed variables
+    dt_ps = cfg.dt_ps * u.picoseconds
+    report_interval_ps = cfg.report_interval_ps * u.picoseconds
+    simulation_length_ns = cfg.simulation_length_ns * u.nanoseconds
+    temperature_kelvin = cfg.temperature_kelvin * u.kelvin
 
     # Handle files
     ctx = SimulationContext(
-        pdb_file=pdb_file,
-        reference_pdb_file=reference_pdb_file,
-        omm_dir_prefix=omm_dir_prefix,
-        omm_parent_dir=local_run_dir,
-        result_dir=result_dir,
-        initial_pdb_dir=initial_pdb_dir,
-        solvent_type=solvent_type,
+        pdb_file=cfg.pdb_file,
+        reference_pdb_file=cfg.reference_pdb_file,
+        dir_prefix=cfg.dir_prefix,
+        node_local_run_dir=cfg.node_local_run_dir,
+        result_dir=cfg.result_dir,
+        initial_pdb_dir=cfg.initial_pdb_dir,
+        solvent_type=cfg.solvent_type,
     )
 
     # Create openmm simulation object
     sim = configure_simulation(
         pdb_file=ctx.pdb_file,
         top_file=ctx.top_file,
-        gpu_index=gpu_index,
-        solvent_type=solvent_type,
+        gpu_index=0,
+        solvent_type=cfg.solvent_type,
         dt_ps=dt_ps,
         temperature_kelvin=temperature_kelvin,
     )
@@ -145,7 +144,7 @@ def run_simulation(
     # Write all frames to a single HDF5 file
     frames_per_h5 = int(simulation_length_ns / report_interval_ps)
 
-    configure_reporters(sim, ctx, report_interval_ps, dt_ps, frames_per_h5, wrap)
+    configure_reporters(sim, ctx, report_interval_ps, dt_ps, frames_per_h5, cfg.wrap)
 
     # Number of steps to run each simulation
     nsteps = int(simulation_length_ns / dt_ps)
@@ -153,29 +152,11 @@ def run_simulation(
     sim.step(nsteps)
 
     # Move simulation data to persistent storage
-    ctx.move_results()
-
-
-def build_simulation_params(cfg: dict) -> dict:
-    return dict(
-        pdb_file=cfg["pdb_file"],
-        reference_pdb_file=cfg["reference_pdb_file"],
-        omm_dir_prefix=cfg["omm_dir_prefix"],
-        local_run_dir=cfg["local_run_dir"],
-        gpu_index=0,
-        solvent_type=cfg["solvent_type"],
-        report_interval_ps=float(cfg["report_interval_ps"]) * u.picoseconds,
-        frames_per_h5=cfg["frames_per_h5"],
-        simulation_length_ns=float(cfg["simulation_length_ns"]) * u.nanoseconds,
-        dt_ps=float(cfg["dt_ps"]) * u.picoseconds,
-        temperature_kelvin=float(cfg["temperature_kelvin"]) * u.kelvin,
-        result_dir=cfg["result_dir"],
-        initial_pdb_dir=cfg["initial_pdb_dir"],
-        wrap=cfg["wrap"],
-    )
+    if cfg.node_local_run_dir is not None:
+        ctx.move_results()
 
 
 if __name__ == "__main__":
     cfg = get_config()
-    simulation_kwargs = build_simulation_params(cfg)
-    run_simulation(**simulation_kwargs)
+    cfg = OpenMMConfig.from_yaml(**cfg)
+    run_simulation(cfg)
