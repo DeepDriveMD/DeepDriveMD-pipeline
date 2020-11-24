@@ -3,8 +3,6 @@ from deepdrivemd.config import MLBaseConfig
 
 
 class AAEModelConfig(MLBaseConfig):
-    # TODO: move to model implementation
-
     # Name of the dataset in the HDF5 file.
     dataset_name: str = "point_cloud"
     # Name of the RMSD data in the HDF5 file.
