@@ -7,3 +7,7 @@ class BasicAggegation(AggregationBaseConfig):
     contact_map: bool = False
     point_cloud: bool = True
     verbose: bool = True
+
+
+if __name__ == "__main__":
+    BasicAggegation().dump_yaml("basic_aggregation_template.yaml")

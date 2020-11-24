@@ -10,3 +10,7 @@ class OPTICSConfig(ODBaseConfig):
     num_points: int = 304
     # Inference batch size for encoder forward pass
     inference_batch_size: int = 128
+
+
+if __name__ == "__main__":
+    OPTICSConfig().dump_yaml("optics_template.yaml")
