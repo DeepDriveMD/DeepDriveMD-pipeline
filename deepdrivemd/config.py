@@ -117,14 +117,6 @@ class AggregationStageConfig(BaseSettings):
     run_config: AggregationBaseConfig = AggregationBaseConfig()
 
 
-class BasicAggegation(AggregationBaseConfig):
-    rmsd: bool = True
-    fnc: bool = False
-    contact_map: bool = False
-    point_cloud: bool = True
-    verbose: bool = True
-
-
 class MLBaseConfig(BaseSettings):
     """Base class for specific model configs to inherit."""
 

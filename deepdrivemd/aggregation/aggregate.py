@@ -1,7 +1,8 @@
 import h5py
 import numpy as np
 from deepdrivemd.data.api import DeepDriveMD_API
-from deepdrivemd.config import get_config, BasicAggegation
+from deepdrivemd.config import get_config
+from .config import BasicAggegation
 
 
 def concatenate_last_n_h5(cfg: BasicAggegation):
