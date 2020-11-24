@@ -27,43 +27,32 @@ class BaseSettings(_BaseSettings):
 class CPUReqs(BaseSettings):
     """radical.entk task.cpu_reqs parameters."""
 
+    class CPUProcessType(str, Enum):
+        mpi = "MPI"
+
+    class CPUThreadType(str, Enum):
+        open_mp = "OpenMP"
+
     processes: int = 1
-    process_type: Optional[str]
+    process_type: Optional[CPUProcessType]
     threads_per_process: int = 1
-    thread_type: Optional[str]
-
-    @validator("process_type")
-    def check_process_type(cls, v):
-        if v not in [None, "MPI"]:
-            raise ValueError("CPU process_type must be `null` or `MPI`")
-        return v
-
-    @validator("thread_type")
-    def check_thread_type(cls, v):
-        if v not in [None, "OpenMP"]:
-            raise ValueError("CPU thread_type must be `null` or `OpenMP`")
-        return v
+    thread_type: Optional[CPUThreadType]
 
 
 class GPUReqs(BaseSettings):
     """radical.entk task.gpu_reqs parameters."""
 
+    class GPUProcessType(str, Enum):
+        mpi = "MPI"
+
+    class GPUThreadType(str, Enum):
+        open_mp = "OpenMP"
+        cuda = "CUDA"
+
     processes: int = 0
-    process_type: Optional[str]
+    process_type: Optional[GPUProcessType]
     threads_per_process: int = 0
-    thread_type: Optional[str]
-
-    @validator("process_type")
-    def check_process_type(cls, v):
-        if v not in [None, "MPI"]:
-            raise ValueError("GPU process_type must be `null` or `MPI`")
-        return v
-
-    @validator("thread_type")
-    def check_thread_type(cls, v):
-        if v not in [None, "OpenMP", "CUDA"]:
-            raise ValueError("GPU thread_type must be `null`, `OpenMP` or `CUDA`")
-        return v
+    thread_type: Optional[GPUThreadType]
 
 
 class MDBaseConfig(BaseSettings):
