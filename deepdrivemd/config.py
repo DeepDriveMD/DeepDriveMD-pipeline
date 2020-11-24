@@ -3,6 +3,7 @@ import json
 import yaml
 import argparse
 from enum import Enum
+from pydantic import validator
 from pydantic import BaseSettings as _BaseSettings
 from pathlib import Path
 from typing import Optional, List, Union
@@ -23,11 +24,46 @@ class BaseSettings(_BaseSettings):
         return cls(**raw_data)
 
 
-class HardwareReqs(BaseSettings):
-    processes: int
-    process_type: str
-    threads_per_process: int
-    thread_type: str
+class CPUReqs(BaseSettings):
+    """radical.entk task.cpu_reqs parameters."""
+
+    processes: int = 1
+    process_type: Optional[str]
+    threads_per_process: int = 1
+    thread_type: Optional[str]
+
+    @validator("process_type")
+    def check_process_type(cls, v):
+        if v not in [None, "MPI"]:
+            raise ValueError("CPU process_type must be `null` or `MPI`")
+        return v
+
+    @validator("thread_type")
+    def check_thread_type(cls, v):
+        if v not in [None, "OpenMP"]:
+            raise ValueError("CPU thread_type must be `null` or `OpenMP`")
+        return v
+
+
+class GPUReqs(BaseSettings):
+    """radical.entk task.gpu_reqs parameters."""
+
+    processes: int = 0
+    process_type: Optional[str]
+    threads_per_process: int = 0
+    thread_type: Optional[str]
+
+    @validator("process_type")
+    def check_process_type(cls, v):
+        if v not in [None, "MPI"]:
+            raise ValueError("GPU process_type must be `null` or `MPI`")
+        return v
+
+    @validator("thread_type")
+    def check_thread_type(cls, v):
+        if v not in [None, "OpenMP", "CUDA"]:
+            raise ValueError("GPU thread_type must be `null`, `OpenMP` or `CUDA`")
+        return v
 
 
 class MDBaseConfig(BaseSettings):
@@ -42,9 +78,17 @@ class MDBaseConfig(BaseSettings):
     # PDB file used to start MD run (set by DeepDriveMD)
     pdb_file: Path = Path("set_by_deepdrivemd")
     # Node local storage path for MD run
-    local_run_dir: Path = Path("/mnt/bb/$USER/")
+    node_local_run_dir: Optional[Path]
     # Initial data directory passed containing PDBs and optional topologies
-    initial_pdb_dir: Path
+    initial_pdb_dir: Path = Path(".").resolve()
+
+    @validator("initial_pdb_dir")
+    def check_thread_type(cls, v):
+        if not v.exists():
+            raise FileNotFoundError(v.as_posix())
+        if not v.is_absolute():
+            raise ValueError(f"initial_pdb_dir must be an absolute path. Not {v}")
+        return v
 
 
 class MDStageConfig(BaseSettings):
@@ -52,19 +96,14 @@ class MDStageConfig(BaseSettings):
     Global MD configuration (written one per experiment)
     """
 
-    pre_exec: List[str] = [
-        ". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh",
-        "module load cuda/9.1.85",
-        "conda activate /gpfs/alpine/proj-shared/med110/conda/openmm",
-        "export PYTHONPATH=/path/to/run_openmm/directory:$PYTHONPATH",
-    ]
-    executable: List[str] = ["/gpfs/alpine/proj-shared/med110/conda/openmm/bin/python"]
-    arguments: List[str] = ["/path/to/run_openmm/run_openmm.py"]
-    cpu_reqs: HardwareReqs
-    gpu_reqs: HardwareReqs
-    num_jobs: int
+    pre_exec: List[str] = []
+    executable: List[str] = []
+    arguments: List[str] = []
+    cpu_reqs: CPUReqs = CPUReqs()
+    gpu_reqs: GPUReqs = GPUReqs()
+    num_jobs: int = 1
     # Arbitrary job parameters
-    run_config: MDBaseConfig
+    run_config: MDBaseConfig = MDBaseConfig()
 
 
 class OpenMMConfig(MDBaseConfig):
@@ -96,17 +135,12 @@ class AggregationStageConfig(BaseSettings):
     Global aggregation configuration (written one per experiment)
     """
 
-    pre_exec: List[str] = [
-        ". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh",
-        "conda activate /gpfs/alpine/proj-shared/med110/conda/pytorch",
-        "export LANG=en_US.utf-8",
-        "export LC_ALL=en_US.utf-8",
-    ]
-    executable: List[str] = ["/gpfs/alpine/proj-shared/med110/conda/pytorch/bin/python"]
-    arguments: List[str] = ["/path/to/data/aggregation/script/aggregate.py"]
-    cpu_reqs: HardwareReqs
+    pre_exec: List[str] = []
+    executable: List[str] = []
+    arguments: List[str] = []
+    cpu_reqs: CPUReqs = CPUReqs()
     # Arbitrary job parameters
-    run_config: AggregationBaseConfig
+    run_config: AggregationBaseConfig = AggregationBaseConfig()
 
 
 class BasicAggegation(AggregationBaseConfig):
@@ -127,101 +161,21 @@ class MLBaseConfig(BaseSettings):
     # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
     init_weights_path: Optional[Path]
 
-    class Optimizer(BaseSettings):
-        """ML training optimizer."""
-
-        # PyTorch Optimizer name
-        name: str = "Adam"
-        # Learning rate
-        lr: float = 0.0001
-
 
 class MLStageConfig(BaseSettings):
     """
     Global ML configuration (written one per experiment)
     """
 
-    pre_exec: List[str] = [
-        ". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh",
-        "conda activate /gpfs/alpine/proj-shared/med110/conda/pytorch",
-        "module load gcc/7.4.0",
-        "module load cuda/10.1.243",
-        "module load hdf5/1.10.4",
-        "export LANG=en_US.utf-8",
-        "export LC_ALL=en_US.utf-8",
-        "export LD_LIBRARY_PATH=/gpfs/alpine/proj-shared/med110/atrifan/scripts/cuda/targets/ppc64le-linux/lib/:$LD_LIBRARY_PATH",
-        # DDP settings
-        "unset CUDA_VISIBLE_DEVICES",
-        "export OMP_NUM_THREADS=4",
-    ]
-    executable: List[str] = [
-        "cat /dev/null; jsrun -n 1 -r 1 -g 6 -a 6 -c 42 -d packed /path/to/deepdrivemd/models/aae/bin/summit.sh"
-    ]
+    pre_exec: List[str] = []
+    executable: List[str] = []
     arguments: List[str] = []
-    cpu_reqs: HardwareReqs
-    gpu_reqs: HardwareReqs
+    cpu_reqs: CPUReqs = CPUReqs()
+    gpu_reqs: GPUReqs = GPUReqs()
     # Retrain every i deepdrivemd iterations
     retrain_freq: int = 1
     # Arbitrary job parameters
-    run_config: MLBaseConfig
-
-
-class AAEModelConfig(MLBaseConfig):
-    # TODO: move to model implementation
-
-    # Name of the dataset in the HDF5 file.
-    dataset_name: str = "point_cloud"
-    # Name of the RMSD data in the HDF5 file.
-    rmsd_name: str = "rmsd"
-    # Name of the fraction of contacts data in the HDF5 file.
-    fnc_name: str = "fnc"
-    # Model ID in for file naming
-    model_id: str = "model_name"
-    # Number of input points in point cloud
-    num_points: int = 3375
-    # Number of features per point in addition to 3D coordinates
-    num_features: int = 0
-    # Number of epochs to train
-    epochs: int = 10
-    # Training batch size
-    batch_size: int = 32
-    # Optimizer params
-    optimizer: MLBaseConfig.Optimizer = MLBaseConfig.Optimizer()
-    # Latent dimension of the AAE
-    latent_dim: int = 64
-    # Encoder filter sizes
-    encoder_filters: list = [64, 128, 256, 256, 512]
-    # Encoder kernel sizes
-    encoder_kernel_sizes: list = [5, 5, 3, 1, 1]
-    # Generator filter sizes
-    generator_filters: list = [64, 128, 512, 1024]
-    # Discriminator filter sizes
-    discriminator_filters: list = [512, 512, 128, 64]
-    encoder_relu_slope: float = 0.0
-    generator_relu_slope: float = 0.0
-    discriminator_relu_slope: float = 0.0
-    use_encoder_bias: bool = True
-    use_generator_bias: bool = True
-    use_discriminator_bias: bool = True
-    # Mean of the prior distribution
-    noise_mu: float = 0.0
-    # Standard deviation of the prior distribution
-    noise_std: float = 1.0
-    # Hyperparameters weighting different elements of the loss
-    lambda_rec: float = 0.5
-    lambda_gp: float = 10
-    # Saves embeddings every embed_interval'th epoch
-    embed_interval: int = 1
-    # Saves tsne plots every tsne_interval'th epoch
-    tsne_interval: int = 5
-    # For saving and plotting embeddings. Saves len(validation_set) / sample_interval points.
-    sample_interval: int = 20
-    # Number of data loaders for training
-    num_data_workers: int = 0
-    # String which specifies from where to feed the dataset. Valid choices are `storage` and `cpu-memory`.
-    dataset_location: str = "storage"
-    # Project name for wandb logging
-    wandb_project_name: Optional[str]
+    run_config: MLBaseConfig = MLBaseConfig()
 
 
 class ODBaseConfig(BaseSettings):
@@ -245,22 +199,13 @@ class ODStageConfig(BaseSettings):
     Global outlier detection configuration (written one per experiment)
     """
 
-    pre_exec: List[str] = [
-        ". /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh || true",
-        "conda activate /gpfs/alpine/proj-shared/med110/conda/pytorch",
-        "export LANG=en_US.utf-8",
-        "export LC_ALL=en_US.utf-8",
-        "unset CUDA_VISIBLE_DEVICES",
-        "export OMP_NUM_THREADS=4",
-    ]
-    executable: List[str] = [
-        "cat /dev/null; jsrun -n 1 -a 6 -g 6 -r 1 -c 7 /path/to/deepdrivemd/outlier_detection/optics.sh"
-    ]
+    pre_exec: List[str] = []
+    executable: List[str] = []
     arguments: List[str] = []
-    cpu_reqs: HardwareReqs
-    gpu_reqs: HardwareReqs
+    cpu_reqs: CPUReqs = CPUReqs()
+    gpu_reqs: GPUReqs = GPUReqs()
     # Arbitrary job parameters
-    run_config: ODBaseConfig
+    run_config: ODBaseConfig = ODBaseConfig()
 
 
 class OPTICSConfig(ODBaseConfig):
@@ -268,9 +213,9 @@ class OPTICSConfig(ODBaseConfig):
 
     # TODO: move to OPTICS implementation
     # Number of outliers to detect (should be number of MD jobs + 1, incase errors)
-    num_outliers: int
+    num_outliers: int = 100
     # Number of points in point cloud AAE
-    num_points: int
+    num_points: int = 304
     # Inference batch size for encoder forward pass
     inference_batch_size: int = 128
 
@@ -298,69 +243,6 @@ class ExperimentConfig(BaseSettings):
 
 
 def generate_sample_config():
-    md_stage = MDStageConfig(
-        num_jobs=10,
-        cpu_reqs=HardwareReqs(
-            processes=1,
-            process_type="null",
-            threads_per_process=4,
-            thread_type="OpenMP",
-        ),
-        gpu_reqs=HardwareReqs(
-            processes=1,
-            process_type="null",
-            threads_per_process=1,
-            thread_type="CUDA",
-        ),
-        run_config=OpenMMConfig(
-            initial_pdb_dir="/path/to/initial_pdbs_and_tops",
-            reference_pdb_file="/path/to/reference.pdb",
-            solvent_type="explicit",
-        ),
-    )
-    aggregation_stage = AggregationStageConfig(
-        cpu_reqs=HardwareReqs(
-            processes=1,
-            process_type="null",
-            threads_per_process=26,
-            thread_type="OpenMP",
-        ),
-        run_config=BasicAggegation(),
-    )
-    ml_stage = MLStageConfig(
-        cpu_reqs=HardwareReqs(
-            processes=1,
-            process_type="MPI",
-            threads_per_process=4,
-            thread_type="OpenMP",
-        ),
-        gpu_reqs=HardwareReqs(
-            processes=1,
-            process_type="null",
-            threads_per_process=1,
-            thread_type="CUDA",
-        ),
-        run_config=AAEModelConfig(),
-    )
-    od_stage = ODStageConfig(
-        cpu_reqs=HardwareReqs(
-            processes=1,
-            process_type="null",
-            threads_per_process=12,
-            thread_type="OpenMP",
-        ),
-        gpu_reqs=HardwareReqs(
-            processes=1,
-            process_type="null",
-            threads_per_process=1,
-            thread_type="CUDA",
-        ),
-        run_config=OPTICSConfig(
-            num_outliers=11,
-            num_points=304,
-        ),
-    )
-
     return ExperimentConfig(
         title="COVID-19 - Workflow2",
         resource="ornl.summit",
@@ -373,10 +255,10 @@ def generate_sample_config():
         gpus_per_node=6,
         max_iteration=4,
         experiment_directory="/path/to/experiment",
-        md_stage=md_stage,
-        aggregation_stage=aggregation_stage,
-        ml_stage=ml_stage,
-        od_stage=od_stage,
+        md_stage=MDStageConfig(),
+        aggregation_stage=AggregationStageConfig(),
+        ml_stage=MLStageConfig(),
+        od_stage=ODStageConfig(),
     )
 
 
