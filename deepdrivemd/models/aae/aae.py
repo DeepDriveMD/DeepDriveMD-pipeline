@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 from typing import Optional
 import wandb
-from deepdrivemd.config import AAEModelConfig
+from deepdrivemd.models.aae.config import AAEModelConfig
 
 # torch stuff
 # from torchsummary import summary
@@ -162,7 +162,7 @@ def main(
 
     # optimizers
     optimizer_hparams = OptimizerHyperparams(
-        name=cfg.optimizer.name, hparams={"lr": cfg.optimizer.lr}
+        name=cfg.optimizer_name, hparams={"lr": cfg.optimizer_lr}
     )
 
     # create a dir for storing the model
@@ -334,9 +334,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "-D", "--decoder_gpu", help="GPU to place decoder", type=int, default=0
-    )
-    parser.add_argument(
-        "-d", "--decoder_gpu", help="GPU to place decoder", type=int, default=0
     )
     parser.add_argument("--distributed", action="store_true")
     args = parser.parse_args()

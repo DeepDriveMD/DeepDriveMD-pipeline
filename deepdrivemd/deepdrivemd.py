@@ -270,7 +270,7 @@ if __name__ == "__main__":
     # TODO: fix this assumption for NAMD
     num_nodes = max(1, cfg.md_stage.num_jobs // cfg.gpus_per_node)
 
-    res_dict = {
+    appman.resource_desc = {
         "resource": cfg.resource,
         "queue": cfg.queue,
         "schema": cfg.schema_,
@@ -280,11 +280,8 @@ if __name__ == "__main__":
         "gpus": cfg.gpus_per_node * num_nodes,
     }
 
-    appman.resource_desc = res_dict
-
     pipeline_manager = PipelineManager(cfg)
     pipeline = pipeline_manager.generate_pipeline()
-
     pipelines = [pipeline]
 
     # Assign the workflow as a list of Pipelines to the Application Manager. In
