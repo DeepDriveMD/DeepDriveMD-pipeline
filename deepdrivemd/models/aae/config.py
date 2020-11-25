@@ -3,6 +3,10 @@ from deepdrivemd.config import MLBaseConfig
 
 
 class AAEModelConfig(MLBaseConfig):
+    # Select the n most recent HDF5 files for training
+    last_n_h5_files: int = 10
+    # Select k random HDF5 files to train on from previous DeepDriveMD iterations
+    k_random_old_h5_files: int = 0
     # Name of the dataset in the HDF5 file.
     dataset_name: str = "point_cloud"
     # Name of the RMSD data in the HDF5 file.

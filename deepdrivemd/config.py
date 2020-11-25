@@ -122,6 +122,8 @@ class AggregationStageConfig(BaseSettings):
 class MLBaseConfig(BaseSettings):
     """Base class for specific model configs to inherit."""
 
+    # Path to experiment directory in order to access data API (set by DeepDriveMD)
+    experiment_directory: Path = Path("set_by_deepdrivemd")
     # Path to file containing preprocessed data (set by DeepDriveMD)
     input_path: Path = Path("set_by_deepdrivemd")
     # Output directory for model data (set by DeepDriveMD)

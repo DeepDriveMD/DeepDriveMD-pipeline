@@ -1,9 +1,13 @@
 import os
+import uuid
 import argparse
+import random
 from pathlib import Path
 from typing import Optional
 import wandb
 from deepdrivemd.models.aae.config import AAEModelConfig
+from deepdrivemd.data.api import DeepDriveMD_API
+from deepdrivemd.data.utils import concatenate_virtual_h5
 
 # torch stuff
 import torch
@@ -48,6 +52,28 @@ def setup_wandb(
         wandb.watch(model)
 
     return wandb_config
+
+
+def get_h5_training_file(cfg: AAEModelConfig) -> Path:
+    # Collect training data
+    api = DeepDriveMD_API(cfg.experiment_directory)
+    md_data = api.get_last_n_md_runs()
+    all_h5_files = md_data["h5_files"]
+
+    last_n_h5_files = all_h5_files[-1 * cfg.last_n_h5_files :]
+    old_h5_files = all_h5_files[: -1 * cfg.last_n_h5_files]
+
+    if len(old_h5_files) > cfg.k_random_old_h5_files:
+        old_h5_files = random.sample(old_h5_files, k=cfg.k_random_old_h5_files)
+
+    # TODO: copy training_h5_files to node local and put virtual_h5_path on node local storage
+    training_h5_files = old_h5_files + last_n_h5_files
+    virtual_h5_path = f"{uuid.uuid4()}.h5"
+
+    # Concatenate HDF5 files into a single virtual HDF5 file
+    concatenate_virtual_h5(training_h5_files, virtual_h5_path)
+
+    return Path(virtual_h5_path)
 
 
 def get_dataset(
@@ -199,10 +225,12 @@ def main(
         # Diplay model
         print(aae)
 
+    h5_file = get_h5_training_file(cfg)
+
     # set up dataloaders
     train_dataset = get_dataset(
         cfg.dataset_location,
-        cfg.input_path,
+        h5_file,
         cfg.dataset_name,
         cfg.rmsd_name,
         cfg.fnc_name,
@@ -226,7 +254,7 @@ def main(
 
     valid_dataset = get_dataset(
         cfg.dataset_location,
-        cfg.input_path,
+        h5_file,
         cfg.dataset_name,
         cfg.rmsd_name,
         cfg.fnc_name,
