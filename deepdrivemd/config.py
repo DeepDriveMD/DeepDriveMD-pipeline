@@ -113,6 +113,8 @@ class AggregationStageConfig(BaseSettings):
     executable: List[str] = []
     arguments: List[str] = []
     cpu_reqs: CPUReqs = CPUReqs()
+    # Whether or not to skip aggregation stage
+    skip_aggregation: bool = False
     # Arbitrary job parameters
     run_config: AggregationBaseConfig = AggregationBaseConfig()
 
@@ -153,6 +155,8 @@ class ODBaseConfig(BaseSettings):
     # Model checkpoint file to load model weights for inference.
     # Saved as .pt by CheckpointCallback. (set by DeepDriveMD)
     weights_path: Path = Path("set_by_deepdrivemd")
+    # Model hyperparameters yaml file (set by DeepDriveMD)
+    model_path: Path = Path("set_by_deepdrivemd")
     # Path to JSON file containing restart PDB paths (set by DeepDriveMD)
     restart_points_path: Path = Path("set_by_deepdrivemd")
     # Path to experiment directory in order to access data API (set by DeepDriveMD)

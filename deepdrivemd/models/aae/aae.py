@@ -1,5 +1,4 @@
 import os
-import yaml
 import argparse
 from pathlib import Path
 from typing import Optional
@@ -7,7 +6,6 @@ import wandb
 from deepdrivemd.models.aae.config import AAEModelConfig
 
 # torch stuff
-# from torchsummary import summary
 import torch
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -201,9 +199,6 @@ def main(
         # Diplay model
         print(aae)
 
-        # Only print summary when encoder_gpu is None or 0
-        # summary(aae.model, (3 + num_features, num_points))
-
     # set up dataloaders
     train_dataset = get_dataset(
         cfg.dataset_location,
@@ -335,15 +330,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-D", "--decoder_gpu", help="GPU to place decoder", type=int, default=0
     )
-    parser.add_argument("--distributed", action="store_true")
+    parser.add_argument(
+        "--distributed", action="store_true", help="Enable distributed training"
+    )
     args = parser.parse_args()
     return args
-
-
-def parse_config(path: str) -> dict:
-    with open(path) as fp:
-        config = yaml.safe_load(fp)
-    return config
 
 
 if __name__ == "__main__":
@@ -351,6 +342,5 @@ if __name__ == "__main__":
     # torch.multiprocessing.set_start_method('forkserver', force = True)
 
     args = parse_args()
-    cfg = parse_config(args.config)
-    cfg = AAEModelConfig.from_yaml(**cfg)
+    cfg = AAEModelConfig.from_yaml(args.config)
     main(cfg, args.encoder_gpu, args.generator_gpu, args.decoder_gpu, args.distributed)

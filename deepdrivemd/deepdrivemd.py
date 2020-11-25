@@ -55,6 +55,8 @@ class PipelineManager:
         for dir_path in self.experiment_dirs.values():
             dir_path.mkdir()
 
+    # TODO: move all these paths into DeepDriveMD_API
+
     def aggregated_data_path(self, iteration: int) -> Path:
         return self.experiment_dirs["aggregation_runs"].joinpath(
             f"data_{iteration:03d}.h5"
@@ -81,6 +83,17 @@ class PipelineManager:
     def outlier_pdbs_path(self, iteration: int) -> Path:
         return self.experiment_dirs["od_runs"].joinpath(f"outlier_pdbs_{iteration:03d}")
 
+    def aggregation_config_path(self, iteration: int) -> Path:
+        return self.experiment_dirs["aggregation_runs"].joinpath(
+            f"aggregation_{iteration:03d}.yaml"
+        )
+
+    def ml_config_path(self, iteration: int) -> Path:
+        return self.experiment_dirs["ml_runs"].joinpath(f"ml_{iteration:03d}.yaml")
+
+    def outlier_detection_config_path(self, iteration: int) -> Path:
+        return self.experiment_dirs["od_runs"].joinpath(f"od_{iteration:03d}.yaml")
+
     def func_condition(self):
         if self.cur_iteration < self.cfg.max_iteration:
             self.func_on_true()
@@ -98,7 +111,8 @@ class PipelineManager:
 
         self.pipeline.add_stages(self.generate_md_stage())
 
-        self.pipeline.add_stages(self.generate_aggregating_stage())
+        if not cfg.aggregation_stage.skip_aggregation:
+            self.pipeline.add_stages(self.generate_aggregating_stage())
 
         if self.cur_iteration % cfg.ml_stage.retrain_freq == 0:
             self.pipeline.add_stages(self.generate_ml_stage())
@@ -143,7 +157,6 @@ class PipelineManager:
             # Write MD yaml to tmp directory to be picked up and moved by MD job
             cfg_path = self.experiment_dirs["tmp"].joinpath(f"{dir_prefix}.yaml")
             cfg.run_config.dump_yaml(cfg_path)
-
             task.arguments += ["-c", cfg_path]
             stage.add_tasks(task)
 
@@ -154,9 +167,7 @@ class PipelineManager:
         stage.name = "aggregating"
         cfg = self.cfg.aggregation_stage
 
-        # Aggregation task
         task = Task()
-
         task.cpu_reqs = cfg.cpu_reqs.dict()
         task.pre_exec = cfg.pre_exec
         task.executable = cfg.executable
@@ -166,11 +177,9 @@ class PipelineManager:
         cfg.run_config.experiment_directory = self.cfg.experiment_directory
         cfg.run_config.output_path = self.aggregated_data_path(self.cur_iteration)
 
-        cfg_path = self.experiment_dirs["aggregation_runs"].joinpath(
-            f"aggregation_{self.cur_iteration:03d}.yaml"
-        )
+        # Write yaml configuration
+        cfg_path = self.aggregation_config_path(self.cur_iteration)
         cfg.run_config.dump_yaml(cfg_path)
-
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
 
@@ -196,11 +205,9 @@ class PipelineManager:
                 self.cur_iteration - 1
             )
 
-        cfg_path = self.experiment_dirs["ml_runs"].joinpath(
-            f"ml_{self.cur_iteration:03d}.yaml"
-        )
+        # Write yaml configuration
+        cfg_path = self.ml_config_path(self.cur_iteration)
         cfg.run_config.dump_yaml(cfg_path)
-
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
 
@@ -223,17 +230,16 @@ class PipelineManager:
         # Update base parameters
         cfg.run_config.experiment_directory = self.cfg.experiment_directory
         cfg.run_config.input_path = self.aggregated_data_path(self.cur_iteration)
+        cfg.run_config.model_path = self.ml_config_path(self.cur_iteration)
         cfg.run_config.output_path = self.outlier_pdbs_path(self.cur_iteration)
         cfg.run_config.weights_path = self.latest_ml_checkpoint_path(self.cur_iteration)
         cfg.run_config.restart_points_path = self.restart_points_path(
             self.cur_iteration
         )
 
-        cfg_path = self.experiment_dirs["od_runs"].joinpath(
-            f"od_{self.cur_iteration:03d}.yaml"
-        )
+        # Write yaml configuration
+        cfg_path = self.outlier_detection_config_path(self.cur_iteration)
         cfg.run_config.dump_yaml(cfg_path)
-
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
 
