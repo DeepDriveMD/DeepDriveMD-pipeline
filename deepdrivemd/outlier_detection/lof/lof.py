@@ -22,8 +22,6 @@ from deepdrivemd.models.aae.config import AAEModelConfig
 
 # from deepdrivemd.models.aae.config import AAEModelConfig
 
-# plotting
-import matplotlib.pyplot as plt
 
 # Helper function for LocalOutlierFactor
 def topk(a, k):
@@ -152,9 +150,7 @@ def generate_embeddings(
 
 
 # LOF
-def local_outlier_factor(
-    embeddings, n_outliers=500, plot_dir=None, comm=None, **kwargs
-):
+def local_outlier_factor(embeddings, n_outliers=500, comm=None, **kwargs):
     # start timer
     t_start = time.time()
 
@@ -174,16 +170,6 @@ def local_outlier_factor(
     # Array with 1 if inlier, -1 if outlier
     embeddings = np.nan_to_num(embeddings, nan=0.0)
     clf.fit_predict(embeddings)
-
-    # print the results
-    if (plot_dir is not None) and (comm_rank == 0):
-        # create directory
-        os.makedirs(plot_dir, exist_ok=True)
-        # plot
-        _, ax = plt.subplots(1, 1, tight_layout=True)
-        ax.hist(clf.negative_outlier_factor_, bins="fd")
-        plt.savefig(os.path.join(plot_dir, "score_distribution.png"))
-        plt.close()
 
     # Only sorts 1 element of negative_outlier_factors_, namely the element
     # that is position k in the sorted array. The elements above and below
@@ -372,7 +358,6 @@ def main(cfg: LOFConfig, distributed: bool):
         outlier_inds, scores = local_outlier_factor(
             embeddings,
             n_outliers=cfg.num_outliers,
-            plot_dir=os.path.join(cfg.output_path, "figures"),
             n_jobs=-1,
             comm=comm,
         )
