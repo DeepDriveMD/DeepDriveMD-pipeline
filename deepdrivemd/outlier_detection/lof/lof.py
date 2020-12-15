@@ -3,8 +3,12 @@ import os
 # import json
 import argparse
 import itertools
+from pathlib import Path
+from typing import Optional, Tuple
 import time
+import shutil
 import torch
+import random
 import numpy as np
 import pandas as pd
 from glob import glob
@@ -19,6 +23,9 @@ from molecules.ml.unsupervised.point_autoencoder.aae import Encoder
 
 from deepdrivemd.outlier_detection.lof.config import LOFConfig
 from deepdrivemd.models.aae.config import AAEModelConfig
+from deepdrivemd.data.api import DeepDriveMD_API
+from deepdrivemd.data.utils import concatenate_virtual_h5
+
 
 # from deepdrivemd.models.aae.config import AAEModelConfig
 
@@ -40,22 +47,77 @@ def topk(a, k):
     return np.argpartition(a, k)[:k]
 
 
-def generate_embeddings(
-    cfg: LOFConfig,
-    comm=None,
-):
+def setup_mpi_comm(distributed: bool):
+    if distributed:
+        # get communicator: duplicate from comm world
+        from mpi4py import MPI
 
-    # start timer
-    t_start = time.time()
+        return MPI.COMM_WORLD.Dup()
+    return None
 
-    # communicator stuff
+
+def setup_mpi(comm):
     comm_size = 1
     comm_rank = 0
     if comm is not None:
         comm_size = comm.Get_size()
         comm_rank = comm.Get_rank()
 
-    model_cfg = AAEModelConfig.from_yaml(args.config)
+    return comm_size, comm_rank
+
+
+def get_virtual_h5_file(
+    experiment_directory: Path,
+    last_n: int,
+    k_random_old: int,
+    output_path: Path,
+    node_local_path: Optional[Path],
+) -> Path:
+
+    # Collect training data
+    api = DeepDriveMD_API(experiment_directory)
+    md_data = api.get_last_n_md_runs()
+    all_h5_files = md_data["h5_files"]
+
+    # Partition all HDF5 files into old and new
+    last_n_h5_files = all_h5_files[-1 * last_n :]
+    old_h5_files = all_h5_files[: -1 * last_n]
+
+    # Get a random sample of old HDF5 files, or use all
+    # if the length of old files is less then k_random_old
+    if len(old_h5_files) > k_random_old:
+        old_h5_files = random.sample(old_h5_files, k=k_random_old)
+
+    # Combine all new files and some old files
+    h5_files = old_h5_files + last_n_h5_files
+
+    # Always make a virtual file in long term storage
+    virtual_h5_path = output_path.joinpath("virtual.h5")
+    concatenate_virtual_h5(h5_files, virtual_h5_path.as_posix())
+
+    # If node local storage optimization is available, then
+    # copy all HDF5 files to node local storage and make a
+    # separate virtual HDF5 file on node local storage.
+    if node_local_path is not None:
+        h5_files = [shutil.copy(f, node_local_path) for f in h5_files]
+        virtual_h5_path = node_local_path.joinpath("virtual.h5")
+        concatenate_virtual_h5(h5_files, virtual_h5_path.as_posix())
+
+    # Returns node local virtual file if available
+    return virtual_h5_path
+
+
+def generate_embeddings(
+    cfg: LOFConfig,
+    comm=None,
+) -> Tuple[np.ndarray, np.ndarray]:
+
+    # start timer
+    t_start = time.time()
+
+    comm_size, comm_rank = setup_mpi(comm)
+
+    model_cfg = AAEModelConfig.from_yaml(cfg.model_path)
 
     model_hparams = AAE3dHyperparams(
         num_features=model_cfg.num_features,
@@ -144,7 +206,7 @@ def generate_embeddings(
     # stop timer
     t_end = time.time()
     if comm_rank == 0:
-        print("Generating Embeddings Time: {}s".format(t_end - t_start))
+        print(f"Generating Embeddings Time: {t_end - t_start}s")
 
     return embeddings, indices
 
@@ -155,11 +217,7 @@ def local_outlier_factor(embeddings, n_outliers=500, comm=None, **kwargs):
     t_start = time.time()
 
     # mpi stuff
-    # comm_size = 1
-    comm_rank = 0
-    if comm is not None:
-        # comm_size = comm.Get_size()
-        comm_rank = comm.Get_rank()
+    comm_size, comm_rank = setup_mpi(comm)
 
     # LOF
     if comm_rank == 0:
@@ -191,17 +249,13 @@ def local_outlier_factor(embeddings, n_outliers=500, comm=None, **kwargs):
     return outlier_inds[sort_inds], outlier_scores[sort_inds]
 
 
-def find_frame(traj_dict, frame_number=0):
-    local_frame = frame_number
-    for key in sorted(traj_dict):
-        if local_frame - traj_dict[key] < 0:
-            return local_frame, key
-        else:
-            local_frame -= traj_dict[key]
-    raise Exception(
-        "frame %d should not exceed the total number of frames, %d"
-        % (frame_number, sum(np.array(traj_dict.values()).astype(int)))
-    )
+def find_frame(index, traj_files, sim_lens):
+    remainder = index
+    for traj_file, sim_len in zip(traj_files, sim_lens):
+        if remainder < sim_len:
+            return traj_file, remainder
+        remainder -= sim_len
+    raise ValueError("Did not find frame")
 
 
 def find_values(rewards_df, fname, xmin, xmax):
@@ -219,12 +273,7 @@ def write_rewarded_pdbs(
     # start timer
     t_start = time.time()
 
-    # mpi stuff
-    comm_size = 1
-    comm_rank = 0
-    if comm is not None:
-        comm_size = comm.Get_size()
-        comm_rank = comm.Get_rank()
+    comm_size, comm_rank = setup_mpi(comm)
 
     # Get list of simulation trajectory files (Assume all are equal length (ns))
     with open_h5(data_path) as h5_file:
@@ -339,16 +388,22 @@ def main(cfg: LOFConfig, distributed: bool):
     # start timer
     t_start = time.time()
 
-    comm_size = 1
-    comm_rank = 0
-    comm = None
-    if distributed:
-        # get communicator: duplicate from comm world
-        from mpi4py import MPI
+    comm = setup_mpi_comm(distributed)
+    comm_size, comm_rank = setup_mpi(comm)
 
-        comm = MPI.COMM_WORLD.Dup()
-        comm_size = comm.Get_size()
-        comm_rank = comm.Get_rank()
+    if comm_rank == 0:
+        h5_data_path = get_virtual_h5_file(
+            cfg.experiment_directory,
+            last_n=cfg.last_n_h5_files,
+            k_random_old=cfg.k_random_old_h5_files,
+            output_path=cfg.output_path,
+            node_local_path=cfg.node_local_path,
+        )
+    else:
+        h5_data_path = None
+
+    if comm_size > 1:
+        h5_data_path = comm.bcast(h5_data_path, 0)
 
     # Generate embeddings for all contact matrices produced during MD stage
     embeddings, indices = generate_embeddings(cfg, comm=comm)
@@ -362,17 +417,11 @@ def main(cfg: LOFConfig, distributed: bool):
             comm=comm,
         )
     else:
-        outlier_inds = None
-        scores = None
+        outlier_inds, scores = None, None
 
     if comm_size > 1:
         outlier_inds = comm.bcast(outlier_inds, 0)
         scores = comm.bcast(scores, 0)
-
-    # if comm_rank == 0:
-    #     print("outlier_inds shape: ", outlier_inds.shape)
-    #     for ind, score in zip(outlier_inds, scores):
-    #         print(f"ind, score: {ind}, {score}")
 
     # Map shuffled indices back to in-order MD frames
     simulation_inds = indices[outlier_inds]
@@ -403,9 +452,8 @@ def main(cfg: LOFConfig, distributed: bool):
     # final barrier
     comm.barrier()
 
-    # end
-    t_end = time.time()
     if comm_rank == 0:
+        t_end = time.time()
         print("Outlier Detection Time: {}s".format(t_end - t_start))
 
 
