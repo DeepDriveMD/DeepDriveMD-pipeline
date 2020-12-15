@@ -60,7 +60,7 @@ class SimulationContext:
         pdb_file: Path,
         reference_pdb_file: Optional[Path],
         dir_prefix: str,
-        node_local_run_dir: Optional[Path],
+        node_local_path: Optional[Path],
         result_dir: Path,
         initial_pdb_dir: Path,
         solvent_type: str,
@@ -70,8 +70,8 @@ class SimulationContext:
         self.reference_pdb_file = reference_pdb_file
 
         # Use node local storage if available. Otherwise, write to result directory.
-        if node_local_run_dir is not None:
-            self.workdir = node_local_run_dir.joinpath(dir_prefix)
+        if node_local_path is not None:
+            self.workdir = node_local_path.joinpath(dir_prefix)
         else:
             self.workdir = result_dir.joinpath(dir_prefix)
 
@@ -125,7 +125,7 @@ def run_simulation(cfg: OpenMMConfig):
         pdb_file=cfg.pdb_file,
         reference_pdb_file=cfg.reference_pdb_file,
         dir_prefix=cfg.dir_prefix,
-        node_local_run_dir=cfg.node_local_run_dir,
+        node_local_path=cfg.node_local_path,
         result_dir=cfg.result_dir,
         initial_pdb_dir=cfg.initial_pdb_dir,
         solvent_type=cfg.solvent_type,
@@ -152,7 +152,7 @@ def run_simulation(cfg: OpenMMConfig):
     sim.step(nsteps)
 
     # Move simulation data to persistent storage
-    if cfg.node_local_run_dir is not None:
+    if cfg.node_local_path is not None:
         ctx.move_results()
 
 
