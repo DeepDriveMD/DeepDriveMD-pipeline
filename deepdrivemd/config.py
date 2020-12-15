@@ -66,8 +66,8 @@ class MDBaseConfig(BaseSettings):
     dir_prefix: str = "set_by_deepdrivemd"
     # PDB file used to start MD run (set by DeepDriveMD)
     pdb_file: Path = Path("set_by_deepdrivemd")
-    # Node local storage path for MD run
-    node_local_run_dir: Optional[Path]
+    # Node local storage path
+    node_local_path: Optional[Path]
     # Initial data directory passed containing PDBs and optional topologies
     initial_pdb_dir: Path = Path(".").resolve()
 
@@ -102,6 +102,8 @@ class AggregationBaseConfig(BaseSettings):
     experiment_directory: Path = Path("set_by_deepdrivemd")
     last_n_h5_files: Optional[int]
     output_path: Path = Path("set_by_deepdrivemd")
+    # Node local storage path
+    node_local_path: Optional[Path]
 
 
 class AggregationStageConfig(BaseSettings):
@@ -130,6 +132,8 @@ class MLBaseConfig(BaseSettings):
     output_path: Path = Path("set_by_deepdrivemd")
     # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
     init_weights_path: Optional[Path]
+    # Node local storage path
+    node_local_path: Optional[Path]
 
 
 class MLStageConfig(BaseSettings):
@@ -163,7 +167,8 @@ class ODBaseConfig(BaseSettings):
     restart_points_path: Path = Path("set_by_deepdrivemd")
     # Path to experiment directory in order to access data API (set by DeepDriveMD)
     experiment_directory: Path = Path("set_by_deepdrivemd")
-    last_n_h5_files: Optional[int]
+    # Node local storage path
+    node_local_path: Optional[Path]
 
 
 class ODStageConfig(BaseSettings):
