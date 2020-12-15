@@ -413,7 +413,7 @@ def main(cfg: LOFConfig, distributed: bool):
         outlier_inds, scores = local_outlier_factor(
             embeddings,
             n_outliers=cfg.num_outliers,
-            n_jobs=-1,
+            n_jobs=cfg.sklearn_num_jobs,
             comm=comm,
         )
     else:

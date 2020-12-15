@@ -16,6 +16,8 @@ class LOFConfig(ODBaseConfig):
     last_n_h5_files: int = 10
     # Select k random HDF5 files from previous DeepDriveMD iterations for outlier search
     k_random_old_h5_files: int = 0
+    # Number of workers to use for LOF
+    sklearn_num_jobs: int = -1
 
 
 if __name__ == "__main__":
