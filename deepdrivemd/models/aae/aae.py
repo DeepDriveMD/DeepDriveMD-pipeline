@@ -54,6 +54,7 @@ def setup_wandb(
     return wandb_config
 
 
+# TODO: duplicate code. Use function in LOF
 def get_h5_training_file(cfg: AAEModelConfig) -> Path:
     # Collect training data
     api = DeepDriveMD_API(cfg.experiment_directory)
