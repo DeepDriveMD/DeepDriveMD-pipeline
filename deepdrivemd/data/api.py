@@ -12,12 +12,40 @@ def glob_file_from_dirs(dirs: List[str], pattern: str) -> List[str]:
 
 
 class DeepDriveMD_API:
+
+    # Directory structure for experiment
+    MD_DIR = "md_runs"
+    AGGREGATE_DIR = "aggregation_runs"
+    ML_DIR = "ml_runs"
+    AGENT_DIR = "agent_runs"
+    TMP_DIR = "tmp"
+
     def __init__(self, experiment_directory: PathLike):
         self.experiment_dir = Path(experiment_directory)
 
+    @property
+    def md_dir(self) -> Path:
+        return self.experiment_dir.joinpath(self.MD_DIR)
+
+    @property
+    def aggregation_dir(self) -> Path:
+        return self.experiment_dir.joinpath(self.AGGREGATE_DIR)
+
+    @property
+    def ml_dir(self) -> Path:
+        return self.experiment_dir.joinpath(self.ML_DIR)
+
+    @property
+    def agent_dir(self) -> Path:
+        return self.experiment_dir.joinpath(self.AGENT_DIR)
+
+    @property
+    def tmp_dir(self) -> Path:
+        return self.experiment_dir.joinpath(self.TMP_DIR)
+
     def get_last_n_md_runs(self, n: Optional[int] = None) -> Dict[str, List[str]]:
         # Run dirs: f"run_{deepdrivemd_iteration:03d}_{sim_task_id:04d}"
-        run_dirs = self.experiment_dir.joinpath("md_runs").glob("*")
+        run_dirs = self.experiment_dir.joinpath(self.MD_DIR).glob("*")
         # Remove any potential files
         run_dirs = filter(lambda x: x.is_dir(), run_dirs)
         # Convert pathlib Path to str

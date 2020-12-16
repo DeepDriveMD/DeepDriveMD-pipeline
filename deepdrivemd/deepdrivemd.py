@@ -9,6 +9,7 @@ import radical.utils as ru
 from radical.entk import AppManager, Pipeline, Stage, Task
 
 from deepdrivemd.config import ExperimentConfig
+from deepdrivemd.data.api import DeepDriveMD_API
 
 
 def get_outlier_pdbs(outlier_filename: Path) -> List[Path]:
@@ -32,38 +33,28 @@ class PipelineManager:
         self.cfg = cfg
         self.cur_iteration = 0
 
+        self.api = DeepDriveMD_API(cfg.experiment_directory)
         self.pipeline = Pipeline()
         pipeline.name = "DeepDriveMD"
 
         self._init_experiment_dir()
 
     def _init_experiment_dir(self):
-        # Name experiment directories
-        self.experiment_dirs = {
-            dir_name: self.cfg.experiment_directory.joinpath(dir_name)
-            for dir_name in [
-                "md_runs",
-                "ml_runs",
-                "aggregation_runs",
-                "od_runs",
-                "tmp",
-            ]
-        }
-
         # Make experiment directories
         self.cfg.experiment_directory.mkdir()
-        for dir_path in self.experiment_dirs.values():
-            dir_path.mkdir()
+        self.api.md_dir.mkdir()
+        self.api.aggregation_dir.mkdir()
+        self.api.ml_dir.mkdir()
+        self.api.agent_dir.mkdir()
+        self.api.tmp_dir.mkdir()
 
     # TODO: move all these paths into DeepDriveMD_API
 
     def aggregated_data_path(self, iteration: int) -> Path:
-        return self.experiment_dirs["aggregation_runs"].joinpath(
-            f"data_{iteration:03d}.h5"
-        )
+        return self.api.aggregation_dir.joinpath(f"data_{iteration:03d}.h5")
 
     def model_path(self, iteration: int) -> Path:
-        return self.experiment_dirs["ml_runs"].joinpath(f"model_{iteration:03d}")
+        return self.api.ml_dir.joinpath(f"model_{iteration:03d}")
 
     def latest_ml_checkpoint_path(self, iteration: int) -> Path:
         # TODO: this code requires specific checkpoint file format
@@ -76,23 +67,19 @@ class PipelineManager:
         return max(checkpoint_files, key=lambda x: x.as_posix().split("-")[1])
 
     def restart_points_path(self, iteration: int) -> Path:
-        return self.experiment_dirs["od_runs"].joinpath(
-            f"restart_points_{iteration:03d}.json"
-        )
+        return self.api.agent_dir.joinpath(f"restart_points_{iteration:03d}.json")
 
     def outlier_pdbs_path(self, iteration: int) -> Path:
-        return self.experiment_dirs["od_runs"].joinpath(f"outlier_pdbs_{iteration:03d}")
+        return self.api.agent_dir.joinpath(f"outlier_pdbs_{iteration:03d}")
 
     def aggregation_config_path(self, iteration: int) -> Path:
-        return self.experiment_dirs["aggregation_runs"].joinpath(
-            f"aggregation_{iteration:03d}.yaml"
-        )
+        return self.api.aggregation_dir.joinpath(f"aggregation_{iteration:03d}.yaml")
 
     def ml_config_path(self, iteration: int) -> Path:
-        return self.experiment_dirs["ml_runs"].joinpath(f"ml_{iteration:03d}.yaml")
+        return self.api.ml_dir.joinpath(f"ml_{iteration:03d}.yaml")
 
     def outlier_detection_config_path(self, iteration: int) -> Path:
-        return self.experiment_dirs["od_runs"].joinpath(f"od_{iteration:03d}.yaml")
+        return self.api.agent_dir.joinpath(f"od_{iteration:03d}.yaml")
 
     def func_condition(self):
         if self.cur_iteration < self.cfg.max_iteration:
@@ -150,12 +137,12 @@ class PipelineManager:
             dir_prefix = f"md_{self.cur_iteration:03d}_{i:04d}"
 
             # Update base parameters
-            cfg.run_config.result_dir = self.experiment_dirs["md_runs"]
+            cfg.run_config.result_dir = self.api.md_dir
             cfg.run_config.dir_prefix = dir_prefix
             cfg.run_config.pdb_file = pdb_filename
 
             # Write MD yaml to tmp directory to be picked up and moved by MD job
-            cfg_path = self.experiment_dirs["tmp"].joinpath(f"{dir_prefix}.yaml")
+            cfg_path = self.api.tmp_dir.joinpath(f"{dir_prefix}.yaml")
             cfg.run_config.dump_yaml(cfg_path)
             task.arguments += ["-c", cfg_path]
             stage.add_tasks(task)
