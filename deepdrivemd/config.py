@@ -152,7 +152,7 @@ class MLStageConfig(BaseSettings):
     run_config: MLBaseConfig = MLBaseConfig()
 
 
-class ODBaseConfig(BaseSettings):
+class AgentBaseConfig(BaseSettings):
 
     # Path to file containing preprocessed data (set by DeepDriveMD)
     input_path: Path = Path("set_by_deepdrivemd")
@@ -171,9 +171,9 @@ class ODBaseConfig(BaseSettings):
     node_local_path: Optional[Path]
 
 
-class ODStageConfig(BaseSettings):
+class AgentStageConfig(BaseSettings):
     """
-    Global outlier detection configuration (written one per experiment)
+    Global agent configuration (written one per experiment)
     """
 
     pre_exec: List[str] = []
@@ -182,7 +182,7 @@ class ODStageConfig(BaseSettings):
     cpu_reqs: CPUReqs = CPUReqs()
     gpu_reqs: GPUReqs = GPUReqs()
     # Arbitrary job parameters
-    run_config: ODBaseConfig = ODBaseConfig()
+    run_config: AgentBaseConfig = AgentBaseConfig()
 
 
 class ExperimentConfig(BaseSettings):
@@ -204,7 +204,7 @@ class ExperimentConfig(BaseSettings):
     md_stage: MDStageConfig
     aggregation_stage: AggregationStageConfig
     ml_stage: MLStageConfig
-    od_stage: ODStageConfig
+    agent_stage: AgentStageConfig
 
 
 def generate_sample_config():
@@ -223,7 +223,7 @@ def generate_sample_config():
         md_stage=MDStageConfig(),
         aggregation_stage=AggregationStageConfig(),
         ml_stage=MLStageConfig(),
-        od_stage=ODStageConfig(),
+        agent_stage=AgentStageConfig(),
     )
 
 

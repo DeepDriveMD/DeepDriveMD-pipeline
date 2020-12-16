@@ -78,7 +78,7 @@ class PipelineManager:
     def ml_config_path(self, iteration: int) -> Path:
         return self.api.ml_dir.joinpath(f"ml_{iteration:03d}.yaml")
 
-    def outlier_detection_config_path(self, iteration: int) -> Path:
+    def agent_config_path(self, iteration: int) -> Path:
         return self.api.agent_dir.joinpath(f"od_{iteration:03d}.yaml")
 
     def func_condition(self):
@@ -104,9 +104,9 @@ class PipelineManager:
         if self.cur_iteration % cfg.ml_stage.retrain_freq == 0:
             self.pipeline.add_stages(self.generate_ml_stage())
 
-        od_stage = self.generate_outlier_detection_stage()
-        od_stage.post_exec = self.func_condition
-        self.pipeline.add_stages(od_stage)
+        agent_stage = self.generate_agent_stage()
+        agent_stage.post_exec = self.func_condition
+        self.pipeline.add_stages(agent_stage)
 
         self.cur_iteration += 1
 
@@ -201,10 +201,10 @@ class PipelineManager:
 
         return stage
 
-    def generate_outlier_detection_stage(self) -> Stage:
+    def generate_agent_stage(self) -> Stage:
         stage = Stage()
-        stage.name = "outlier_detection"
-        cfg = self.cfg.od_stage
+        stage.name = "agent"
+        cfg = self.cfg.agent_stage
 
         task = Task()
         task.cpu_reqs = cfg.cpu_reqs.dict()
@@ -226,7 +226,7 @@ class PipelineManager:
         )
 
         # Write yaml configuration
-        cfg_path = self.outlier_detection_config_path(self.cur_iteration)
+        cfg_path = self.agent_config_path(self.cur_iteration)
         cfg.run_config.dump_yaml(cfg_path)
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
@@ -276,11 +276,10 @@ if __name__ == "__main__":
 
     pipeline_manager = PipelineManager(cfg)
     pipeline = pipeline_manager.generate_pipeline()
-    pipelines = [pipeline]
 
     # Assign the workflow as a list of Pipelines to the Application Manager. In
     # this way, all the pipelines in the list will execute concurrently.
-    appman.workflow = pipelines
+    appman.workflow = [pipeline]
 
     # Run the Application Manager
     appman.run()

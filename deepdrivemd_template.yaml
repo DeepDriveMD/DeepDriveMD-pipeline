@@ -147,7 +147,7 @@ ml_stage:
         num_data_workers: 0
         dataset_location: storage
         wandb_project_name: null
-od_stage:
+agent_stage:
     pre_exec:
     - . /sw/summit/python/3.6/anaconda3/5.3.0/etc/profile.d/conda.sh || true
     - conda activate /gpfs/alpine/proj-shared/med110/conda/pytorch
