@@ -41,6 +41,7 @@ class DeepDriveMD_API:
         input_pdb_file: PathLike,
         traj_file: PathLike,
         frame: int,
+        in_memory: bool = False,
     ):
         r"""Write a PDB file.
 
@@ -59,6 +60,8 @@ class DeepDriveMD_API:
             The path of the trajectory file to be read from.
         frame : int
             The frame index into `traj_file` used to write `output_pdb_file`.
+        in_memory : bool, optional
+            If true, will load the MDAnalysis.Universe() trajectory into memory.
 
         Examples
         --------
@@ -68,7 +71,9 @@ class DeepDriveMD_API:
         >>> frame = 10
         >>> write_pdb(output_pdb_file, input_pdb_file, traj_file, frame)
         """
-        u = MDAnalysis.Universe(str(input_pdb_file), str(traj_file))
+        u = MDAnalysis.Universe(
+            str(input_pdb_file), str(traj_file), in_memory=in_memory
+        )
         u.trajectory[frame]
         PDB = MDAnalysis.Writer(str(output_pdb_file))
         PDB.write(u.atoms)
