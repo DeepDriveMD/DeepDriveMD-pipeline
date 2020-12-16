@@ -5,7 +5,7 @@ import random
 import shutil
 import time
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Dict, Union
 
 import numpy as np
 import torch
@@ -203,7 +203,9 @@ def generate_embeddings(
     return embeddings
 
 
-def local_outlier_factor(embeddings: np.ndarray, n_outliers: int = 500, **kwargs):
+def local_outlier_factor(
+    embeddings: np.ndarray, n_outliers: int = 500, **kwargs
+) -> Tuple[np.ndarray, np.ndarray]:
 
     t_start = time.time()  # Start timer
     print("Running LOF")
@@ -228,6 +230,41 @@ def local_outlier_factor(embeddings: np.ndarray, n_outliers: int = 500, **kwargs
 
     # Returns n_outlier best outliers sorted from best to worst
     return outlier_inds[sort_inds], outlier_scores[sort_inds]
+
+
+def generate_outliers(
+    md_data: Dict[str, List[str]],
+    sampled_h5_files: List[str],
+    outlier_inds: List[int],
+) -> List[Dict[str, Union[str, int]]]:
+    # Get all available MD data
+    all_h5_files = md_data["h5_files"]
+    all_traj_files = md_data["traj_files"]
+    all_pdb_files = md_data["pdb_files"]
+
+    # Mapping from the sampled HDF5 file to the index into md_data
+    h5_sample_ind_to_all = {
+        h5_file: all_h5_files.index(h5_file) for h5_file in sampled_h5_files
+    }
+
+    # Collect outlier metadata used to create PDB files down stream
+    outliers = []
+    for outlier_ind in outlier_inds:
+        # divmod returns a tuple of quotient and remainder
+        sampled_index, frame = divmod(outlier_ind, cfg.n_traj_frames)
+        # Need to remap subsampled h5_file index back to all md_data
+        all_index = h5_sample_ind_to_all[sampled_h5_files[sampled_index]]
+
+        # Collect data to be passed into DeepDriveMD_API.write_pdb()
+        outlier = {
+            "pdb_file": all_pdb_files[all_index],
+            "dcd_file": all_traj_files[all_index],
+            "frame": frame,
+            "outlier_ind": outlier_ind,
+        }
+        outliers.append(outlier)
+
+    return outliers
 
 
 def main(cfg: LOFConfig, distributed: bool):
@@ -268,31 +305,7 @@ def main(cfg: LOFConfig, distributed: bool):
             comm=comm,
         )
 
-        # Get all available MD data
-        all_h5_files = md_data["h5_files"]
-        all_traj_files = md_data["traj_files"]
-        all_pdb_files = md_data["pdb_files"]
-
-        # Mapping from the sampled HDF5 file to the index into md_data
-        h5_sample_ind_to_all = {
-            h5_file: all_h5_files.index(h5_file) for h5_file in sampled_h5_files
-        }
-
-        # Collect outlier metadata used to create PDB files down stream
-        outliers = []
-        for outlier_ind in outlier_inds:
-            # divmod returns a tuple of quotient and remainder
-            sampled_index, frame = divmod(outlier_ind, cfg.n_traj_frames)
-            # Need to remap subsampled h5_file index back to all md_data
-            all_index = h5_sample_ind_to_all[sampled_h5_files[sampled_index]]
-
-            # Collect data to be passed into DeepDriveMD_API.write_pdb()
-            outlier = {
-                "pdb_file": all_pdb_files[all_index],
-                "dcd_file": all_traj_files[all_index],
-                "frame": frame,
-            }
-            outliers.append(outlier)
+        outliers = generate_outliers(md_data, sampled_h5_files, list(outlier_inds))
 
         # Dump metadata to disk
         with open(cfg.restart_points_path, "w") as f:
