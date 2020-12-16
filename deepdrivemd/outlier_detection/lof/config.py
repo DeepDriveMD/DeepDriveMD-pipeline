@@ -6,6 +6,8 @@ class LOFConfig(ODBaseConfig):
 
     # Number of outliers to detect (should be number of MD jobs + 1, incase errors)
     num_outliers: int = 100
+    # Number of frames in each trajectory/HDF5 file
+    n_traj_frames: int = 200
     # Number of points in point cloud AAE
     num_points: int = 304
     # Inference batch size for encoder forward pass
