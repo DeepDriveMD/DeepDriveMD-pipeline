@@ -51,7 +51,7 @@ def get_topology(initial_pdb_dir: Path, pdb_file: Path) -> Path:
     # pdb_file: /path/to/pdb/<system-name>__<everything-else>.pdb
     # top_file: initial_pdb_dir/<system-name>/*.top
     system_name = get_system_name(pdb_file)
-    return list(initial_pdb_dir.joinpath(system_name).glob("*.top"))[0]
+    return next(initial_pdb_dir.joinpath(system_name).glob("*.top"))
 
 
 class SimulationContext:
