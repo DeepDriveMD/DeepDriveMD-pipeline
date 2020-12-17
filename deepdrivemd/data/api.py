@@ -8,7 +8,7 @@ PathLike = Union[str, Path]
 
 
 def glob_file_from_dirs(dirs: List[str], pattern: str) -> List[str]:
-    """Helper function"""
+    """Return a list of all items matching `pattern` in multiple `dirs`."""
     return [next(Path(d).glob(pattern)).as_posix() for d in dirs]
 
 
@@ -22,10 +22,9 @@ class DeepDriveMD_API:
     TMP_DIR = "tmp"
 
     # File name and subdirectory prefixes
-    AGGREGATION_PREFIX = "data_"
-    ML_PREFIX = "model_"
+    AGGREGATION_PREFIX = "aggregation_"
+    ML_PREFIX = "ml_"
     AGENT_PREFIX = "agent_"
-    RESTART_POINTS = "restart_points_"
 
     @staticmethod
     def idx_label(idx):
@@ -36,9 +35,12 @@ class DeepDriveMD_API:
         return path.with_suffix("").name.split("_")[-1]
 
     @staticmethod
-    def get_latest(path: Path, pattern: str) -> Path:
+    def get_latest(path: Path, pattern: str, is_dir=False) -> Path:
         # Assumes file has format XXX_YYY_..._{iteration:03d}.ZZZ
-        return max(path.glob(pattern), key=DeepDriveMD_API.get_idx_label)
+        return max(
+            filter(lambda p: p.is_dir() == is_dir, path.glob(pattern)),
+            key=DeepDriveMD_API.get_idx_label,
+        )
 
     @staticmethod
     def next_idx(path: Path, pattern: str) -> int:
@@ -83,7 +85,9 @@ class DeepDriveMD_API:
             Path to HDF5 file containing aggregated data.
         """
         if iteration == -1:
-            return self.get_latest(self.aggregation_dir, f"{self.AGGREGATION_PREFIX}*")
+            return self.get_latest(
+                self.aggregation_dir, f"{self.AGGREGATION_PREFIX}*.h5"
+            )
         return self.aggregation_dir.joinpath(
             f"{self.AGGREGATION_PREFIX}{self.idx_label(iteration)}.h5"
         )
@@ -102,7 +106,7 @@ class DeepDriveMD_API:
             Path to model directory containing ML run.
         """
         if iteration == -1:
-            return self.get_latest(self.ml_dir, f"{self.ML_PREFIX}*")
+            return self.get_latest(self.ml_dir, f"{self.ML_PREFIX}*", is_dir=True)
         return self.ml_dir.joinpath(f"{self.ML_PREFIX}{self.idx_label(iteration)}")
 
     def agent_path(self, iteration: int = -1) -> Path:
@@ -119,10 +123,48 @@ class DeepDriveMD_API:
             Path to agent directory containing agent run.
         """
         if iteration == -1:
-            return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*")
+            return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*", is_dir=True)
         return self.agent_dir.joinpath(
             f"{self.AGENT_PREFIX}{self.idx_label(iteration)}"
         )
+
+    def aggregation_config_path(self, iteration: int = -1) -> Path:
+        r"""Return the aggregation config file path for a given `iteration`
+
+        Parameters
+        ----------
+        iteration : int
+            Iteration of DeepDriveMD. Defaults to most recently created.
+
+        Returns
+        -------
+        Path
+            Path to yaml file containing aggregation config.
+        """
+        if iteration == -1:
+            return self.get_latest(
+                self.aggregation_dir, f"{self.AGGREGATION_PREFIX}*.yaml"
+            )
+        return self.aggregation_dir.joinpath(
+            f"{self.AGGREGATION_PREFIX}{self.idx_label(iteration)}.yaml"
+        )
+
+    def ml_config_path(self, iteration: int = -1) -> Path:
+        r"""Return the machine learning config file path for a given `iteration`
+
+        Parameters
+        ----------
+        iteration : int
+            Iteration of DeepDriveMD. Defaults to most recently created.
+
+        Returns
+        -------
+        Path
+            Path to yaml file containing machine learning config.
+        """
+        if iteration == -1:
+            return self.get_latest(self.ml_dir, f"{self.ML_PREFIX}*.yaml")
+        return self.ml_dir.joinpath(f"{self.ML_PREFIX}{self.idx_label(iteration)}.yaml")
 
     # TODO: review this code
     def get_last_n_md_runs(self, n: Optional[int] = None) -> Dict[str, List[str]]:
@@ -145,15 +187,16 @@ class DeepDriveMD_API:
             "pdb_files": glob_file_from_dirs(run_dirs, "*pdb"),
         }
 
+    # TODO: Change interface to get_agent_json_path, etc
     def get_restart_points_path(self, iteration: int = -1) -> Path:
         if iteration == -1:
-            return self.get_latest(self.agent_dir, f"{self.RESTART_POINTS}*")
+            return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*.json")
         return self.agent_dir.joinpath(
-            f"{self.RESTART_POINTS}{self.idx_label(iteration)}.json"
+            f"{self.AGENT_PREFIX}{self.idx_label(iteration)}.json"
         )
 
     def write_restart_points(self, data: List[Dict[str, Any]]):
-        idx = self.next_idx(self.agent_dir, f"{self.RESTART_POINTS}*")
+        idx = self.next_idx(self.agent_dir, f"{self.AGENT_PREFIX}*.json")
         new_restart_path = self.get_restart_points_path(idx)
         with open(new_restart_path, "w") as f:
             json.dump(data, f)
@@ -164,7 +207,7 @@ class DeepDriveMD_API:
         Parameters
         ----------
         index : int
-            Index into the restart_points_{}.json file of the latest
+            Index into the agent_{}.json file of the latest
             DeepDriveMD iteration.
 
         Returns

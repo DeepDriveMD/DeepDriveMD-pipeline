@@ -51,12 +51,6 @@ class PipelineManager:
         # Format: epoch-1-20200922-131947.pt
         return max(checkpoint_files, key=lambda x: x.as_posix().split("-")[1])
 
-    def aggregation_config_path(self, iteration: int) -> Path:
-        return self.api.aggregation_dir.joinpath(f"aggregation_{iteration:03d}.yaml")
-
-    def ml_config_path(self, iteration: int) -> Path:
-        return self.api.ml_dir.joinpath(f"ml_{iteration:03d}.yaml")
-
     def agent_config_path(self, iteration: int) -> Path:
         return self.api.agent_dir.joinpath(f"od_{iteration:03d}.yaml")
 
@@ -147,7 +141,7 @@ class PipelineManager:
         cfg.run_config.output_path = self.api.aggregated_data_path(self.cur_iteration)
 
         # Write yaml configuration
-        cfg_path = self.aggregation_config_path(self.cur_iteration)
+        cfg_path = self.api.aggregation_config_path(self.cur_iteration)
         cfg.run_config.dump_yaml(cfg_path)
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
@@ -178,7 +172,7 @@ class PipelineManager:
             )
 
         # Write yaml configuration
-        cfg_path = self.ml_config_path(self.cur_iteration)
+        cfg_path = self.api.ml_config_path(self.cur_iteration)
         cfg.run_config.dump_yaml(cfg_path)
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
@@ -202,7 +196,7 @@ class PipelineManager:
         # Update base parameters
         cfg.run_config.experiment_directory = self.cfg.experiment_directory
         cfg.run_config.input_path = self.api.aggregated_data_path(self.cur_iteration)
-        cfg.run_config.model_path = self.ml_config_path(self.cur_iteration)
+        cfg.run_config.model_path = self.api.ml_config_path(self.cur_iteration)
         cfg.run_config.output_path = self.api.agent_path(self.cur_iteration)
         cfg.run_config.weights_path = self.latest_ml_checkpoint_path(self.cur_iteration)
 
