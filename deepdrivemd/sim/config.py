@@ -15,8 +15,11 @@ class OpenMMConfig(MDBaseConfig):
     wrap: bool = False
     dt_ps: float = 0.002
     temperature_kelvin: float = 310.0
+    heat_bath_friction_coef: float = 1.0
     # Reference PDB file used to compute RMSD and align point cloud
     reference_pdb_file: Optional[Path]
+    # Read outlier trajectory into memory while writing PDB file
+    in_memory: bool = True
 
 
 if __name__ == "__main__":
