@@ -24,6 +24,7 @@ class DeepDriveMD_API:
     # File name and subdirectory prefixes
     AGGREGATION_PREFIX = "data_"
     ML_PREFIX = "model_"
+    AGENT_PREFIX = "agent_"
     RESTART_POINTS = "restart_points_"
 
     @staticmethod
@@ -68,41 +69,65 @@ class DeepDriveMD_API:
     def tmp_dir(self) -> Path:
         return self.experiment_dir.joinpath(self.TMP_DIR)
 
-    def aggregated_data_path(self, iteration: int) -> Path:
+    def aggregated_data_path(self, iteration: int = -1) -> Path:
         r"""Return the aggregated HDF5 path for a given `iteration`
 
         Parameters
         ----------
         iteration : int
-            Iteration of DeepDriveMD.
+            Iteration of DeepDriveMD. Defaults to most recently created.
 
         Returns
         -------
         Path
             Path to HDF5 file containing aggregated data.
         """
+        if iteration == -1:
+            return self.get_latest(self.aggregation_dir, f"{self.AGGREGATION_PREFIX}*")
         return self.aggregation_dir.joinpath(
             f"{self.AGGREGATION_PREFIX}{self.idx_label(iteration)}.h5"
         )
 
-    def model_path(self, iteration: int) -> Path:
+    def model_path(self, iteration: int = -1) -> Path:
         r"""Return the ML model path for a given `iteration`
 
         Parameters
         ----------
         iteration : int
-            Iteration of DeepDriveMD.
+            Iteration of DeepDriveMD. Defaults to most recently created.
 
         Returns
         -------
         Path
-            Path to model directory containing ML runs.
+            Path to model directory containing ML run.
         """
+        if iteration == -1:
+            return self.get_latest(self.ml_dir, f"{self.ML_PREFIX}*")
         return self.ml_dir.joinpath(f"{self.ML_PREFIX}{self.idx_label(iteration)}")
 
+    def agent_path(self, iteration: int = -1) -> Path:
+        r"""Return the agent path for a given `iteration`
+
+        Parameters
+        ----------
+        iteration : int
+            Iteration of DeepDriveMD. Defaults to most recently created.
+
+        Returns
+        -------
+        Path
+            Path to agent directory containing agent run.
+        """
+        if iteration == -1:
+            return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*")
+        return self.agent_dir.joinpath(
+            f"{self.AGENT_PREFIX}{self.idx_label(iteration)}"
+        )
+
+    # TODO: review this code
     def get_last_n_md_runs(self, n: Optional[int] = None) -> Dict[str, List[str]]:
         # Run dirs: f"run_{deepdrivemd_iteration:03d}_{sim_task_id:04d}"
-        run_dirs = self.experiment_dir.joinpath(self.MD_DIR).glob("*")
+        run_dirs = self.md_dir.glob("*")
         # Remove any potential files
         run_dirs = filter(lambda x: x.is_dir(), run_dirs)
         # Convert pathlib Path to str
@@ -122,13 +147,13 @@ class DeepDriveMD_API:
 
     def get_restart_points_path(self, iteration: int = -1) -> Path:
         if iteration == -1:
-            return self.get_latest(self.agent_dir, f"{self.RESTART_POINTS}*.json")
+            return self.get_latest(self.agent_dir, f"{self.RESTART_POINTS}*")
         return self.agent_dir.joinpath(
             f"{self.RESTART_POINTS}{self.idx_label(iteration)}.json"
         )
 
     def write_restart_points(self, data: List[Dict[str, Any]]):
-        idx = self.next_idx(self.agent_dir, f"{self.RESTART_POINTS}*.json")
+        idx = self.next_idx(self.agent_dir, f"{self.RESTART_POINTS}*")
         new_restart_path = self.get_restart_points_path(idx)
         with open(new_restart_path, "w") as f:
             json.dump(data, f)

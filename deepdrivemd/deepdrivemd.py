@@ -40,6 +40,7 @@ class PipelineManager:
 
     # TODO: move all these paths into DeepDriveMD_API
 
+    # TODO: Make model selection stage
     def latest_ml_checkpoint_path(self, iteration: int) -> Path:
         # TODO: this code requires specific checkpoint file format
         #       might want an interface class to implement a latest_checkpoint
@@ -49,9 +50,6 @@ class PipelineManager:
         )
         # Format: epoch-1-20200922-131947.pt
         return max(checkpoint_files, key=lambda x: x.as_posix().split("-")[1])
-
-    def outlier_pdbs_path(self, iteration: int) -> Path:
-        return self.api.agent_dir.joinpath(f"outlier_pdbs_{iteration:03d}")
 
     def aggregation_config_path(self, iteration: int) -> Path:
         return self.api.aggregation_dir.joinpath(f"aggregation_{iteration:03d}.yaml")
@@ -91,7 +89,7 @@ class PipelineManager:
 
         self.cur_iteration += 1
 
-    def generate_pipeline(self) -> List[Pipeline]:
+    def generate_pipelines(self) -> List[Pipeline]:
         self._generate_pipeline_iteration()
         return [self.pipeline]
 
@@ -168,11 +166,12 @@ class PipelineManager:
         task.executable = cfg.executable
         task.arguments = cfg.arguments
 
+        self.api.model_path(self.cur_iteration).mkdir()
+
         # Update base parameters
         cfg.run_config.experiment_directory = self.cfg.experiment_directory
         cfg.run_config.input_path = self.api.aggregated_data_path(self.cur_iteration)
         cfg.run_config.output_path = self.api.model_path(self.cur_iteration)
-        cfg.run_config.output_path.mkdir()
         if self.cur_iteration > 0:
             cfg.run_config.init_weights_path = self.latest_ml_checkpoint_path(
                 self.cur_iteration - 1
@@ -198,13 +197,13 @@ class PipelineManager:
         task.executable = cfg.executable
         task.arguments = cfg.arguments
 
-        self.outlier_pdbs_path(self.cur_iteration).mkdir()
+        self.api.agent_path(self.cur_iteration).mkdir()
 
         # Update base parameters
         cfg.run_config.experiment_directory = self.cfg.experiment_directory
         cfg.run_config.input_path = self.api.aggregated_data_path(self.cur_iteration)
         cfg.run_config.model_path = self.ml_config_path(self.cur_iteration)
-        cfg.run_config.output_path = self.outlier_pdbs_path(self.cur_iteration)
+        cfg.run_config.output_path = self.api.agent_path(self.cur_iteration)
         cfg.run_config.weights_path = self.latest_ml_checkpoint_path(self.cur_iteration)
 
         # Write yaml configuration
@@ -257,10 +256,10 @@ if __name__ == "__main__":
     }
 
     pipeline_manager = PipelineManager(cfg)
-    pipelines = pipeline_manager.generate_pipeline()
+    pipelines = pipeline_manager.generate_pipelines()
 
-    # Assign the workflow as a list of Pipelines to the Application Manager. In
-    # this way, all the pipelines in the list will execute concurrently.
+    # Assign the workflow as a list of Pipelines to the Application Manager.
+    # All the pipelines in the list will execute concurrently.
     appman.workflow = pipelines
 
     # Run the Application Manager
