@@ -21,7 +21,9 @@ class DeepDriveMD_API:
     AGENT_DIR = "agent_runs"
     TMP_DIR = "tmp"
 
-    # File name prefixes and subdirectory
+    # File name and subdirectory prefixes
+    AGGREGATION_PREFIX = "data_"
+    ML_PREFIX = "model_"
     RESTART_POINTS = "restart_points_"
 
     @staticmethod
@@ -66,6 +68,38 @@ class DeepDriveMD_API:
     def tmp_dir(self) -> Path:
         return self.experiment_dir.joinpath(self.TMP_DIR)
 
+    def aggregated_data_path(self, iteration: int) -> Path:
+        r"""Return the aggregated HDF5 path for a given `iteration`
+
+        Parameters
+        ----------
+        iteration : int
+            Iteration of DeepDriveMD.
+
+        Returns
+        -------
+        Path
+            Path to HDF5 file containing aggregated data.
+        """
+        return self.aggregation_dir.joinpath(
+            f"{self.AGGREGATION_PREFIX}{self.idx_label(iteration)}.h5"
+        )
+
+    def model_path(self, iteration: int) -> Path:
+        r"""Return the ML model path for a given `iteration`
+
+        Parameters
+        ----------
+        iteration : int
+            Iteration of DeepDriveMD.
+
+        Returns
+        -------
+        Path
+            Path to model directory containing ML runs.
+        """
+        return self.ml_dir.joinpath(f"{self.ML_PREFIX}{self.idx_label(iteration)}")
+
     def get_last_n_md_runs(self, n: Optional[int] = None) -> Dict[str, List[str]]:
         # Run dirs: f"run_{deepdrivemd_iteration:03d}_{sim_task_id:04d}"
         run_dirs = self.experiment_dir.joinpath(self.MD_DIR).glob("*")
@@ -90,7 +124,7 @@ class DeepDriveMD_API:
         if iteration == -1:
             return self.get_latest(self.agent_dir, f"{self.RESTART_POINTS}*.json")
         return self.agent_dir.joinpath(
-            f"{self.RESTART_POINTS}_{self.idx_label(iteration)}.json"
+            f"{self.RESTART_POINTS}{self.idx_label(iteration)}.json"
         )
 
     def write_restart_points(self, data: List[Dict[str, Any]]):

@@ -40,18 +40,12 @@ class PipelineManager:
 
     # TODO: move all these paths into DeepDriveMD_API
 
-    def aggregated_data_path(self, iteration: int) -> Path:
-        return self.api.aggregation_dir.joinpath(f"data_{iteration:03d}.h5")
-
-    def model_path(self, iteration: int) -> Path:
-        return self.api.ml_dir.joinpath(f"model_{iteration:03d}")
-
     def latest_ml_checkpoint_path(self, iteration: int) -> Path:
         # TODO: this code requires specific checkpoint file format
         #       might want an interface class to implement a latest_checkpoint
         #       function.
         checkpoint_files = (
-            self.model_path(iteration).joinpath("checkpoint").glob("*.pt")
+            self.api.model_path(iteration).joinpath("checkpoint").glob("*.pt")
         )
         # Format: epoch-1-20200922-131947.pt
         return max(checkpoint_files, key=lambda x: x.as_posix().split("-")[1])
@@ -152,7 +146,7 @@ class PipelineManager:
 
         # Update base parameters
         cfg.run_config.experiment_directory = self.cfg.experiment_directory
-        cfg.run_config.output_path = self.aggregated_data_path(self.cur_iteration)
+        cfg.run_config.output_path = self.api.aggregated_data_path(self.cur_iteration)
 
         # Write yaml configuration
         cfg_path = self.aggregation_config_path(self.cur_iteration)
@@ -176,8 +170,9 @@ class PipelineManager:
 
         # Update base parameters
         cfg.run_config.experiment_directory = self.cfg.experiment_directory
-        cfg.run_config.input_path = self.aggregated_data_path(self.cur_iteration)
-        cfg.run_config.output_path = self.model_path(self.cur_iteration)
+        cfg.run_config.input_path = self.api.aggregated_data_path(self.cur_iteration)
+        cfg.run_config.output_path = self.api.model_path(self.cur_iteration)
+        cfg.run_config.output_path.mkdir()
         if self.cur_iteration > 0:
             cfg.run_config.init_weights_path = self.latest_ml_checkpoint_path(
                 self.cur_iteration - 1
@@ -207,7 +202,7 @@ class PipelineManager:
 
         # Update base parameters
         cfg.run_config.experiment_directory = self.cfg.experiment_directory
-        cfg.run_config.input_path = self.aggregated_data_path(self.cur_iteration)
+        cfg.run_config.input_path = self.api.aggregated_data_path(self.cur_iteration)
         cfg.run_config.model_path = self.ml_config_path(self.cur_iteration)
         cfg.run_config.output_path = self.outlier_pdbs_path(self.cur_iteration)
         cfg.run_config.weights_path = self.latest_ml_checkpoint_path(self.cur_iteration)
