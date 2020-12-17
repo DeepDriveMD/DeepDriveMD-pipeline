@@ -1,6 +1,5 @@
 import argparse
 import itertools
-import json
 import random
 import shutil
 import time
@@ -307,9 +306,8 @@ def main(cfg: LOFConfig, distributed: bool):
 
         outliers = generate_outliers(md_data, sampled_h5_files, list(outlier_inds))
 
-        # Dump metadata to disk
-        with open(cfg.restart_points_path, "w") as f:
-            json.dump(outliers, f)
+        # Dump metadata to disk for MD stage
+        api.write_restart_points(outliers)
 
         print(f"Outlier Detection Time: {time.time() - t_start}s")
 
