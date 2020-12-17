@@ -36,7 +36,7 @@ class PipelineManager:
 
         self.api = DeepDriveMD_API(cfg.experiment_directory)
         self.pipeline = Pipeline()
-        pipeline.name = self.PIPELINE_NAME
+        self.pipeline.name = self.PIPELINE_NAME
 
         self._init_experiment_dir()
 
@@ -108,9 +108,9 @@ class PipelineManager:
 
         self.cur_iteration += 1
 
-    def generate_pipeline(self) -> Pipeline:
+    def generate_pipeline(self) -> List[Pipeline]:
         self._generate_pipeline_iteration()
-        return self.pipeline
+        return [self.pipeline]
 
     def generate_md_stage(self) -> Stage:
         stage = Stage()
@@ -273,11 +273,11 @@ if __name__ == "__main__":
     }
 
     pipeline_manager = PipelineManager(cfg)
-    pipeline = pipeline_manager.generate_pipeline()
+    pipelines = pipeline_manager.generate_pipeline()
 
     # Assign the workflow as a list of Pipelines to the Application Manager. In
     # this way, all the pipelines in the list will execute concurrently.
-    appman.workflow = [pipeline]
+    appman.workflow = pipelines
 
     # Run the Application Manager
     appman.run()
