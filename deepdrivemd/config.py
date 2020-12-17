@@ -60,12 +60,16 @@ class MDBaseConfig(BaseSettings):
     Auto-generates configuration file for run_openmm.py
     """
 
+    # Path to experiment directory in order to access data API (set by DeepDriveMD)
+    experiment_directory: Path = Path("set_by_deepdrivemd")
     # Directory to store output MD data (set by DeepDriveMD)
     result_dir: Path = Path("set_by_deepdrivemd")
     # Unique name for each MD run directory (set by DeepDriveMD)
     dir_prefix: str = "set_by_deepdrivemd"
     # PDB file used to start MD run (set by DeepDriveMD)
-    pdb_file: Path = Path("set_by_deepdrivemd")
+    pdb_file: Optional[Path]
+    # Index into restart points json
+    restart_point: Optional[int]
     # Node local storage path
     node_local_path: Optional[Path]
     # Initial data directory passed containing PDBs and optional topologies
@@ -78,6 +82,9 @@ class MDBaseConfig(BaseSettings):
         if not v.is_absolute():
             raise ValueError(f"initial_pdb_dir must be an absolute path. Not {v}")
         return v
+
+    # TODO: add validator to check that pdb_file and restart_point are both not None
+    #       currently checking in MD user code.
 
 
 class MDStageConfig(BaseSettings):
@@ -163,8 +170,6 @@ class AgentBaseConfig(BaseSettings):
     weights_path: Path = Path("set_by_deepdrivemd")
     # Model hyperparameters yaml file (set by DeepDriveMD)
     model_path: Path = Path("set_by_deepdrivemd")
-    # Path to JSON file containing restart PDB paths (set by DeepDriveMD)
-    restart_points_path: Path = Path("set_by_deepdrivemd")
     # Path to experiment directory in order to access data API (set by DeepDriveMD)
     experiment_directory: Path = Path("set_by_deepdrivemd")
     # Node local storage path

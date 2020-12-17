@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 from itertools import cycle
@@ -10,11 +9,6 @@ from radical.entk import AppManager, Pipeline, Stage, Task
 
 from deepdrivemd.config import ExperimentConfig
 from deepdrivemd.data.api import DeepDriveMD_API
-
-
-def get_outlier_pdbs(outlier_filename: Path) -> List[Path]:
-    with open(outlier_filename) as f:
-        return list(map(Path, json.load(f)))
 
 
 def get_initial_pdbs(initial_pdb_dir: Path) -> List[Path]:
@@ -65,9 +59,6 @@ class PipelineManager:
         )
         # Format: epoch-1-20200922-131947.pt
         return max(checkpoint_files, key=lambda x: x.as_posix().split("-")[1])
-
-    def restart_points_path(self, iteration: int) -> Path:
-        return self.api.agent_dir.joinpath(f"restart_points_{iteration:03d}.json")
 
     def outlier_pdbs_path(self, iteration: int) -> Path:
         return self.api.agent_dir.joinpath(f"outlier_pdbs_{iteration:03d}")
@@ -120,12 +111,11 @@ class PipelineManager:
         cfg = self.cfg.md_stage
 
         if self.cur_iteration > 0:
-            outlier_filename = self.restart_points_path(self.cur_iteration - 1)
-            pdb_filenames = get_outlier_pdbs(outlier_filename)
+            filenames = [self.api.get_restart_points_path(self.cur_iteration - 1)]
         else:
-            pdb_filenames = get_initial_pdbs(cfg.run_config.initial_pdb_dir)
+            filenames = get_initial_pdbs(cfg.run_config.initial_pdb_dir)
 
-        for i, pdb_filename in zip(range(cfg.num_jobs), cycle(pdb_filenames)):
+        for i, filename in zip(range(cfg.num_jobs), cycle(filenames)):
             task = Task()
             task.cpu_reqs = cfg.cpu_reqs.dict()
             task.gpu_reqs = cfg.gpu_reqs.dict()
@@ -134,12 +124,16 @@ class PipelineManager:
             task.arguments = cfg.arguments
 
             # Set unique output directory name for task
-            dir_prefix = f"md_{self.cur_iteration:03d}_{i:04d}"
+            dir_prefix = f"run{self.cur_iteration:03d}_{i:04d}"
 
             # Update base parameters
+            cfg.run_config.experiment_directory = self.cfg.experiment_directory
             cfg.run_config.result_dir = self.api.md_dir
             cfg.run_config.dir_prefix = dir_prefix
-            cfg.run_config.pdb_file = pdb_filename
+            if self.cur_iteration > 0:
+                cfg.restart_point = i
+            else:
+                cfg.run_config.pdb_file = filename
 
             # Write MD yaml to tmp directory to be picked up and moved by MD job
             cfg_path = self.api.tmp_dir.joinpath(f"{dir_prefix}.yaml")
@@ -221,9 +215,6 @@ class PipelineManager:
         cfg.run_config.model_path = self.ml_config_path(self.cur_iteration)
         cfg.run_config.output_path = self.outlier_pdbs_path(self.cur_iteration)
         cfg.run_config.weights_path = self.latest_ml_checkpoint_path(self.cur_iteration)
-        cfg.run_config.restart_points_path = self.restart_points_path(
-            self.cur_iteration
-        )
 
         # Write yaml configuration
         cfg_path = self.agent_config_path(self.cur_iteration)
