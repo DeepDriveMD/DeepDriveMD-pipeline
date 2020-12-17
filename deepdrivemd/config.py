@@ -3,7 +3,7 @@ import json
 import yaml
 import argparse
 from enum import Enum
-from pydantic import validator
+from pydantic import validator, root_validator
 from pydantic import BaseSettings as _BaseSettings
 from pathlib import Path
 from typing import Optional, List, Union
@@ -76,15 +76,21 @@ class MDBaseConfig(BaseSettings):
     initial_pdb_dir: Path = Path(".").resolve()
 
     @validator("initial_pdb_dir")
-    def check_thread_type(cls, v):
+    def initial_pdb_dir_must_exist_with_valid_pdbs(cls, v):
         if not v.exists():
             raise FileNotFoundError(v.as_posix())
         if not v.is_absolute():
             raise ValueError(f"initial_pdb_dir must be an absolute path. Not {v}")
+        if any("__" in p.as_posix() for p in v.glob("*/*.pdb")):
+            raise ValueError("Initial PDB files cannot contain a double underscore __")
         return v
 
-    # TODO: add validator to check that pdb_file and restart_point are both not None
-    #       currently checking in MD user code.
+    @root_validator
+    def pdb_file_and_restart_point_both_not_none(cls, values):
+        restart_point = values.get("restart_point")
+        pdb_file = values.get("pdb_file")
+        if restart_point is None and pdb_file is None:
+            raise ValueError("pdb_file and restart_point cannot both be None")
 
 
 class MDStageConfig(BaseSettings):

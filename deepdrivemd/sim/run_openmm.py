@@ -13,10 +13,6 @@ from .config import OpenMMConfig
 class SimulationContext:
     def __init__(self, cfg: OpenMMConfig):
 
-        # TODO: put in configuration validator
-        if cfg.pdb_file is None and cfg.restart_point is None:
-            raise ValueError("Both pdb_file and restart_point are None")
-
         self.cfg = cfg
         self.api = DeepDriveMD_API(cfg.experiment_directory)
 
