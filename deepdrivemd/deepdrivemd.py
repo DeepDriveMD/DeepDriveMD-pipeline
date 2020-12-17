@@ -11,17 +11,6 @@ from deepdrivemd.config import ExperimentConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 
 
-def get_initial_pdbs(initial_pdb_dir: Path) -> List[Path]:
-    """Scan input directory for PDBs and optional topologies."""
-
-    pdb_filenames = list(initial_pdb_dir.glob("*/*.pdb"))
-
-    if any("__" in filename.as_posix() for filename in pdb_filenames):
-        raise ValueError("Initial PDB files cannot contain a double underscore __")
-
-    return pdb_filenames
-
-
 class PipelineManager:
 
     PIPELINE_NAME = "DeepDriveMD"
@@ -120,7 +109,7 @@ class PipelineManager:
         if self.cur_iteration > 0:
             filenames = [self.api.get_restart_points_path(self.cur_iteration - 1)]
         else:
-            filenames = get_initial_pdbs(cfg.run_config.initial_pdb_dir)
+            filenames = self.api.get_initial_pdbs(cfg.run_config.initial_pdb_dir)
 
         for i, filename in zip(range(cfg.num_jobs), cycle(filenames)):
             task = Task()

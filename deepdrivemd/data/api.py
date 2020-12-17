@@ -118,6 +118,33 @@ class DeepDriveMD_API:
             return json.load(f)[index]
 
     @staticmethod
+    def get_initial_pdbs(initial_pdb_dir: PathLike) -> List[Path]:
+        r"""Return a list of PDB paths from the `initial_pdb_dir`.
+
+        Parameters
+        ----------
+        initial_pdb_dir : Union[str, Path]
+            Initial data directory passed containing PDBs and optional topologies.
+
+        Returns
+        -------
+        List[Path]
+            List of paths to initial PDB files.
+
+        Raises
+        ------
+        ValueError
+            If any of the PDB file names contain a double underscore __.
+        """
+
+        pdb_filenames = list(Path(initial_pdb_dir).glob("*/*.pdb"))
+
+        if any("__" in filename.as_posix() for filename in pdb_filenames):
+            raise ValueError("Initial PDB files cannot contain a double underscore __")
+
+        return pdb_filenames
+
+    @staticmethod
     def get_system_name(pdb_file: PathLike) -> str:
         r"""Parse the system name from a PDB file.
 
