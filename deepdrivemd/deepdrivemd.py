@@ -23,13 +23,20 @@ def get_initial_pdbs(initial_pdb_dir: Path) -> List[Path]:
 
 
 class PipelineManager:
+
+    PIPELINE_NAME = "DeepDriveMD"
+    MD_STAGE_NAME = "MD"
+    AGGREGATION_STAGE_NAME = "aggregating"
+    ML_STAGE_NAME = "learning"
+    AGENT_STAGE_NAME = "agent"
+
     def __init__(self, cfg: ExperimentConfig):
         self.cfg = cfg
         self.cur_iteration = 0
 
         self.api = DeepDriveMD_API(cfg.experiment_directory)
         self.pipeline = Pipeline()
-        pipeline.name = "DeepDriveMD"
+        pipeline.name = self.PIPELINE_NAME
 
         self._init_experiment_dir()
 
@@ -107,7 +114,7 @@ class PipelineManager:
 
     def generate_md_stage(self) -> Stage:
         stage = Stage()
-        stage.name = "MD"
+        stage.name = self.MD_STAGE_NAME
         cfg = self.cfg.md_stage
 
         if self.cur_iteration > 0:
@@ -145,7 +152,7 @@ class PipelineManager:
 
     def generate_aggregating_stage(self) -> Stage:
         stage = Stage()
-        stage.name = "aggregating"
+        stage.name = self.AGGREGATION_STAGE_NAME
         cfg = self.cfg.aggregation_stage
 
         task = Task()
@@ -168,7 +175,7 @@ class PipelineManager:
 
     def generate_ml_stage(self) -> Stage:
         stage = Stage()
-        stage.name = "learning"
+        stage.name = self.ML_STAGE_NAME
         cfg = self.cfg.ml_stage
 
         task = Task()
@@ -197,7 +204,7 @@ class PipelineManager:
 
     def generate_agent_stage(self) -> Stage:
         stage = Stage()
-        stage.name = "agent"
+        stage.name = self.AGENT_STAGE_NAME
         cfg = self.cfg.agent_stage
 
         task = Task()
