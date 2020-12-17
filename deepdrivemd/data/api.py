@@ -1,6 +1,7 @@
+import json
 import itertools
 from pathlib import Path
-from typing import List, Dict, Optional, Union
+from typing import Any, List, Dict, Optional, Union
 import MDAnalysis
 
 PathLike = Union[str, Path]
@@ -19,6 +20,28 @@ class DeepDriveMD_API:
     ML_DIR = "ml_runs"
     AGENT_DIR = "agent_runs"
     TMP_DIR = "tmp"
+
+    # File name prefixes and subdirectory
+    RESTART_POINTS = "restart_points_"
+
+    @staticmethod
+    def idx_label(idx):
+        return f"{idx:03d}"
+
+    @staticmethod
+    def get_idx_label(path: Path) -> str:
+        return path.with_suffix("").name.split("_")[-1]
+
+    @staticmethod
+    def get_latest(path: Path, pattern: str) -> Path:
+        # Assumes file has format XXX_YYY_..._{iteration:03d}.ZZZ
+        return max(path.glob(pattern), key=DeepDriveMD_API.get_idx_label)
+
+    @staticmethod
+    def next_idx(path: Path, pattern: str) -> int:
+        latest = DeepDriveMD_API.get_latest(path, pattern)
+        idx = int(DeepDriveMD_API.get_idx_label(latest))
+        return idx
 
     def __init__(self, experiment_directory: PathLike):
         self.experiment_dir = Path(experiment_directory)
@@ -63,6 +86,149 @@ class DeepDriveMD_API:
             "pdb_files": glob_file_from_dirs(run_dirs, "*pdb"),
         }
 
+    def get_restart_points_path(self, iteration: int = -1) -> Path:
+        if iteration == -1:
+            return self.get_latest(self.agent_dir, f"{self.RESTART_POINTS}*.json")
+        return self.agent_dir.joinpath(
+            f"{self.RESTART_POINTS}_{self.idx_label(iteration)}.json"
+        )
+
+    def write_restart_points(self, data: List[Dict[str, Any]]):
+        idx = self.next_idx(self.agent_dir, f"{self.RESTART_POINTS}*.json")
+        new_restart_path = self.get_restart_points_path(idx)
+        with open(new_restart_path, "w") as f:
+            json.dump(data, f)
+
+    def get_restart_pdb(self, index: int) -> Dict[str, Any]:
+        r"""Gets a single datum for the restart points JSON file.
+
+        Parameters
+        ----------
+        index : int
+            Index into the restart_points_{}.json file of the latest
+            DeepDriveMD iteration.
+
+        Returns
+        -------
+        Dict[Any]
+            Dictionary entry written by the outlier detector.
+        """
+        path = self.get_restart_points_path()
+        with open(path, "r") as f:
+            return json.load(f)[index]
+
+    @staticmethod
+    def get_system_name(pdb_file: PathLike) -> str:
+        r"""Parse the system name from a PDB file.
+
+        Parameters
+        ----------
+        pdb_file : Union[str, Path]
+            The PDB file to parse. Can be absolute path,
+            relative path, or filename.
+
+        Returns
+        -------
+        str
+            The system name used to identify system topology.
+
+        Examples
+        --------
+        >>> pdb_file = "/path/to/system_name__anything.pdb"
+        >>> DeepDriveMD_API.get_system_name(pdb_file)
+        'system_name'
+
+        >>> pdb_file = "/path/to/system_name/anything.pdb"
+        >>> DeepDriveMD_API.get_system_name(pdb_file)
+        'system_name'
+        """
+        pdb_file = Path(pdb_file)
+        # On subsequent iterations the PDB file names include
+        # the system information to look up the topology
+        if "__" in pdb_file.name:
+            return Path(pdb_file).name.split("__")[0]
+
+        # On initial iterations the system name is the name of the
+        # subdirectory containing pdb/top files
+        return pdb_file.parent.name
+
+    @staticmethod
+    def get_topology(initial_pdb_dir: PathLike, pdb_file: PathLike) -> Optional[Path]:
+        r"""Get the topology file for the system.
+
+        Parse `pdb_file` for the system name and then retrieve
+        the topology file from the `initial_pdb_dir` or return None
+        if the system doesn't have a topology.
+
+        Parameters
+        ----------
+        initial_pdb_dir : Union[str, Path]
+            Initial data directory passed containing PDBs and optional topologies.
+        pdb_file : Union[str, Path]
+            The PDB file to parse. Can be absolute path, relative path, or filename.
+
+        Returns
+        -------
+        Optional[Path]
+            The path to the topology file, or None if system has no topology.
+
+        """
+        # pdb_file: /path/to/pdb/<system-name>__<everything-else>.pdb
+        # top_file: initial_pdb_dir/<system-name>/*.top
+        system_name = DeepDriveMD_API.get_system_name(pdb_file)
+        top_file = list(Path(initial_pdb_dir).joinpath(system_name).glob("*.top"))
+        if top_file:
+            return top_file[0]
+        return None
+
+    @staticmethod
+    def get_system_pdb_name(pdb_file: PathLike) -> str:
+        r"""Generate PDB file name with correct system name.
+
+        Parse `pdb_file` for the system name and generate a
+        PDB file name that is parseable by DeepDriveMD. If
+        `pdb_file` name is already compatible with DeepDriveMD,
+        the returned name will be the same.
+
+        Parameters
+        ----------
+        pdb_file : Union[str, Path]
+            The PDB file to parse. Can be absolute path,
+            relative path, or filename.
+
+        Returns
+        -------
+        str
+            The new PDB file name. File is not created.
+
+        Raises
+        ------
+        ValueError
+            If `pdb_file` contains more than one __.
+
+        Examples
+        --------
+        >>> pdb_file = "/path/to/system_name__anything.pdb"
+        >>> DeepDriveMD_API.get_system_pdb_name(pdb_file)
+        'system_name__anything.pdb'
+
+        >>> pdb_file = "/path/to/system_name/anything.pdb"
+        >>> DeepDriveMD_API.get_system_pdb_name(pdb_file)
+        'system_name__anything.pdb'
+        """
+        pdb_file = Path(pdb_file)
+
+        __count = pdb_file.name.count("__")
+
+        if __count == 0:
+            return f"{pdb_file.parent.name}__{pdb_file.name}"
+        elif __count == 1:
+            return pdb_file.name
+
+        raise ValueError(
+            f"pdb_file can only have one occurence of __ not {__count}.\n{pdb_file}"
+        )
+
     @staticmethod
     def write_pdb(
         output_pdb_file: PathLike,
@@ -97,7 +263,7 @@ class DeepDriveMD_API:
         >>> input_pdb_file = "/path/to/input.pdb"
         >>> traj_file = "/path/to/traj.dcd"
         >>> frame = 10
-        >>> write_pdb(output_pdb_file, input_pdb_file, traj_file, frame)
+        >>> DeepDriveMD_API.write_pdb(output_pdb_file, input_pdb_file, traj_file, frame)
         """
         u = MDAnalysis.Universe(
             str(input_pdb_file), str(traj_file), in_memory=in_memory
