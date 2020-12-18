@@ -90,7 +90,7 @@ class PipelineManager:
         cfg = self.cfg.md_stage
 
         if self.cur_iteration > 0:
-            filenames = [self.api.get_restart_points_path(self.cur_iteration - 1)]
+            filenames = [self.api.get_agent_json_path(self.cur_iteration - 1)]
         else:
             filenames = self.api.get_initial_pdbs(cfg.run_config.initial_pdb_dir)
 

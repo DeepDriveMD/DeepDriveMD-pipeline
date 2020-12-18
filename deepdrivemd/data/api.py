@@ -207,16 +207,16 @@ class DeepDriveMD_API:
         }
 
     # TODO: Change interface to get_agent_json_path, etc
-    def get_restart_points_path(self, iteration: int = -1) -> Path:
+    def get_agent_json_path(self, iteration: int = -1) -> Path:
         if iteration == -1:
             return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*.json")
         return self.agent_dir.joinpath(
             f"{self.AGENT_PREFIX}{self.idx_label(iteration)}.json"
         )
 
-    def write_restart_points(self, data: List[Dict[str, Any]]):
+    def write_agent_json(self, data: List[Dict[str, Any]]):
         idx = self.next_idx(self.agent_dir, f"{self.AGENT_PREFIX}*.json")
-        new_restart_path = self.get_restart_points_path(idx)
+        new_restart_path = self.get_agent_json_path(idx)
         with open(new_restart_path, "w") as f:
             json.dump(data, f)
 
@@ -234,7 +234,7 @@ class DeepDriveMD_API:
         Dict[Any]
             Dictionary entry written by the outlier detector.
         """
-        path = self.get_restart_points_path()
+        path = self.get_agent_json_path()
         with open(path, "r") as f:
             return json.load(f)[index]
 
