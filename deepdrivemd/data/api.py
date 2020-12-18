@@ -166,6 +166,25 @@ class DeepDriveMD_API:
             return self.get_latest(self.ml_dir, f"{self.ML_PREFIX}*.yaml")
         return self.ml_dir.joinpath(f"{self.ML_PREFIX}{self.idx_label(iteration)}.yaml")
 
+    def agent_config_path(self, iteration: int = -1) -> Path:
+        r"""Return the agent config file path for a given `iteration`
+
+        Parameters
+        ----------
+        iteration : int
+            Iteration of DeepDriveMD. Defaults to most recently created.
+
+        Returns
+        -------
+        Path
+            Path to yaml file containing agent config.
+        """
+        if iteration == -1:
+            return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*.yaml")
+        return self.agent_dir.joinpath(
+            f"{self.AGENT_PREFIX}{self.idx_label(iteration)}.yaml"
+        )
+
     # TODO: review this code
     def get_last_n_md_runs(self, n: Optional[int] = None) -> Dict[str, List[str]]:
         # Run dirs: f"run_{deepdrivemd_iteration:03d}_{sim_task_id:04d}"

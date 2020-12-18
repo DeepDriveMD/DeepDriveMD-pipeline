@@ -51,9 +51,6 @@ class PipelineManager:
         # Format: epoch-1-20200922-131947.pt
         return max(checkpoint_files, key=lambda x: x.as_posix().split("-")[1])
 
-    def agent_config_path(self, iteration: int) -> Path:
-        return self.api.agent_dir.joinpath(f"od_{iteration:03d}.yaml")
-
     def func_condition(self):
         if self.cur_iteration < self.cfg.max_iteration:
             self.func_on_true()
@@ -201,7 +198,7 @@ class PipelineManager:
         cfg.run_config.weights_path = self.latest_ml_checkpoint_path(self.cur_iteration)
 
         # Write yaml configuration
-        cfg_path = self.agent_config_path(self.cur_iteration)
+        cfg_path = self.api.agent_config_path(self.cur_iteration)
         cfg.run_config.dump_yaml(cfg_path)
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
