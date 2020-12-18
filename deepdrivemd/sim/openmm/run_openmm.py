@@ -7,7 +7,7 @@ from deepdrivemd.config import get_config
 from mdtools.openmm.sim import configure_simulation
 from mdtools.openmm.reporter import OfflineReporter
 from deepdrivemd.data.api import DeepDriveMD_API
-from .config import OpenMMConfig
+from deepdrivemd.sim.openmm.config import OpenMMConfig
 
 
 class SimulationContext:

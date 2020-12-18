@@ -1,10 +1,10 @@
 from enum import Enum
 from pathlib import Path
 from typing import Optional
-from deepdrivemd.config import MDBaseConfig
+from deepdrivemd.config import MolecularDynamicsTaskConfig
 
 
-class OpenMMConfig(MDBaseConfig):
+class OpenMMConfig(MolecularDynamicsTaskConfig):
     class MDSolvent(str, Enum):
         implicit = "implicit"
         explicit = "explicit"
