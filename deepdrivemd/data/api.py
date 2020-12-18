@@ -71,7 +71,7 @@ class DeepDriveMD_API:
     def tmp_dir(self) -> Path:
         return self.experiment_dir.joinpath(self.TMP_DIR)
 
-    def aggregated_data_path(self, iteration: int = -1) -> Path:
+    def aggregation_path(self, iteration: int = -1) -> Path:
         r"""Return the aggregated HDF5 path for a given `iteration`
 
         Parameters
@@ -92,7 +92,7 @@ class DeepDriveMD_API:
             f"{self.AGGREGATION_PREFIX}{self.idx_label(iteration)}.h5"
         )
 
-    def model_path(self, iteration: int = -1) -> Path:
+    def ml_path(self, iteration: int = -1) -> Path:
         r"""Return the ML model path for a given `iteration`
 
         Parameters
