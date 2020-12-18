@@ -72,7 +72,7 @@ class DeepDriveMD_API:
         return self.experiment_dir.joinpath(self.TMP_DIR)
 
     def aggregation_path(self, iteration: int = -1) -> Path:
-        r"""Return the aggregated HDF5 path for a given `iteration`
+        r"""Return the aggregated HDF5 path for a given `iteration`.
 
         Parameters
         ----------
@@ -93,7 +93,7 @@ class DeepDriveMD_API:
         )
 
     def ml_path(self, iteration: int = -1) -> Path:
-        r"""Return the ML model path for a given `iteration`
+        r"""Return the ML model path for a given `iteration`.
 
         Parameters
         ----------
@@ -110,7 +110,7 @@ class DeepDriveMD_API:
         return self.ml_dir.joinpath(f"{self.ML_PREFIX}{self.idx_label(iteration)}")
 
     def agent_path(self, iteration: int = -1) -> Path:
-        r"""Return the agent path for a given `iteration`
+        r"""Return the agent path for a given `iteration`.
 
         Parameters
         ----------
@@ -129,7 +129,7 @@ class DeepDriveMD_API:
         )
 
     def aggregation_config_path(self, iteration: int = -1) -> Path:
-        r"""Return the aggregation config file path for a given `iteration`
+        r"""Return the aggregation config file path for a given `iteration`.
 
         Parameters
         ----------
@@ -150,7 +150,7 @@ class DeepDriveMD_API:
         )
 
     def ml_config_path(self, iteration: int = -1) -> Path:
-        r"""Return the machine learning config file path for a given `iteration`
+        r"""Return the machine learning config file path for a given `iteration`,
 
         Parameters
         ----------
@@ -167,7 +167,7 @@ class DeepDriveMD_API:
         return self.ml_dir.joinpath(f"{self.ML_PREFIX}{self.idx_label(iteration)}.yaml")
 
     def agent_config_path(self, iteration: int = -1) -> Path:
-        r"""Return the agent config file path for a given `iteration`
+        r"""Return the agent config file path for a given `iteration`.
 
         Parameters
         ----------
@@ -191,7 +191,7 @@ class DeepDriveMD_API:
         run_dirs = self.md_dir.glob("*")
         # Remove any potential files
         run_dirs = filter(lambda x: x.is_dir(), run_dirs)
-        # Convert pathlib Path to str
+        # Convert pathlib.Path to str
         run_dirs = map(lambda x: x.as_posix(), run_dirs)
         # Sort by deepdrivemd iteration and sim task id (deepdrivemd_iteration, sim_task_id)
         run_dirs = sorted(run_dirs, key=lambda x: tuple(x.split("_")[1:]))
