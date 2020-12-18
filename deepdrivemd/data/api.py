@@ -15,15 +15,17 @@ def glob_file_from_dirs(dirs: List[str], pattern: str) -> List[str]:
 class DeepDriveMD_API:
 
     # Directory structure for experiment
-    MD_DIR = "md_runs"
+    MOLECULAR_DYNAMICS_DIR = "molecular_dyanamics_runs"
     AGGREGATE_DIR = "aggregation_runs"
-    ML_DIR = "ml_runs"
+    MACHINE_LEARNING_DIR = "machine_learning_runs"
+    MODEL_SELECTION_DIR = "model_selection_runs"
     AGENT_DIR = "agent_runs"
     TMP_DIR = "tmp"
 
     # File name and subdirectory prefixes
     AGGREGATION_PREFIX = "aggregation_"
     ML_PREFIX = "ml_"
+    MODEL_SELECTION_PREFIX = "modelselection_"
     AGENT_PREFIX = "agent_"
 
     @staticmethod
@@ -52,16 +54,20 @@ class DeepDriveMD_API:
         self.experiment_dir = Path(experiment_directory)
 
     @property
-    def md_dir(self) -> Path:
-        return self.experiment_dir.joinpath(self.MD_DIR)
+    def molecular_dynamics_dir(self) -> Path:
+        return self.experiment_dir.joinpath(self.MOLECULAR_DYNAMICS_DIR)
 
     @property
     def aggregation_dir(self) -> Path:
         return self.experiment_dir.joinpath(self.AGGREGATE_DIR)
 
     @property
-    def ml_dir(self) -> Path:
-        return self.experiment_dir.joinpath(self.ML_DIR)
+    def machine_learning_dir(self) -> Path:
+        return self.experiment_dir.joinpath(self.MACHINE_LEARNING_DIR)
+
+    @property
+    def model_selection_dir(self) -> Path:
+        return self.experiment_dir.joinpath(self.MODEL_SELECTION_DIR)
 
     @property
     def agent_dir(self) -> Path:
@@ -106,8 +112,12 @@ class DeepDriveMD_API:
             Path to model directory containing ML run.
         """
         if iteration == -1:
-            return self.get_latest(self.ml_dir, f"{self.ML_PREFIX}*", is_dir=True)
-        return self.ml_dir.joinpath(f"{self.ML_PREFIX}{self.idx_label(iteration)}")
+            return self.get_latest(
+                self.machine_learning_dir, f"{self.ML_PREFIX}*", is_dir=True
+            )
+        return self.machine_learning_dir.joinpath(
+            f"{self.ML_PREFIX}{self.idx_label(iteration)}"
+        )
 
     def agent_path(self, iteration: int = -1) -> Path:
         r"""Return the agent path for a given `iteration`.
@@ -149,7 +159,7 @@ class DeepDriveMD_API:
             f"{self.AGGREGATION_PREFIX}{self.idx_label(iteration)}.yaml"
         )
 
-    def ml_config_path(self, iteration: int = -1) -> Path:
+    def machine_learning_config_path(self, iteration: int = -1) -> Path:
         r"""Return the machine learning config file path for a given `iteration`,
 
         Parameters
@@ -163,8 +173,31 @@ class DeepDriveMD_API:
             Path to yaml file containing machine learning config.
         """
         if iteration == -1:
-            return self.get_latest(self.ml_dir, f"{self.ML_PREFIX}*.yaml")
-        return self.ml_dir.joinpath(f"{self.ML_PREFIX}{self.idx_label(iteration)}.yaml")
+            return self.get_latest(self.machine_learning_dir, f"{self.ML_PREFIX}*.yaml")
+        return self.machine_learning_dir.joinpath(
+            f"{self.ML_PREFIX}{self.idx_label(iteration)}.yaml"
+        )
+
+    def model_selection_config_path(self, iteration: int = -1) -> Path:
+        r"""Return the model selection config file path for a given `iteration`,
+
+        Parameters
+        ----------
+        iteration : int
+            Iteration of DeepDriveMD. Defaults to most recently created.
+
+        Returns
+        -------
+        Path
+            Path to yaml file containing machine learning config.
+        """
+        if iteration == -1:
+            return self.get_latest(
+                self.model_selection_dir, f"{self.MODEL_SELECTION_PREFIX}*.yaml"
+            )
+        return self.model_selection_dir.joinpath(
+            f"{self.MODEL_SELECTION_PREFIX}{self.idx_label(iteration)}.yaml"
+        )
 
     def agent_config_path(self, iteration: int = -1) -> Path:
         r"""Return the agent config file path for a given `iteration`.
@@ -218,7 +251,7 @@ class DeepDriveMD_API:
             MD run directories.
         """
         # Run dirs: f"run{deepdrivemd_iteration:03d}_{sim_task_id:04d}"
-        run_dirs = self.md_dir.glob("*")
+        run_dirs = self.molecular_dynamics_dir.glob("*")
         # Remove any potential files
         run_dirs = filter(lambda x: x.is_dir(), run_dirs)
         # Convert pathlib.Path to str
