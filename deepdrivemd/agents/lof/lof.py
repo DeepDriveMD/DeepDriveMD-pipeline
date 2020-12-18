@@ -237,9 +237,9 @@ def generate_outliers(
     outlier_inds: List[int],
 ) -> List[Dict[str, Union[str, int]]]:
     # Get all available MD data
-    all_h5_files = md_data["h5_files"]
+    all_h5_files = md_data["data_files"]
     all_traj_files = md_data["traj_files"]
-    all_pdb_files = md_data["pdb_files"]
+    all_pdb_files = md_data["structure_files"]
 
     # Mapping from the sampled HDF5 file to the index into md_data
     h5_sample_ind_to_all = {
@@ -279,7 +279,7 @@ def main(cfg: LOFConfig, distributed: bool):
         md_data = api.get_last_n_md_runs()
 
         virtual_h5_file, sampled_h5_files = get_virtual_h5_file(
-            md_data["h5_files"],
+            md_data["data_files"],
             last_n=cfg.last_n_h5_files,
             k_random_old=cfg.k_random_old_h5_files,
             output_path=cfg.output_path,

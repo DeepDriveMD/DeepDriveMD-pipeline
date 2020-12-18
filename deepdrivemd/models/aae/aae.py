@@ -59,7 +59,7 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Path:
     # Collect training data
     api = DeepDriveMD_API(cfg.experiment_directory)
     md_data = api.get_last_n_md_runs()
-    all_h5_files = md_data["h5_files"]
+    all_h5_files = md_data["data_files"]
 
     last_n_h5_files = all_h5_files[-1 * cfg.last_n_h5_files :]
     old_h5_files = all_h5_files[: -1 * cfg.last_n_h5_files]

@@ -20,7 +20,7 @@ def concatenate_last_n_h5(cfg: BasicAggegation):
     # Get list of input h5 files
     api = DeepDriveMD_API(cfg.experiment_directory)
     md_data = api.get_last_n_md_runs(n=cfg.last_n_h5_files)
-    files = md_data["h5_files"]
+    files = md_data["data_files"]
 
     if cfg.verbose:
         print(f"Collected {len(files)} h5 files.")

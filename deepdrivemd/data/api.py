@@ -185,29 +185,72 @@ class DeepDriveMD_API:
             f"{self.AGENT_PREFIX}{self.idx_label(iteration)}.yaml"
         )
 
-    # TODO: review this code
-    def get_last_n_md_runs(self, n: Optional[int] = None) -> Dict[str, List[str]]:
-        # Run dirs: f"run_{deepdrivemd_iteration:03d}_{sim_task_id:04d}"
+    def get_last_n_md_runs(
+        self,
+        n: Optional[int] = None,
+        data_file_suffix: str = ".h5",
+        traj_file_suffix: str = ".dcd",
+        structure_file_suffix: str = ".pdb",
+    ) -> Dict[str, List[str]]:
+        r"""Get the last `n` MD run directories data file paths.
+
+        Return a dictionary of data file paths for the last `n` MD runs
+        including the training data files, the trajectory files, and the
+        coordinate files.
+
+        Parameters
+        ----------
+        n : int, optional
+            Number of latest MD run directories to glob data files from.
+            Defaults to all MD run directories.
+        data_file_suffix : int, optional
+            The suffix of the training data file. Defaults to ".h5".
+        traj_file_suffix : str, optional
+            The suffix of the traj file. Defaults to ".dcd".
+        structure_file_suffix : str, optional
+            The suffix of the structure file. Defaults to ".pdb".
+
+        Returns
+        -------
+        Dict[str, List[str]]
+            A dictionary with keys "data_files", "traj_files" and "structure_files"
+            each containing a list of `n` paths globed from the the latest `n`
+            MD run directories.
+        """
+        # Run dirs: f"run{deepdrivemd_iteration:03d}_{sim_task_id:04d}"
         run_dirs = self.md_dir.glob("*")
         # Remove any potential files
         run_dirs = filter(lambda x: x.is_dir(), run_dirs)
         # Convert pathlib.Path to str
         run_dirs = map(lambda x: x.as_posix(), run_dirs)
-        # Sort by deepdrivemd iteration and sim task id (deepdrivemd_iteration, sim_task_id)
-        run_dirs = sorted(run_dirs, key=lambda x: tuple(x.split("_")[1:]))
+        # Sort by deepdrivemd iteration and sim task id
+        run_dirs = sorted(run_dirs)
         # Reverse sort to get last n
         run_dirs = reversed(run_dirs)
         # Evaluate generator up to n items
         run_dirs = list(itertools.islice(run_dirs, n))
 
         return {
-            "h5_files": glob_file_from_dirs(run_dirs, "*h5"),
-            "traj_files": glob_file_from_dirs(run_dirs, "*dcd"),
-            "pdb_files": glob_file_from_dirs(run_dirs, "*pdb"),
+            "data_files": glob_file_from_dirs(run_dirs, f"*{data_file_suffix}"),
+            "traj_files": glob_file_from_dirs(run_dirs, f"*{traj_file_suffix}"),
+            "structure_files": glob_file_from_dirs(
+                run_dirs, f"*{structure_file_suffix}"
+            ),
         }
 
-    # TODO: Change interface to get_agent_json_path, etc
     def get_agent_json_path(self, iteration: int = -1) -> Path:
+        r"""Get the JSON path written by the agent at `iteration`.
+
+        Parameters
+        ----------
+        iteration : int
+            Iteration of DeepDriveMD. Defaults to most recently created.
+
+        Returns
+        -------
+        Path
+            Path to JSON file containing agent metadata.
+        """
         if iteration == -1:
             return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*.json")
         return self.agent_dir.joinpath(
@@ -215,6 +258,17 @@ class DeepDriveMD_API:
         )
 
     def write_agent_json(self, data: List[Dict[str, Any]]):
+        r"""Dump `data` to a new JSON file for the agent.
+
+        Dump `data` to a JSON file with the file name in increasing order
+        from previous calls to `write_agent_json`.
+
+        Parameters
+        ----------
+        data : List[Dict[str, Any]]
+            List of dictionarys to pass to `json.dump()`. Values in the
+            dictionarys must be JSON serializable.
+        """
         idx = self.next_idx(self.agent_dir, f"{self.AGENT_PREFIX}*.json")
         new_restart_path = self.get_agent_json_path(idx)
         with open(new_restart_path, "w") as f:
