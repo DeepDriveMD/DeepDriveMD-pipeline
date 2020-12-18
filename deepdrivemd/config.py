@@ -84,7 +84,7 @@ class MolecularDynamicsTaskConfig(BaseTaskConfig):
     # Unique name for each MD run directory (set by DeepDriveMD)
     dir_prefix: str = "set_by_deepdrivemd"
     # PDB file used to start MD run (set by DeepDriveMD)
-    pdb_file: Optional[Path]
+    pdb_file: Optional[Path] = Path("set_by_deepdrivemd")
     # Index into restart points json
     restart_point: Optional[int]
     # Initial data directory passed containing PDBs and optional topologies
