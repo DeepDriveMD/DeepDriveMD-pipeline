@@ -106,6 +106,7 @@ class MolecularDynamicsTaskConfig(BaseTaskConfig):
         pdb_file = values.get("pdb_file")
         if restart_point is None and pdb_file is None:
             raise ValueError("pdb_file and restart_point cannot both be None")
+        return values
 
 
 class MolecularDynamicsStageConfig(BaseStageConfig):
