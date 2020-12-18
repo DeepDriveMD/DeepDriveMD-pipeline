@@ -7,8 +7,18 @@ from typing import List
 import radical.utils as ru
 from radical.entk import AppManager, Pipeline, Stage, Task
 
-from deepdrivemd.config import ExperimentConfig
+from deepdrivemd.config import ExperimentConfig, BaseStageConfig
 from deepdrivemd.data.api import DeepDriveMD_API
+
+
+def generate_task(cfg: BaseStageConfig) -> Task:
+    task = Task()
+    task.cpu_reqs = cfg.cpu_reqs.dict()
+    task.gpu_reqs = cfg.gpu_reqs.dict()
+    task.pre_exec = cfg.pre_exec
+    task.executable = cfg.executable
+    task.arguments = cfg.arguments
+    return task
 
 
 class PipelineManager:
@@ -98,12 +108,6 @@ class PipelineManager:
             filenames = self.api.get_initial_pdbs(cfg.task_config.initial_pdb_dir)
 
         for i, filename in zip(range(cfg.num_jobs), cycle(filenames)):
-            task = Task()
-            task.cpu_reqs = cfg.cpu_reqs.dict()
-            task.gpu_reqs = cfg.gpu_reqs.dict()
-            task.pre_exec = cfg.pre_exec
-            task.executable = cfg.executable
-            task.arguments = cfg.arguments
 
             # Set unique output directory name for task
             dir_prefix = f"run{self.cur_iteration:03d}_{i:04d}"
@@ -121,6 +125,7 @@ class PipelineManager:
             # Write MD yaml to tmp directory to be picked up and moved by MD job
             cfg_path = self.api.tmp_dir.joinpath(f"{dir_prefix}.yaml")
             cfg.task_config.dump_yaml(cfg_path)
+            task = generate_task(cfg)
             task.arguments += ["-c", cfg_path]
             stage.add_tasks(task)
 
@@ -131,13 +136,6 @@ class PipelineManager:
         stage.name = self.AGGREGATION_STAGE_NAME
         cfg = self.cfg.aggregation_stage
 
-        task = Task()
-        task.cpu_reqs = cfg.cpu_reqs.dict()
-        task.gpu_reqs = cfg.gpu_reqs.dict()
-        task.pre_exec = cfg.pre_exec
-        task.executable = cfg.executable
-        task.arguments = cfg.arguments
-
         # Update base parameters
         cfg.task_config.experiment_directory = self.cfg.experiment_directory
         cfg.task_config.node_local_path = self.cfg.node_local_path
@@ -146,6 +144,7 @@ class PipelineManager:
         # Write yaml configuration
         cfg_path = self.api.aggregation_config_path(self.cur_iteration)
         cfg.task_config.dump_yaml(cfg_path)
+        task = generate_task(cfg)
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
 
@@ -155,13 +154,6 @@ class PipelineManager:
         stage = Stage()
         stage.name = self.MACHINE_LEARNING_STAGE_NAME
         cfg = self.cfg.machine_learning_stage
-
-        task = Task()
-        task.cpu_reqs = cfg.cpu_reqs.dict()
-        task.gpu_reqs = cfg.gpu_reqs.dict()
-        task.pre_exec = cfg.pre_exec
-        task.executable = cfg.executable
-        task.arguments = cfg.arguments
 
         self.api.ml_path(self.cur_iteration).mkdir()
 
@@ -177,6 +169,7 @@ class PipelineManager:
         # Write yaml configuration
         cfg_path = self.api.machine_learning_config_path(self.cur_iteration)
         cfg.task_config.dump_yaml(cfg_path)
+        task = generate_task(cfg)
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
 
@@ -187,13 +180,6 @@ class PipelineManager:
         stage.name = self.MODEL_SELECTION_STAGE_NAME
         cfg = self.cfg.model_selection_stage
 
-        task = Task()
-        task.cpu_reqs = cfg.cpu_reqs.dict()
-        task.gpu_reqs = cfg.gpu_reqs.dict()
-        task.pre_exec = cfg.pre_exec
-        task.executable = cfg.executable
-        task.arguments = cfg.arguments
-
         # Update base parameters
         cfg.task_config.experiment_directory = self.cfg.experiment_directory
         cfg.task_config.node_local_path = self.cfg.node_local_path
@@ -201,6 +187,7 @@ class PipelineManager:
         # Write yaml configuration
         cfg_path = self.api.model_selection_config_path(self.cur_iteration)
         cfg.task_config.dump_yaml(cfg_path)
+        task = generate_task(cfg)
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
 
@@ -210,13 +197,6 @@ class PipelineManager:
         stage = Stage()
         stage.name = self.AGENT_STAGE_NAME
         cfg = self.cfg.agent_stage
-
-        task = Task()
-        task.cpu_reqs = cfg.cpu_reqs.dict()
-        task.gpu_reqs = cfg.gpu_reqs.dict()
-        task.pre_exec = cfg.pre_exec
-        task.executable = cfg.executable
-        task.arguments = cfg.arguments
 
         self.api.agent_path(self.cur_iteration).mkdir()
 
@@ -234,6 +214,7 @@ class PipelineManager:
         # Write yaml configuration
         cfg_path = self.api.agent_config_path(self.cur_iteration)
         cfg.task_config.dump_yaml(cfg_path)
+        task = generate_task(cfg)
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
 
