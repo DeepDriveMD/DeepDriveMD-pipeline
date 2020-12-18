@@ -55,13 +55,30 @@ class GPUReqs(BaseSettings):
     thread_type: Optional[GPUThreadType]
 
 
-class MDBaseConfig(BaseSettings):
+class BaseTaskConfig(BaseSettings):
+    """Base configuration for all TaskConfig objects."""
+
+    # Path to experiment directory in order to access data API (set by DeepDriveMD)
+    experiment_directory: Path = Path("set_by_deepdrivemd")
+    # Node local storage path
+    node_local_path: Optional[Path] = Path("set_by_deepdrivemd")
+
+
+class BaseStageConfig(BaseSettings):
+    """Base configuration for all StageConfig objects."""
+
+    pre_exec: List[str] = []
+    executable: List[str] = []
+    arguments: List[str] = []
+    cpu_reqs: CPUReqs = CPUReqs()
+    gpu_reqs: GPUReqs = GPUReqs()
+
+
+class MolecularDynamicsTaskConfig(BaseTaskConfig):
     """
     Auto-generates configuration file for run_openmm.py
     """
 
-    # Path to experiment directory in order to access data API (set by DeepDriveMD)
-    experiment_directory: Path = Path("set_by_deepdrivemd")
     # Directory to store output MD data (set by DeepDriveMD)
     result_dir: Path = Path("set_by_deepdrivemd")
     # Unique name for each MD run directory (set by DeepDriveMD)
@@ -70,8 +87,6 @@ class MDBaseConfig(BaseSettings):
     pdb_file: Optional[Path]
     # Index into restart points json
     restart_point: Optional[int]
-    # Node local storage path
-    node_local_path: Optional[Path]
     # Initial data directory passed containing PDBs and optional topologies
     initial_pdb_dir: Path = Path(".").resolve()
 
@@ -93,77 +108,68 @@ class MDBaseConfig(BaseSettings):
             raise ValueError("pdb_file and restart_point cannot both be None")
 
 
-class MDStageConfig(BaseSettings):
+class MolecularDynamicsStageConfig(BaseStageConfig):
     """
     Global MD configuration (written one per experiment)
     """
 
-    pre_exec: List[str] = []
-    executable: List[str] = []
-    arguments: List[str] = []
-    cpu_reqs: CPUReqs = CPUReqs()
-    gpu_reqs: GPUReqs = GPUReqs()
     num_jobs: int = 1
-    # Arbitrary job parameters
-    run_config: MDBaseConfig = MDBaseConfig()
+    # Arbitrary task parameters
+    task_config: MolecularDynamicsTaskConfig = MolecularDynamicsTaskConfig()
 
 
-class AggregationBaseConfig(BaseSettings):
+class AggregationTaskConfig(BaseTaskConfig):
     """Base class for specific aggregation configs to inherit."""
 
-    # Path to experiment directory in order to access data API (set by DeepDriveMD)
-    experiment_directory: Path = Path("set_by_deepdrivemd")
     last_n_h5_files: Optional[int]
     output_path: Path = Path("set_by_deepdrivemd")
-    # Node local storage path
-    node_local_path: Optional[Path]
 
 
-class AggregationStageConfig(BaseSettings):
+class AggregationStageConfig(BaseStageConfig):
     """
     Global aggregation configuration (written one per experiment)
     """
 
-    pre_exec: List[str] = []
-    executable: List[str] = []
-    arguments: List[str] = []
-    cpu_reqs: CPUReqs = CPUReqs()
     # Whether or not to skip aggregation stage
     skip_aggregation: bool = False
-    # Arbitrary job parameters
-    run_config: AggregationBaseConfig = AggregationBaseConfig()
+    # Arbitrary task parameters
+    task_config: AggregationTaskConfig = AggregationTaskConfig()
 
 
-class MLBaseConfig(BaseSettings):
+class MachineLearningTaskConfig(BaseTaskConfig):
     """Base class for specific model configs to inherit."""
 
-    # Path to experiment directory in order to access data API (set by DeepDriveMD)
-    experiment_directory: Path = Path("set_by_deepdrivemd")
     # Output directory for model data (set by DeepDriveMD)
     output_path: Path = Path("set_by_deepdrivemd")
     # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
     init_weights_path: Optional[Path]
-    # Node local storage path
-    node_local_path: Optional[Path]
 
 
-class MLStageConfig(BaseSettings):
+class MachineLearningStageConfig(BaseStageConfig):
     """
     Global ML configuration (written one per experiment)
     """
 
-    pre_exec: List[str] = []
-    executable: List[str] = []
-    arguments: List[str] = []
-    cpu_reqs: CPUReqs = CPUReqs()
-    gpu_reqs: GPUReqs = GPUReqs()
     # Retrain every i deepdrivemd iterations
     retrain_freq: int = 1
-    # Arbitrary job parameters
-    run_config: MLBaseConfig = MLBaseConfig()
+    # Arbitrary task parameters
+    task_config: MachineLearningTaskConfig = MachineLearningTaskConfig()
 
 
-class AgentBaseConfig(BaseSettings):
+class ModelSelectionTaskConfig(BaseTaskConfig):
+    """Base class for specific model selection configs to inherit."""
+
+
+class ModelSelectionStageConfig(BaseStageConfig):
+    """
+    Global ML configuration (written one per experiment)
+    """
+
+    # Arbitrary task parameters
+    task_config: ModelSelectionTaskConfig = ModelSelectionTaskConfig()
+
+
+class AgentTaskConfig(BaseTaskConfig):
 
     # Output directory for model data (set by DeepDriveMD)
     output_path: Path = Path("set_by_deepdrivemd")
@@ -172,24 +178,15 @@ class AgentBaseConfig(BaseSettings):
     weights_path: Path = Path("set_by_deepdrivemd")
     # Model hyperparameters yaml file (set by DeepDriveMD)
     model_path: Path = Path("set_by_deepdrivemd")
-    # Path to experiment directory in order to access data API (set by DeepDriveMD)
-    experiment_directory: Path = Path("set_by_deepdrivemd")
-    # Node local storage path
-    node_local_path: Optional[Path]
 
 
-class AgentStageConfig(BaseSettings):
+class AgentStageConfig(BaseStageConfig):
     """
     Global agent configuration (written one per experiment)
     """
 
-    pre_exec: List[str] = []
-    executable: List[str] = []
-    arguments: List[str] = []
-    cpu_reqs: CPUReqs = CPUReqs()
-    gpu_reqs: GPUReqs = GPUReqs()
     # Arbitrary job parameters
-    run_config: AgentBaseConfig = AgentBaseConfig()
+    task_config: AgentTaskConfig = AgentTaskConfig()
 
 
 class ExperimentConfig(BaseSettings):
@@ -208,9 +205,11 @@ class ExperimentConfig(BaseSettings):
     gpus_per_node: int
     hardware_threads_per_cpu: int
     experiment_directory: Path
-    md_stage: MDStageConfig
+    node_local_path: Optional[Path]
+    molecular_dynamics_stage: MolecularDynamicsStageConfig
     aggregation_stage: AggregationStageConfig
-    ml_stage: MLStageConfig
+    machine_learning_stage: MachineLearningStageConfig
+    model_selection_stage: ModelSelectionStageConfig
     agent_stage: AgentStageConfig
 
 
@@ -227,9 +226,11 @@ def generate_sample_config():
         gpus_per_node=6,
         max_iteration=4,
         experiment_directory="/path/to/experiment",
-        md_stage=MDStageConfig(),
+        node_local_path=None,
+        molecular_dynamics_stage=MolecularDynamicsStageConfig(),
         aggregation_stage=AggregationStageConfig(),
-        ml_stage=MLStageConfig(),
+        machine_learning_stage=MachineLearningStageConfig(),
+        model_selection_stage=ModelSelectionStageConfig(),
         agent_stage=AgentStageConfig(),
     )
 
