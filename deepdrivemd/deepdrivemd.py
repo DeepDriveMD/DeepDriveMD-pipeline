@@ -14,10 +14,11 @@ from deepdrivemd.data.api import DeepDriveMD_API
 class PipelineManager:
 
     PIPELINE_NAME = "DeepDriveMD"
-    MD_STAGE_NAME = "MD"
-    AGGREGATION_STAGE_NAME = "aggregating"
-    ML_STAGE_NAME = "learning"
-    AGENT_STAGE_NAME = "agent"
+    MOLECULAR_DYNAMICS_STAGE_NAME = "MolecularDynamics"
+    AGGREGATION_STAGE_NAME = "Aggregating"
+    MACHINE_LEARNING_STAGE_NAME = "Learning"
+    MODEL_SELECTION_STAGE_NAME = "ModelSelection"
+    AGENT_STAGE_NAME = "Agent"
 
     def __init__(self, cfg: ExperimentConfig):
         self.cfg = cfg
@@ -32,9 +33,10 @@ class PipelineManager:
     def _init_experiment_dir(self):
         # Make experiment directories
         self.cfg.experiment_directory.mkdir()
-        self.api.md_dir.mkdir()
+        self.api.molecular_dynamics_dir.mkdir()
         self.api.aggregation_dir.mkdir()
-        self.api.ml_dir.mkdir()
+        self.api.machine_learning_dir.mkdir()
+        self.api.model_selection_dir.mkdir()
         self.api.agent_dir.mkdir()
         self.api.tmp_dir.mkdir()
 
@@ -66,13 +68,14 @@ class PipelineManager:
 
     def _generate_pipeline_iteration(self):
 
-        self.pipeline.add_stages(self.generate_md_stage())
+        self.pipeline.add_stages(self.generate_molecular_dynamics_stage())
 
         if not cfg.aggregation_stage.skip_aggregation:
             self.pipeline.add_stages(self.generate_aggregating_stage())
 
-        if self.cur_iteration % cfg.ml_stage.retrain_freq == 0:
-            self.pipeline.add_stages(self.generate_ml_stage())
+        if self.cur_iteration % cfg.machine_learning_stage.retrain_freq == 0:
+            self.pipeline.add_stages(self.generate_machine_learning_stage())
+            self.pipeline.add_stages(self.generate_model_selection_stage())
 
         agent_stage = self.generate_agent_stage()
         agent_stage.post_exec = self.func_condition
@@ -84,15 +87,15 @@ class PipelineManager:
         self._generate_pipeline_iteration()
         return [self.pipeline]
 
-    def generate_md_stage(self) -> Stage:
+    def generate_molecular_dynamics_stage(self) -> Stage:
         stage = Stage()
-        stage.name = self.MD_STAGE_NAME
-        cfg = self.cfg.md_stage
+        stage.name = self.MOLECULAR_DYNAMICS_STAGE_NAME
+        cfg = self.cfg.molecular_dynamics_stage
 
         if self.cur_iteration > 0:
             filenames = [self.api.get_agent_json_path(self.cur_iteration - 1)]
         else:
-            filenames = self.api.get_initial_pdbs(cfg.run_config.initial_pdb_dir)
+            filenames = self.api.get_initial_pdbs(cfg.task_config.initial_pdb_dir)
 
         for i, filename in zip(range(cfg.num_jobs), cycle(filenames)):
             task = Task()
@@ -106,17 +109,18 @@ class PipelineManager:
             dir_prefix = f"run{self.cur_iteration:03d}_{i:04d}"
 
             # Update base parameters
-            cfg.run_config.experiment_directory = self.cfg.experiment_directory
-            cfg.run_config.result_dir = self.api.md_dir
-            cfg.run_config.dir_prefix = dir_prefix
+            cfg.task_config.experiment_directory = self.cfg.experiment_directory
+            cfg.task_config.node_local_path = self.cfg.node_local_path
+            cfg.task_config.result_dir = self.api.molecular_dynamics_dir
+            cfg.task_config.dir_prefix = dir_prefix
             if self.cur_iteration > 0:
                 cfg.restart_point = i
             else:
-                cfg.run_config.pdb_file = filename
+                cfg.task_config.pdb_file = filename
 
             # Write MD yaml to tmp directory to be picked up and moved by MD job
             cfg_path = self.api.tmp_dir.joinpath(f"{dir_prefix}.yaml")
-            cfg.run_config.dump_yaml(cfg_path)
+            cfg.task_config.dump_yaml(cfg_path)
             task.arguments += ["-c", cfg_path]
             stage.add_tasks(task)
 
@@ -129,26 +133,28 @@ class PipelineManager:
 
         task = Task()
         task.cpu_reqs = cfg.cpu_reqs.dict()
+        task.gpu_reqs = cfg.gpu_reqs.dict()
         task.pre_exec = cfg.pre_exec
         task.executable = cfg.executable
         task.arguments = cfg.arguments
 
         # Update base parameters
-        cfg.run_config.experiment_directory = self.cfg.experiment_directory
-        cfg.run_config.output_path = self.api.aggregation_path(self.cur_iteration)
+        cfg.task_config.experiment_directory = self.cfg.experiment_directory
+        cfg.task_config.node_local_path = self.cfg.node_local_path
+        cfg.task_config.output_path = self.api.aggregation_path(self.cur_iteration)
 
         # Write yaml configuration
         cfg_path = self.api.aggregation_config_path(self.cur_iteration)
-        cfg.run_config.dump_yaml(cfg_path)
+        cfg.task_config.dump_yaml(cfg_path)
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
 
         return stage
 
-    def generate_ml_stage(self) -> Stage:
+    def generate_machine_learning_stage(self) -> Stage:
         stage = Stage()
-        stage.name = self.ML_STAGE_NAME
-        cfg = self.cfg.ml_stage
+        stage.name = self.MACHINE_LEARNING_STAGE_NAME
+        cfg = self.cfg.machine_learning_stage
 
         task = Task()
         task.cpu_reqs = cfg.cpu_reqs.dict()
@@ -160,16 +166,41 @@ class PipelineManager:
         self.api.ml_path(self.cur_iteration).mkdir()
 
         # Update base parameters
-        cfg.run_config.experiment_directory = self.cfg.experiment_directory
-        cfg.run_config.output_path = self.api.ml_path(self.cur_iteration)
+        cfg.task_config.experiment_directory = self.cfg.experiment_directory
+        cfg.task_config.node_local_path = self.cfg.node_local_path
+        cfg.task_config.output_path = self.api.ml_path(self.cur_iteration)
         if self.cur_iteration > 0:
-            cfg.run_config.init_weights_path = self.latest_ml_checkpoint_path(
+            cfg.task_config.init_weights_path = self.latest_ml_checkpoint_path(
                 self.cur_iteration - 1
             )
 
         # Write yaml configuration
-        cfg_path = self.api.ml_config_path(self.cur_iteration)
-        cfg.run_config.dump_yaml(cfg_path)
+        cfg_path = self.api.machine_learning_config_path(self.cur_iteration)
+        cfg.task_config.dump_yaml(cfg_path)
+        task.arguments += ["-c", cfg_path]
+        stage.add_tasks(task)
+
+        return stage
+
+    def generate_model_selection_stage(self) -> Stage:
+        stage = Stage()
+        stage.name = self.MODEL_SELECTION_STAGE_NAME
+        cfg = self.cfg.model_selection_stage
+
+        task = Task()
+        task.cpu_reqs = cfg.cpu_reqs.dict()
+        task.gpu_reqs = cfg.gpu_reqs.dict()
+        task.pre_exec = cfg.pre_exec
+        task.executable = cfg.executable
+        task.arguments = cfg.arguments
+
+        # Update base parameters
+        cfg.task_config.experiment_directory = self.cfg.experiment_directory
+        cfg.task_config.node_local_path = self.cfg.node_local_path
+
+        # Write yaml configuration
+        cfg_path = self.api.model_selection_config_path(self.cur_iteration)
+        cfg.task_config.dump_yaml(cfg_path)
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
 
@@ -190,14 +221,19 @@ class PipelineManager:
         self.api.agent_path(self.cur_iteration).mkdir()
 
         # Update base parameters
-        cfg.run_config.experiment_directory = self.cfg.experiment_directory
-        cfg.run_config.model_path = self.api.ml_config_path(self.cur_iteration)
-        cfg.run_config.output_path = self.api.agent_path(self.cur_iteration)
-        cfg.run_config.weights_path = self.latest_ml_checkpoint_path(self.cur_iteration)
+        cfg.task_config.experiment_directory = self.cfg.experiment_directory
+        cfg.task_config.node_local_path = self.cfg.node_local_path
+        cfg.task_config.model_path = self.api.machine_learning_config_path(
+            self.cur_iteration
+        )
+        cfg.task_config.output_path = self.api.agent_path(self.cur_iteration)
+        cfg.task_config.weights_path = self.latest_ml_checkpoint_path(
+            self.cur_iteration
+        )
 
         # Write yaml configuration
         cfg_path = self.api.agent_config_path(self.cur_iteration)
-        cfg.run_config.dump_yaml(cfg_path)
+        cfg.task_config.dump_yaml(cfg_path)
         task.arguments += ["-c", cfg_path]
         stage.add_tasks(task)
 
@@ -232,7 +268,7 @@ if __name__ == "__main__":
 
     # Calculate total number of nodes required. Assumes 1 MD job per GPU
     # TODO: fix this assumption for NAMD
-    num_nodes = max(1, cfg.md_stage.num_jobs // cfg.gpus_per_node)
+    num_nodes = max(1, cfg.molecular_dynamics_stage.num_jobs // cfg.gpus_per_node)
 
     appman.resource_desc = {
         "resource": cfg.resource,
