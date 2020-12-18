@@ -91,7 +91,7 @@ class PipelineManager:
         else:
             filenames = self.api.get_initial_pdbs(cfg.task_config.initial_pdb_dir)
 
-        for i, filename in zip(range(cfg.num_jobs), cycle(filenames)):
+        for i, filename in zip(range(cfg.num_tasks), cycle(filenames)):
 
             # Set unique output directory name for task
             dir_prefix = f"run{self.cur_iteration:03d}_{i:04d}"

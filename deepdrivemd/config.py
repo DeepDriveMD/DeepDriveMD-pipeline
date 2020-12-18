@@ -113,7 +113,7 @@ class MolecularDynamicsStageConfig(BaseStageConfig):
     Global MD configuration (written one per experiment)
     """
 
-    num_jobs: int = 1
+    num_tasks: int = 1
     # Arbitrary task parameters
     task_config: MolecularDynamicsTaskConfig = MolecularDynamicsTaskConfig()
 
