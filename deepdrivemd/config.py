@@ -121,7 +121,6 @@ class MolecularDynamicsStageConfig(BaseStageConfig):
 class AggregationTaskConfig(BaseTaskConfig):
     """Base class for specific aggregation configs to inherit."""
 
-    last_n_h5_files: Optional[int]
     output_path: Path = Path("set_by_deepdrivemd")
 
 
@@ -173,11 +172,6 @@ class AgentTaskConfig(BaseTaskConfig):
 
     # Output directory for model data (set by DeepDriveMD)
     output_path: Path = Path("set_by_deepdrivemd")
-    # Model checkpoint file to load model weights for inference.
-    # Saved as .pt by CheckpointCallback. (set by DeepDriveMD)
-    weights_path: Path = Path("set_by_deepdrivemd")
-    # Model hyperparameters yaml file (set by DeepDriveMD)
-    model_path: Path = Path("set_by_deepdrivemd")
 
 
 class AgentStageConfig(BaseStageConfig):

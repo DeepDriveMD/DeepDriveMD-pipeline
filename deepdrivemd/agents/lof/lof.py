@@ -12,6 +12,7 @@ from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import concatenate_virtual_h5
 from deepdrivemd.models.aae.config import AAEModelConfig
 from deepdrivemd.agents.lof.config import LOFConfig
+from deepdrivemd.selection.latest.select import get_model_path
 from molecules.ml.datasets import PointCloudDataset
 from molecules.ml.unsupervised.point_autoencoder import AAE3dHyperparams
 from molecules.ml.unsupervised.point_autoencoder.aae import Encoder
@@ -113,7 +114,9 @@ def get_virtual_h5_file(
 
 def generate_embeddings(
     cfg: LOFConfig,
+    model_cfg_path: PathLike,
     h5_file: PathLike,
+    init_weights: PathLike,
     comm=None,
 ) -> np.ndarray:
 
@@ -123,7 +126,7 @@ def generate_embeddings(
         t_start = time.time()  # Start timer
         print("Generating embeddings")
 
-    model_cfg = AAEModelConfig.from_yaml(cfg.model_path)
+    model_cfg = AAEModelConfig.from_yaml(model_cfg_path)
 
     model_hparams = AAE3dHyperparams(
         num_features=model_cfg.num_features,
@@ -148,7 +151,7 @@ def generate_embeddings(
         cfg.num_points,
         model_cfg.num_features,
         model_hparams,
-        cfg.weights_path.as_posix(),
+        str(init_weights),
     )
 
     dataset = PointCloudDataset(
@@ -292,8 +295,15 @@ def main(cfg: LOFConfig, distributed: bool):
     if comm_size > 1:
         virtual_h5_file = comm.bcast(virtual_h5_file, 0)
 
+    # Get model hyperparameters and weights
+    model_cfg_path, init_weights = get_model_path(
+        experiment_dir=cfg.experiment_directory
+    )
+
     # Generate embeddings for all contact matrices produced during MD stage
-    embeddings = generate_embeddings(cfg, virtual_h5_file, comm=comm)
+    embeddings = generate_embeddings(
+        cfg, model_cfg_path, virtual_h5_file, init_weights, comm=comm
+    )
 
     if comm_rank == 0:
         # Perform LocalOutlierFactor outlier detection on embeddings

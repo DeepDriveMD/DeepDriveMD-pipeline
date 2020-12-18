@@ -1,3 +1,4 @@
+from typing import Optional
 from deepdrivemd.config import AggregationTaskConfig
 
 
@@ -7,6 +8,7 @@ class BasicAggegation(AggregationTaskConfig):
     contact_map: bool = False
     point_cloud: bool = True
     verbose: bool = True
+    last_n_h5_files: Optional[int]
 
 
 if __name__ == "__main__":

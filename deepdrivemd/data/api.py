@@ -98,7 +98,7 @@ class DeepDriveMD_API:
             f"{self.AGGREGATION_PREFIX}{self.idx_label(iteration)}.h5"
         )
 
-    def ml_path(self, iteration: int = -1) -> Path:
+    def machine_learning_path(self, iteration: int = -1) -> Path:
         r"""Return the ML model path for a given `iteration`.
 
         Parameters
@@ -270,6 +270,46 @@ class DeepDriveMD_API:
                 run_dirs, f"*{structure_file_suffix}"
             ),
         }
+
+    def get_model_selection_json_path(self, iteration: int = -1) -> Path:
+        r"""Get the JSON path written by the model selection at `iteration`.
+
+        Parameters
+        ----------
+        iteration : int
+            Iteration of DeepDriveMD. Defaults to most recently created.
+
+        Returns
+        -------
+        Path
+            Path to JSON file containing model selection metadata.
+        """
+        if iteration == -1:
+            return self.get_latest(
+                self.model_selection_dir, f"{self.MODEL_SELECTION_PREFIX}*.json"
+            )
+        return self.model_selection_dir.joinpath(
+            f"{self.MODEL_SELECTION_PREFIX}{self.idx_label(iteration)}.json"
+        )
+
+    def write_model_selection_json(self, data: List[Dict[str, Any]]):
+        r"""Dump `data` to a new JSON file for the agent.
+
+        Dump `data` to a JSON file with the file name in increasing order
+        from previous calls to `write_model_selection_json`.
+
+        Parameters
+        ----------
+        data : List[Dict[str, Any]]
+            List of dictionarys to pass to `json.dump()`. Values in the
+            dictionarys must be JSON serializable.
+        """
+        idx = self.next_idx(
+            self.model_selection_dir, f"{self.MODEL_SELECTION_PREFIX}*.json"
+        )
+        new_restart_path = self.get_model_selection_json_path(idx)
+        with open(new_restart_path, "w") as f:
+            json.dump(data, f)
 
     def get_agent_json_path(self, iteration: int = -1) -> Path:
         r"""Get the JSON path written by the agent at `iteration`.

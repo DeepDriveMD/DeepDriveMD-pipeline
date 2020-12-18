@@ -1,12 +1,9 @@
 import os
 import sys
 from itertools import cycle
-from pathlib import Path
 from typing import List
-
 import radical.utils as ru
 from radical.entk import AppManager, Pipeline, Stage, Task
-
 from deepdrivemd.config import ExperimentConfig, BaseStageConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 
@@ -49,19 +46,6 @@ class PipelineManager:
         self.api.model_selection_dir.mkdir()
         self.api.agent_dir.mkdir()
         self.api.tmp_dir.mkdir()
-
-    # TODO: move all these paths into DeepDriveMD_API
-
-    # TODO: Make model selection stage
-    def latest_ml_checkpoint_path(self, iteration: int) -> Path:
-        # TODO: this code requires specific checkpoint file format
-        #       might want an interface class to implement a latest_checkpoint
-        #       function.
-        checkpoint_files = (
-            self.api.ml_path(iteration).joinpath("checkpoint").glob("*.pt")
-        )
-        # Format: epoch-1-20200922-131947.pt
-        return max(checkpoint_files, key=lambda x: x.as_posix().split("-")[1])
 
     def func_condition(self):
         if self.cur_iteration < self.cfg.max_iteration:
@@ -155,16 +139,15 @@ class PipelineManager:
         stage.name = self.MACHINE_LEARNING_STAGE_NAME
         cfg = self.cfg.machine_learning_stage
 
-        self.api.ml_path(self.cur_iteration).mkdir()
+        self.api.machine_learning_path(self.cur_iteration).mkdir()
 
         # Update base parameters
         cfg.task_config.experiment_directory = self.cfg.experiment_directory
         cfg.task_config.node_local_path = self.cfg.node_local_path
-        cfg.task_config.output_path = self.api.ml_path(self.cur_iteration)
+        cfg.task_config.output_path = self.api.machine_learning_path(self.cur_iteration)
         if self.cur_iteration > 0:
-            cfg.task_config.init_weights_path = self.latest_ml_checkpoint_path(
-                self.cur_iteration - 1
-            )
+            # Machine learning should use model selection API
+            cfg.task_config.init_weights_path = None
 
         # Write yaml configuration
         cfg_path = self.api.machine_learning_config_path(self.cur_iteration)
@@ -203,13 +186,7 @@ class PipelineManager:
         # Update base parameters
         cfg.task_config.experiment_directory = self.cfg.experiment_directory
         cfg.task_config.node_local_path = self.cfg.node_local_path
-        cfg.task_config.model_path = self.api.machine_learning_config_path(
-            self.cur_iteration
-        )
         cfg.task_config.output_path = self.api.agent_path(self.cur_iteration)
-        cfg.task_config.weights_path = self.latest_ml_checkpoint_path(
-            self.cur_iteration
-        )
 
         # Write yaml configuration
         cfg_path = self.api.agent_config_path(self.cur_iteration)

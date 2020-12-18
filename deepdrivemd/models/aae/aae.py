@@ -8,6 +8,7 @@ import wandb
 from deepdrivemd.models.aae.config import AAEModelConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import concatenate_virtual_h5
+from deepdrivemd.selection.latest.select import get_model_path
 
 # torch stuff
 import torch
@@ -199,6 +200,11 @@ def main(
         model_hparams.save(model_path.joinpath("model-hparams.json"))
         optimizer_hparams.save(model_path.joinpath("optimizer-hparams.json"))
 
+    if cfg.init_weights_path is None:
+        _, init_weights = get_model_path(experiment_dir=cfg.experiment_directory)
+    else:
+        init_weights = cfg.init_weights_path
+
     # construct model
     aae = AAE3d(
         cfg.num_points,
@@ -207,7 +213,7 @@ def main(
         model_hparams,
         optimizer_hparams,
         gpu=(encoder_gpu, generator_gpu, discriminator_gpu),
-        init_weights=cfg.init_weights_path.as_posix(),
+        init_weights=init_weights.as_posix(),
     )
 
     enc_device = torch.device(f"cuda:{encoder_gpu}")
