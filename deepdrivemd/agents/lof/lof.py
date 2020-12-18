@@ -11,7 +11,7 @@ import torch
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import concatenate_virtual_h5
 from deepdrivemd.models.aae.config import AAEModelConfig
-from deepdrivemd.outlier_detection.lof.config import LOFConfig
+from deepdrivemd.agents.lof.config import LOFConfig
 from molecules.ml.datasets import PointCloudDataset
 from molecules.ml.unsupervised.point_autoencoder import AAE3dHyperparams
 from molecules.ml.unsupervised.point_autoencoder.aae import Encoder

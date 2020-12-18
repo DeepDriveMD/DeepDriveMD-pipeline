@@ -1,7 +1,7 @@
-from deepdrivemd.config import AggregationBaseConfig
+from deepdrivemd.config import AggregationTaskConfig
 
 
-class BasicAggegation(AggregationBaseConfig):
+class BasicAggegation(AggregationTaskConfig):
     rmsd: bool = True
     fnc: bool = False
     contact_map: bool = False

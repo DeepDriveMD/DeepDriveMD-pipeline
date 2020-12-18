@@ -1,8 +1,8 @@
 from typing import Optional
-from deepdrivemd.config import MLBaseConfig
+from deepdrivemd.config import MachineLearningTaskConfig
 
 
-class AAEModelConfig(MLBaseConfig):
+class AAEModelConfig(MachineLearningTaskConfig):
     # Select the n most recent HDF5 files for training
     last_n_h5_files: int = 10
     # Select k random HDF5 files to train on from previous DeepDriveMD iterations

@@ -1,7 +1,7 @@
-from deepdrivemd.config import AgentBaseConfig
+from deepdrivemd.config import AgentTaskConfig
 
 
-class LOFConfig(AgentBaseConfig):
+class LOFConfig(AgentTaskConfig):
     """LOF outlier detection algorithm configuration."""
 
     # Number of outliers to detect (should be number of MD jobs + 1, incase errors)
