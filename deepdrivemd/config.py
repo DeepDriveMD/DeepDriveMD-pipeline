@@ -139,8 +139,6 @@ class MLBaseConfig(BaseSettings):
 
     # Path to experiment directory in order to access data API (set by DeepDriveMD)
     experiment_directory: Path = Path("set_by_deepdrivemd")
-    # Path to file containing preprocessed data (set by DeepDriveMD)
-    input_path: Path = Path("set_by_deepdrivemd")
     # Output directory for model data (set by DeepDriveMD)
     output_path: Path = Path("set_by_deepdrivemd")
     # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
