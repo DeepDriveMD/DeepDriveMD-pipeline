@@ -165,8 +165,6 @@ class MLStageConfig(BaseSettings):
 
 class AgentBaseConfig(BaseSettings):
 
-    # Path to file containing preprocessed data (set by DeepDriveMD)
-    input_path: Path = Path("set_by_deepdrivemd")
     # Output directory for model data (set by DeepDriveMD)
     output_path: Path = Path("set_by_deepdrivemd")
     # Model checkpoint file to load model weights for inference.

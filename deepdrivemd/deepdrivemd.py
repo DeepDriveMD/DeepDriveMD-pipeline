@@ -191,7 +191,6 @@ class PipelineManager:
 
         # Update base parameters
         cfg.run_config.experiment_directory = self.cfg.experiment_directory
-        cfg.run_config.input_path = self.api.aggregation_path(self.cur_iteration)
         cfg.run_config.model_path = self.api.ml_config_path(self.cur_iteration)
         cfg.run_config.output_path = self.api.agent_path(self.cur_iteration)
         cfg.run_config.weights_path = self.latest_ml_checkpoint_path(self.cur_iteration)
