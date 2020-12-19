@@ -15,7 +15,7 @@ def glob_file_from_dirs(dirs: List[str], pattern: str) -> List[str]:
 class DeepDriveMD_API:
 
     # Directory structure for experiment
-    MOLECULAR_DYNAMICS_DIR = "molecular_dyanmics_runs"
+    MOLECULAR_DYNAMICS_DIR = "molecular_dynamics_runs"
     AGGREGATE_DIR = "aggregation_runs"
     MACHINE_LEARNING_DIR = "machine_learning_runs"
     MODEL_SELECTION_DIR = "model_selection_runs"
