@@ -1,0 +1,23 @@
+experiment_directory: set_by_deepdrivemd
+node_local_path: set_by_deepdrivemd
+result_dir: set_by_deepdrivemd
+dir_prefix: set_by_deepdrivemd
+pdb_file: set_by_deepdrivemd
+restart_point: null
+initial_pdb_dir: /Users/abrace/src/DeepDriveMD-pipeline
+solvent_type: implicit
+simulation_length_ns: 10.0
+report_interval_ps: 50.0
+dt_ps: 0.002
+temperature_kelvin: 310.0
+heat_bath_friction_coef: 1.0
+wrap: false
+reference_pdb_file: null
+openmm_selection:
+- CA
+mda_selection: protein and name CA
+threshold: 8.0
+contact_map: true
+point_cloud: true
+fraction_of_contacts: true
+in_memory: true

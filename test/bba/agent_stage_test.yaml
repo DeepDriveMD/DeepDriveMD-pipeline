@@ -1,0 +1,11 @@
+experiment_directory: set_by_deepdrivemd
+node_local_path: set_by_deepdrivemd
+output_path: set_by_deepdrivemd
+num_outliers: 100
+n_traj_frames: 200
+num_points: 304
+inference_batch_size: 128
+device: cuda:0
+last_n_h5_files: 10
+k_random_old_h5_files: 0
+sklearn_num_jobs: -1

@@ -1,0 +1,109 @@
+title: BBA refactor test
+resource: llnl.lassen
+queue: pbatch
+schema_: local
+project: cv19-a01
+walltime_min: 60
+max_iteration: 4
+cpus_per_node: 42
+gpus_per_node: 6
+hardware_threads_per_cpu: 4
+experiment_directory: /path/to/experiment
+node_local_path: null
+molecular_dynamics_stage:
+    pre_exec: []
+    executable: []
+    arguments: []
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    num_tasks: 1
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        result_dir: set_by_deepdrivemd
+        dir_prefix: set_by_deepdrivemd
+        pdb_file: set_by_deepdrivemd
+        restart_point: null
+        initial_pdb_dir: /Users/abrace/src/DeepDriveMD-pipeline
+aggregation_stage:
+    pre_exec: []
+    executable: []
+    arguments: []
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    skip_aggregation: false
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        output_path: set_by_deepdrivemd
+machine_learning_stage:
+    pre_exec: []
+    executable: []
+    arguments: []
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    retrain_freq: 1
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        output_path: set_by_deepdrivemd
+        init_weights_path: null
+model_selection_stage:
+    pre_exec: []
+    executable: []
+    arguments: []
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+agent_stage:
+    pre_exec: []
+    executable: []
+    arguments: []
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        output_path: set_by_deepdrivemd
