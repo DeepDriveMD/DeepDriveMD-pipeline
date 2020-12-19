@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 from typing import Optional
 import simtk.unit as u
+import simtk.openmm as omm
 import simtk.openmm.app as app
 from deepdrivemd.config import get_config
 from mdtools.openmm.sim import configure_simulation
@@ -105,7 +106,7 @@ class SimulationContext:
 
 
 def configure_reporters(
-    sim: simtk.openmm.app.Simulation,  # noqa F821
+    sim: omm.app.Simulation,  # noqa F821
     ctx: SimulationContext,
     cfg: OpenMMConfig,
     report_steps: int,
