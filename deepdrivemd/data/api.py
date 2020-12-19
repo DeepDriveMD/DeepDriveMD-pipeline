@@ -37,16 +37,17 @@ class DeepDriveMD_API:
         return path.with_suffix("").name.split("_")[-1]
 
     @staticmethod
-    def get_latest(path: Path, pattern: str, is_dir=False) -> Path:
+    def get_latest(path: Path, pattern: str, is_dir=False) -> Optional[Path]:
         # Assumes file has format XXX_YYY_..._{iteration:03d}.ZZZ
-        return max(
-            filter(lambda p: p.is_dir() == is_dir, path.glob(pattern)),
-            key=DeepDriveMD_API.get_idx_label,
-        )
+        matches = list(filter(lambda p: p.is_dir() == is_dir, path.glob(pattern)))
+        if not matches:
+            return None
+        return max(matches, key=DeepDriveMD_API.get_idx_label)
 
     @staticmethod
     def next_idx(path: Path, pattern: str) -> int:
         latest = DeepDriveMD_API.get_latest(path, pattern)
+        assert latest is not None
         idx = int(DeepDriveMD_API.get_idx_label(latest))
         return idx
 
@@ -77,7 +78,7 @@ class DeepDriveMD_API:
     def tmp_dir(self) -> Path:
         return self.experiment_dir.joinpath(self.TMP_DIR)
 
-    def aggregation_path(self, iteration: int = -1) -> Path:
+    def aggregation_path(self, iteration: int = -1) -> Optional[Path]:
         r"""Return the aggregated HDF5 path for a given `iteration`.
 
         Parameters
@@ -87,8 +88,9 @@ class DeepDriveMD_API:
 
         Returns
         -------
-        Path
-            Path to HDF5 file containing aggregated data.
+        Path, optional
+            Path to HDF5 file containing aggregated data. or
+            `None` if `iteration == -1` and no HDF5 files exist.
         """
         if iteration == -1:
             return self.get_latest(
@@ -98,7 +100,7 @@ class DeepDriveMD_API:
             f"{self.AGGREGATION_PREFIX}{self.idx_label(iteration)}.h5"
         )
 
-    def machine_learning_path(self, iteration: int = -1) -> Path:
+    def machine_learning_path(self, iteration: int = -1) -> Optional[Path]:
         r"""Return the ML model path for a given `iteration`.
 
         Parameters
@@ -108,8 +110,9 @@ class DeepDriveMD_API:
 
         Returns
         -------
-        Path
-            Path to model directory containing ML run.
+        Path, optional
+            Path to model directory containing ML run. or `None` if
+            `iteration == -1` and no machine learning directories exist.
         """
         if iteration == -1:
             return self.get_latest(
@@ -119,7 +122,7 @@ class DeepDriveMD_API:
             f"{self.ML_PREFIX}{self.idx_label(iteration)}"
         )
 
-    def agent_path(self, iteration: int = -1) -> Path:
+    def agent_path(self, iteration: int = -1) -> Optional[Path]:
         r"""Return the agent path for a given `iteration`.
 
         Parameters
@@ -129,8 +132,9 @@ class DeepDriveMD_API:
 
         Returns
         -------
-        Path
-            Path to agent directory containing agent run.
+        Path, optional
+            Path to agent directory containing agent run. or
+            `None` if `iteration == -1` and no agent directories exist.
         """
         if iteration == -1:
             return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*", is_dir=True)
@@ -138,7 +142,7 @@ class DeepDriveMD_API:
             f"{self.AGENT_PREFIX}{self.idx_label(iteration)}"
         )
 
-    def aggregation_config_path(self, iteration: int = -1) -> Path:
+    def aggregation_config_path(self, iteration: int = -1) -> Optional[Path]:
         r"""Return the aggregation config file path for a given `iteration`.
 
         Parameters
@@ -148,8 +152,9 @@ class DeepDriveMD_API:
 
         Returns
         -------
-        Path
-            Path to yaml file containing aggregation config.
+        Path, optional
+            Path to yaml file containing aggregation config or
+            `None` if `iteration == -1` and no yaml files exist.
         """
         if iteration == -1:
             return self.get_latest(
@@ -159,7 +164,7 @@ class DeepDriveMD_API:
             f"{self.AGGREGATION_PREFIX}{self.idx_label(iteration)}.yaml"
         )
 
-    def machine_learning_config_path(self, iteration: int = -1) -> Path:
+    def machine_learning_config_path(self, iteration: int = -1) -> Optional[Path]:
         r"""Return the machine learning config file path for a given `iteration`,
 
         Parameters
@@ -169,8 +174,9 @@ class DeepDriveMD_API:
 
         Returns
         -------
-        Path
-            Path to yaml file containing machine learning config.
+        Path, optional
+            Path to yaml file containing machine learning config or
+            `None` if `iteration == -1` and no yaml files exist.
         """
         if iteration == -1:
             return self.get_latest(self.machine_learning_dir, f"{self.ML_PREFIX}*.yaml")
@@ -178,7 +184,7 @@ class DeepDriveMD_API:
             f"{self.ML_PREFIX}{self.idx_label(iteration)}.yaml"
         )
 
-    def model_selection_config_path(self, iteration: int = -1) -> Path:
+    def model_selection_config_path(self, iteration: int = -1) -> Optional[Path]:
         r"""Return the model selection config file path for a given `iteration`,
 
         Parameters
@@ -188,8 +194,9 @@ class DeepDriveMD_API:
 
         Returns
         -------
-        Path
-            Path to yaml file containing machine learning config.
+        Path, optional
+            Path to yaml file containing machine learning config or
+            `None` if `iteration == -1` and no yaml files exist.
         """
         if iteration == -1:
             return self.get_latest(
@@ -199,7 +206,7 @@ class DeepDriveMD_API:
             f"{self.MODEL_SELECTION_PREFIX}{self.idx_label(iteration)}.yaml"
         )
 
-    def agent_config_path(self, iteration: int = -1) -> Path:
+    def agent_config_path(self, iteration: int = -1) -> Optional[Path]:
         r"""Return the agent config file path for a given `iteration`.
 
         Parameters
@@ -209,8 +216,9 @@ class DeepDriveMD_API:
 
         Returns
         -------
-        Path
-            Path to yaml file containing agent config.
+        Path, optional
+            Path to yaml file containing agent config or
+            `None` if `iteration == -1` and no yaml files exist.
         """
         if iteration == -1:
             return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*.yaml")
@@ -271,7 +279,7 @@ class DeepDriveMD_API:
             ),
         }
 
-    def get_model_selection_json_path(self, iteration: int = -1) -> Path:
+    def get_model_selection_json_path(self, iteration: int = -1) -> Optional[Path]:
         r"""Get the JSON path written by the model selection at `iteration`.
 
         Parameters
@@ -281,8 +289,9 @@ class DeepDriveMD_API:
 
         Returns
         -------
-        Path
-            Path to JSON file containing model selection metadata.
+        Path, optional
+            Path to JSON file containing model selection metadata or
+            `None` if `iteration == -1` and no JSON files exist.
         """
         if iteration == -1:
             return self.get_latest(
@@ -308,10 +317,11 @@ class DeepDriveMD_API:
             self.model_selection_dir, f"{self.MODEL_SELECTION_PREFIX}*.json"
         )
         new_restart_path = self.get_model_selection_json_path(idx)
+        assert new_restart_path is not None
         with open(new_restart_path, "w") as f:
             json.dump(data, f)
 
-    def get_agent_json_path(self, iteration: int = -1) -> Path:
+    def get_agent_json_path(self, iteration: int = -1) -> Optional[Path]:
         r"""Get the JSON path written by the agent at `iteration`.
 
         Parameters
@@ -321,8 +331,9 @@ class DeepDriveMD_API:
 
         Returns
         -------
-        Path
-            Path to JSON file containing agent metadata.
+        Path, optional
+            Path to JSON file containing agent metadata or
+            `None` if `iteration == -1` and no JSON files exist.
         """
         if iteration == -1:
             return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*.json")
@@ -344,6 +355,7 @@ class DeepDriveMD_API:
         """
         idx = self.next_idx(self.agent_dir, f"{self.AGENT_PREFIX}*.json")
         new_restart_path = self.get_agent_json_path(idx)
+        assert new_restart_path is not None
         with open(new_restart_path, "w") as f:
             json.dump(data, f)
 
@@ -362,6 +374,7 @@ class DeepDriveMD_API:
             Dictionary entry written by the outlier detector.
         """
         path = self.get_agent_json_path()
+        assert path is not None
         with open(path, "r") as f:
             return json.load(f)[index]
 

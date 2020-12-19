@@ -120,10 +120,13 @@ class PipelineManager:
         stage.name = self.AGGREGATION_STAGE_NAME
         cfg = self.cfg.aggregation_stage
 
+        output_path = self.api.aggregation_path(self.cur_iteration)
+        assert output_path is not None
+
         # Update base parameters
         cfg.task_config.experiment_directory = self.cfg.experiment_directory
         cfg.task_config.node_local_path = self.cfg.node_local_path
-        cfg.task_config.output_path = self.api.aggregation_path(self.cur_iteration)
+        cfg.task_config.output_path = output_path
 
         # Write yaml configuration
         cfg_path = self.api.aggregation_config_path(self.cur_iteration)
@@ -140,6 +143,7 @@ class PipelineManager:
         cfg = self.cfg.machine_learning_stage
 
         ml_path = self.api.machine_learning_path(self.cur_iteration)
+        assert ml_path is not None
         ml_path.mkdir()
 
         # Update base parameters
@@ -183,12 +187,14 @@ class PipelineManager:
         stage.name = self.AGENT_STAGE_NAME
         cfg = self.cfg.agent_stage
 
-        self.api.agent_path(self.cur_iteration).mkdir()
+        output_path = self.api.agent_path(self.cur_iteration)
+        assert output_path is not None
+        output_path.mkdir()
 
         # Update base parameters
         cfg.task_config.experiment_directory = self.cfg.experiment_directory
         cfg.task_config.node_local_path = self.cfg.node_local_path
-        cfg.task_config.output_path = self.api.agent_path(self.cur_iteration)
+        cfg.task_config.output_path = output_path
 
         # Write yaml configuration
         cfg_path = self.api.agent_config_path(self.cur_iteration)
@@ -228,7 +234,7 @@ if __name__ == "__main__":
 
     # Calculate total number of nodes required. Assumes 1 MD job per GPU
     # TODO: fix this assumption for NAMD
-    num_nodes = max(1, cfg.molecular_dynamics_stage.num_jobs // cfg.gpus_per_node)
+    num_nodes = max(1, cfg.molecular_dynamics_stage.num_tasks // cfg.gpus_per_node)
 
     appman.resource_desc = {
         "resource": cfg.resource,

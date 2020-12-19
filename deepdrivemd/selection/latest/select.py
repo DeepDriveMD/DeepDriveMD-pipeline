@@ -42,7 +42,10 @@ def get_model_path(
         assert experiment_dir is not None
         api = DeepDriveMD_API(experiment_dir)
 
-    with open(api.get_model_selection_json_path(), "r") as f:
+    path = api.get_model_selection_json_path()
+    assert path is not None
+
+    with open(path, "r") as f:
         data = json.load(f)
 
     model_config = Path(data[0]["model_config"])
