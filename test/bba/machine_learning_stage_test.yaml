@@ -1,7 +1,7 @@
 experiment_directory: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment
 node_local_path: null
 output_path: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment/machine_learning_runs/ml_0000
-init_weights_path: null
+init_weights_path: /homes/abrace/runs/model-bba-pasc-run1/checkpoint/epoch-78-20201203-023309.pt
 last_n_h5_files: 2
 k_random_old_h5_files: 1
 dataset_name: point_cloud
@@ -23,7 +23,7 @@ encoder_filters:
 - 512
 encoder_kernel_sizes:
 - 5
-- 5
+- 3
 - 3
 - 1
 - 1
