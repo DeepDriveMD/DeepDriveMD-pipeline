@@ -78,6 +78,25 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Path:
     return Path(virtual_h5_path)
 
 
+def get_init_weights(cfg: AAEModelConfig) -> Optional[str]:
+    if cfg.init_weights_path is None:
+        token = get_model_path(experiment_dir=cfg.experiment_directory)
+        if token is None:
+            # Case for no pretrained weights
+            init_weights = None
+        else:
+            # Case where model selection has run before
+            _, init_weights = token
+    else:
+        # Case for pretrained weights
+        init_weights = cfg.init_weights_path
+
+    if init_weights is not None:
+        init_weights = init_weights.as_posix()
+
+    return init_weights
+
+
 def get_dataset(
     dataset_location: str,
     input_path: Path,
@@ -200,17 +219,6 @@ def main(
         model_hparams.save(model_path.joinpath("model-hparams.json"))
         optimizer_hparams.save(model_path.joinpath("optimizer-hparams.json"))
 
-    if cfg.init_weights_path is None:
-        token = get_model_path(experiment_dir=cfg.experiment_directory)
-        if token is None:
-            # Case for no pretrained weights
-            init_weights = None
-        else:
-            # Case where model selection has run before
-            _, init_weights = token
-    else:
-        init_weights = cfg.init_weights_path
-
     # construct model
     aae = AAE3d(
         cfg.num_points,
@@ -219,7 +227,7 @@ def main(
         model_hparams,
         optimizer_hparams,
         gpu=(encoder_gpu, generator_gpu, discriminator_gpu),
-        init_weights=init_weights.as_posix(),
+        init_weights=get_init_weights(cfg),
     )
 
     enc_device = torch.device(f"cuda:{encoder_gpu}")
