@@ -47,7 +47,8 @@ class DeepDriveMD_API:
     @staticmethod
     def next_idx(path: Path, pattern: str) -> int:
         latest = DeepDriveMD_API.get_latest(path, pattern)
-        assert latest is not None
+        if latest is None:
+            return 0
         idx = int(DeepDriveMD_API.get_idx_label(latest))
         return idx
 
