@@ -139,12 +139,14 @@ class PipelineManager:
         stage.name = self.MACHINE_LEARNING_STAGE_NAME
         cfg = self.cfg.machine_learning_stage
 
-        self.api.machine_learning_path(self.cur_iteration).mkdir()
+        ml_path = self.api.machine_learning_path(self.cur_iteration)
+        ml_path.mkdir()
 
         # Update base parameters
         cfg.task_config.experiment_directory = self.cfg.experiment_directory
         cfg.task_config.node_local_path = self.cfg.node_local_path
-        cfg.task_config.output_path = self.api.machine_learning_path(self.cur_iteration)
+        cfg.task_config.model_id = ml_path.name  # A unique tag for the model
+        cfg.task_config.output_path = ml_path
         if self.cur_iteration > 0:
             # Machine learning should use model selection API
             cfg.task_config.init_weights_path = None

@@ -141,6 +141,8 @@ class MachineLearningTaskConfig(BaseTaskConfig):
 
     # Output directory for model data (set by DeepDriveMD)
     output_path: Path = Path("set_by_deepdrivemd")
+    # Model ID in for file naming (set by DeepDriveMD)
+    model_id: str = "set_by_deepdrivemd"
     # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
     init_weights_path: Optional[Path]
 

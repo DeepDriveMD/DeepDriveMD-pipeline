@@ -13,8 +13,6 @@ class AAEModelConfig(MachineLearningTaskConfig):
     rmsd_name: str = "rmsd"
     # Name of the fraction of contacts data in the HDF5 file.
     fnc_name: str = "fnc"
-    # Model ID in for file naming
-    model_id: str = "model_name"
     # Number of input points in point cloud
     num_points: int = 3375
     # Number of features per point in addition to 3D coordinates

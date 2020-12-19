@@ -30,7 +30,7 @@ class DeepDriveMD_API:
 
     @staticmethod
     def idx_label(idx):
-        return f"{idx:03d}"
+        return f"{idx:04d}"
 
     @staticmethod
     def get_idx_label(path: Path) -> str:
