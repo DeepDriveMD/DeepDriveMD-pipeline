@@ -107,9 +107,9 @@ class SimulationContext:
 def configure_reporters(
     sim: simtk.openmm.app.Simulation,  # noqa F821
     ctx: SimulationContext,
+    cfg: OpenMMConfig,
     report_steps: int,
     frames_per_h5: int,
-    wrap: bool,
 ):
     # Configure DCD file reporter
     sim.reporters.append(app.DCDReporter(ctx.traj_file, report_steps))
@@ -119,9 +119,15 @@ def configure_reporters(
         OfflineReporter(
             ctx.h5_prefix,
             report_steps,
-            wrap_pdb_file=ctx.pdb_file if wrap else None,
-            reference_pdb_file=ctx.reference_pdb_file,
             frames_per_h5=frames_per_h5,
+            wrap_pdb_file=ctx.pdb_file if cfg.wrap else None,
+            reference_pdb_file=ctx.reference_pdb_file,
+            openmm_selection=cfg.openmm_selection,
+            mda_selection=cfg.mda_selection,
+            threshold=cfg.threshold,
+            contact_map=cfg.contact_map,
+            point_cloud=cfg.point_cloud,
+            fraction_of_contacts=cfg.fraction_of_contacts,
         )
     )
 
@@ -170,7 +176,7 @@ def run_simulation(cfg: OpenMMConfig):
     nsteps = int(simulation_length_ns / dt_ps)
 
     # Configure reporters to write output files
-    configure_reporters(sim, ctx, report_steps, frames_per_h5, cfg.wrap)
+    configure_reporters(sim, ctx, cfg, report_steps, frames_per_h5)
 
     # Run simulation for nsteps
     sim.step(nsteps)

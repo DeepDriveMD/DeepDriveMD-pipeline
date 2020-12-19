@@ -23,7 +23,7 @@ class PipelineManager:
     PIPELINE_NAME = "DeepDriveMD"
     MOLECULAR_DYNAMICS_STAGE_NAME = "MolecularDynamics"
     AGGREGATION_STAGE_NAME = "Aggregating"
-    MACHINE_LEARNING_STAGE_NAME = "Learning"
+    MACHINE_LEARNING_STAGE_NAME = "MachineLearning"
     MODEL_SELECTION_STAGE_NAME = "ModelSelection"
     AGENT_STAGE_NAME = "Agent"
 
