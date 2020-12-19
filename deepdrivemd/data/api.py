@@ -258,6 +258,7 @@ class DeepDriveMD_API:
             each containing a list of `n` paths globed from the the latest `n`
             MD run directories.
         """
+        print(self.molecular_dynamics_dir)
         # Run dirs: f"run{deepdrivemd_iteration:03d}_{sim_task_id:04d}"
         run_dirs = list(self.molecular_dynamics_dir.glob("*"))
         print(run_dirs)
