@@ -201,7 +201,13 @@ def main(
         optimizer_hparams.save(model_path.joinpath("optimizer-hparams.json"))
 
     if cfg.init_weights_path is None:
-        _, init_weights = get_model_path(experiment_dir=cfg.experiment_directory)
+        token = get_model_path(experiment_dir=cfg.experiment_directory)
+        if token is None:
+            # Case for no pretrained weights
+            init_weights = None
+        else:
+            # Case where model selection has run before
+            _, init_weights = token
     else:
         init_weights = cfg.init_weights_path
 

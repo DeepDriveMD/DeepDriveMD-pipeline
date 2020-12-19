@@ -10,7 +10,7 @@ PathLike = Union[str, Path]
 
 def get_model_path(
     api: Optional[DeepDriveMD_API] = None, experiment_dir: Optional[PathLike] = None
-) -> Tuple[Path, Path]:
+) -> Optional[Tuple[Path, Path]]:
     r"""Get the current best model.
 
     Should be imported by other stages to retrieve the best model path.
@@ -24,12 +24,16 @@ def get_model_path(
 
     Returns
     -------
-    model_config : Path
+    None
+        If model selection has not run before.
+    model_config : Path, optional
         Path to the most recent model YAML configuration file
         selected by the model selection stage. Contains hyperparameters.
-    model_checkpoint : Path
+    model_checkpoint : Path, optional
         Path to the most recent model weights selected by the model
         selection stage.
+
+
     Raises
     ------
     ValueError
@@ -43,7 +47,8 @@ def get_model_path(
         api = DeepDriveMD_API(experiment_dir)
 
     path = api.get_model_selection_json_path()
-    assert path is not None
+    if path is None:
+        return None
 
     with open(path, "r") as f:
         data = json.load(f)

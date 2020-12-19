@@ -296,9 +296,9 @@ def main(cfg: LOFConfig, distributed: bool):
         virtual_h5_file = comm.bcast(virtual_h5_file, 0)
 
     # Get model hyperparameters and weights
-    model_cfg_path, init_weights = get_model_path(
-        experiment_dir=cfg.experiment_directory
-    )
+    token = get_model_path(experiment_dir=cfg.experiment_directory)
+    assert token is not None
+    model_cfg_path, init_weights = token
 
     # Generate embeddings for all contact matrices produced during MD stage
     embeddings = generate_embeddings(
