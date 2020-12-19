@@ -1,2 +1,2 @@
-experiment_directory: set_by_deepdrivemd
-node_local_path: set_by_deepdrivemd
+experiment_directory: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment
+node_local_path: null
