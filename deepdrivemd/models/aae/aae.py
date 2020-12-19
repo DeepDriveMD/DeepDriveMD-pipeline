@@ -205,7 +205,7 @@ def main(
     )
 
     # create a dir for storing the model
-    model_path = cfg.output_path.joinpath(cfg.model_id)
+    model_path = cfg.output_path
 
     # Save hparams to disk
     if comm_rank == 0:
