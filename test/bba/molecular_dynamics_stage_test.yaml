@@ -1,6 +1,6 @@
 experiment_directory: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment
 node_local_path: null
-result_dir: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment/molecular_dyanamics_runs
+result_dir: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment/molecular_dynamics_runs
 dir_prefix: run000_0000
 pdb_file: /homes/abrace/tmp/deepdrivemd_tests/bba_test/inputs/1FME-unfolded.pdb
 restart_point: null
