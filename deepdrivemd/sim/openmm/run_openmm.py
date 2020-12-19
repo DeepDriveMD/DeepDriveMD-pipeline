@@ -1,10 +1,10 @@
 import shutil
+import argparse
 from pathlib import Path
 from typing import Optional
 import simtk.unit as u
 import simtk.openmm as omm
 import simtk.openmm.app as app
-from deepdrivemd.config import get_config
 from mdtools.openmm.sim import configure_simulation
 from mdtools.openmm.reporter import OfflineReporter
 from deepdrivemd.data.api import DeepDriveMD_API
@@ -106,7 +106,7 @@ class SimulationContext:
 
 
 def configure_reporters(
-    sim: omm.app.Simulation,  # noqa F821
+    sim: omm.app.Simulation,
     ctx: SimulationContext,
     cfg: OpenMMConfig,
     report_steps: int,
@@ -187,7 +187,16 @@ def run_simulation(cfg: OpenMMConfig):
         ctx.move_results()
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c", "--config", help="YAML config file", type=str, required=True
+    )
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == "__main__":
-    cfg = get_config()
-    cfg = OpenMMConfig.from_yaml(**cfg)
+    args = parse_args()
+    cfg = OpenMMConfig.from_yaml(args.config)
     run_simulation(cfg)
