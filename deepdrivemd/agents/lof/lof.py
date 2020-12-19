@@ -1,15 +1,13 @@
 import argparse
 import itertools
-import random
-import shutil
 import time
 from pathlib import Path
-from typing import List, Optional, Tuple, Dict, Union
+from typing import List, Tuple, Dict, Union
 
 import numpy as np
 import torch
 from deepdrivemd.data.api import DeepDriveMD_API
-from deepdrivemd.data.utils import concatenate_virtual_h5
+from deepdrivemd.data.utils import get_virtual_h5_file
 from deepdrivemd.models.aae.config import AAEModelConfig
 from deepdrivemd.agents.lof.config import LOFConfig
 from deepdrivemd.selection.latest.select import get_model_path
@@ -74,42 +72,6 @@ def shard_dataset(
     dataset = Subset(dataset, subset_indices)
 
     return dataset
-
-
-def get_virtual_h5_file(
-    all_h5_files: List[str],
-    last_n: int,
-    k_random_old: int,
-    output_path: Path,
-    node_local_path: Optional[Path],
-) -> Tuple[Path, List[str]]:
-
-    # Partition all HDF5 files into old and new
-    last_n_h5_files = all_h5_files[-1 * last_n :]
-    old_h5_files = all_h5_files[: -1 * last_n]
-
-    # Get a random sample of old HDF5 files, or use all
-    # if the length of old files is less then k_random_old
-    if len(old_h5_files) > k_random_old:
-        old_h5_files = random.sample(old_h5_files, k=k_random_old)
-
-    # Combine all new files and some old files
-    h5_files = old_h5_files + last_n_h5_files
-
-    # Always make a virtual file in long term storage
-    virtual_h5_file = output_path.joinpath("virtual.h5")
-    concatenate_virtual_h5(h5_files, virtual_h5_file.as_posix())
-
-    # If node local storage optimization is available, then
-    # copy all HDF5 files to node local storage and make a
-    # separate virtual HDF5 file on node local storage.
-    if node_local_path is not None:
-        h5_files = [shutil.copy(f, node_local_path) for f in h5_files]
-        virtual_h5_file = node_local_path.joinpath("virtual.h5")
-        concatenate_virtual_h5(h5_files, virtual_h5_file.as_posix())
-
-    # Returns node local virtual file if available
-    return virtual_h5_file, h5_files
 
 
 def generate_embeddings(
@@ -282,10 +244,11 @@ def main(cfg: LOFConfig, distributed: bool):
         md_data = api.get_last_n_md_runs()
 
         virtual_h5_file, sampled_h5_files = get_virtual_h5_file(
-            md_data["data_files"],
+            output_path=cfg.output_path,
+            all_h5_files=md_data["data_files"],
             last_n=cfg.last_n_h5_files,
             k_random_old=cfg.k_random_old_h5_files,
-            output_path=cfg.output_path,
+            virtual_name=cfg.output_path.name,
             node_local_path=cfg.node_local_path,
         )
 

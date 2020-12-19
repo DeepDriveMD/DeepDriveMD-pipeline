@@ -1,13 +1,11 @@
 import os
-import uuid
 import argparse
-import random
 from pathlib import Path
 from typing import Optional
 import wandb
 from deepdrivemd.models.aae.config import AAEModelConfig
 from deepdrivemd.data.api import DeepDriveMD_API
-from deepdrivemd.data.utils import concatenate_virtual_h5
+from deepdrivemd.data.utils import get_virtual_h5_file
 from deepdrivemd.selection.latest.select import get_model_path
 
 # torch stuff
@@ -55,37 +53,22 @@ def setup_wandb(
     return wandb_config
 
 
-# TODO: duplicate code. Use function in LOF
 def get_h5_training_file(cfg: AAEModelConfig) -> Path:
     # Collect training data
     api = DeepDriveMD_API(cfg.experiment_directory)
     md_data = api.get_last_n_md_runs()
     all_h5_files = md_data["data_files"]
 
-    print("all_h5_files:", len(all_h5_files), all_h5_files)
+    virtual_h5_path, _ = get_virtual_h5_file(
+        output_path=cfg.output_path,
+        all_h5_files=all_h5_files,
+        last_n=cfg.last_n_h5_files,
+        k_random_old=cfg.k_random_old_h5_files,
+        virtual_name=cfg.model_id,
+        node_local_path=cfg.node_local_path,
+    )
 
-    last_n_h5_files = all_h5_files[-1 * cfg.last_n_h5_files :]
-    old_h5_files = all_h5_files[: -1 * cfg.last_n_h5_files]
-
-    print("last_n_h5_files:", len(last_n_h5_files), last_n_h5_files)
-    print("old_h5_files before sample:", len(old_h5_files), old_h5_files)
-
-    if len(old_h5_files) > cfg.k_random_old_h5_files:
-        old_h5_files = random.sample(old_h5_files, k=cfg.k_random_old_h5_files)
-
-    print("old_h5_files after sample:", len(old_h5_files), old_h5_files)
-
-    # TODO: copy training_h5_files to node local and put virtual_h5_path on node local storage
-    training_h5_files = old_h5_files + last_n_h5_files
-    virtual_h5_path = f"{uuid.uuid4()}.h5"
-
-    print("training_h5_files:", len(training_h5_files), training_h5_files)
-    print("virtual_h5_path:", virtual_h5_path)
-
-    # Concatenate HDF5 files into a single virtual HDF5 file
-    concatenate_virtual_h5(training_h5_files, virtual_h5_path)
-
-    return Path(virtual_h5_path)
+    return virtual_h5_path
 
 
 def get_init_weights(cfg: AAEModelConfig) -> Optional[str]:
