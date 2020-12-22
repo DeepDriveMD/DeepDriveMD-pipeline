@@ -3,7 +3,7 @@ stage_idx: 0
 task_idx: 0
 output_path: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment_2/machine_learning_runs/stage0000/task0000
 node_local_path: null
-model_id: stage0000_task0000
+model_tag: stage0000_task0000
 init_weights_path: /homes/abrace/runs/model-bba-pasc-run1/checkpoint/epoch-78-20201203-023309.pt
 last_n_h5_files: 2
 k_random_old_h5_files: 3
