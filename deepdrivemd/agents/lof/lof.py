@@ -280,7 +280,7 @@ def main(cfg: LOFConfig, distributed: bool):
         outliers = generate_outliers(md_data, sampled_h5_files, list(outlier_inds))
 
         # Dump metadata to disk for MD stage
-        api.agent_stage.write_task_json(outliers)
+        api.agent_stage.write_task_json(outliers, cfg.stage_idx, cfg.task_idx)
 
         print(f"Outlier Detection Time: {time.time() - t_start}s")
 

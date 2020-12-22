@@ -107,11 +107,11 @@ def latest_model_checkpoint(cfg: LatestCheckpointConfig):
     # Select latest PyTorch model checkpoint.
     checkpoint_path = latest_checkpoint(api)
     # Get latest model YAML configuration.
-    cfg_path = api.machine_learning_stage.config_path()
+    cfg_path = api.machine_learning_stage.config_path(cfg.stage_idx, cfg.task_idx)
     # Format data into JSON serializable list of dictionaries
     data = [{"model_checkpoint": str(checkpoint_path), "model_config": str(cfg_path)}]
     # Dump metadata to disk for MD stage
-    api.model_selection_stage.write_task_json(cfg.stage_idx, cfg.task_idx, data)
+    api.model_selection_stage.write_task_json(data, cfg.stage_idx, cfg.task_idx)
 
 
 def parse_args() -> argparse.Namespace:
