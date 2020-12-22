@@ -78,10 +78,7 @@ class SimulationContext:
         # Iterations after outlier detection
         outlier = self.api.get_restart_pdb(self.cfg.task_idx)
         system_name = self.api.get_system_name(outlier["structure_file"])
-        unique_name = self.api.molecular_dynamics_stage.unique_name(
-            self.cfg.output_path
-        )
-        pdb_file = self.workdir.joinpath(f"{system_name}__{unique_name}.pdb")
+        pdb_file = self.workdir.joinpath(f"{system_name}__{self._prefix}.pdb")
         self.api.write_pdb(
             pdb_file,
             outlier["structure_file"],
