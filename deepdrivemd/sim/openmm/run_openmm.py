@@ -77,7 +77,10 @@ class SimulationContext:
 
         # Iterations after outlier detection
         outlier = self.api.get_restart_pdb(self.cfg.task_idx)
-        pdb_file = self.workdir.joinpath("input.pdb")
+        system_name = self.api.get_system_name(outlier["input_pdb_file"])
+        pdb_file = self.workdir.joinpath(
+            f"{system_name}__{self.cfg.stage_idx}_{self.cfg.task_idx}.pdb"
+        )
         self.api.write_pdb(
             pdb_file,
             outlier["input_pdb_file"],
