@@ -44,6 +44,14 @@ class Stage_API:
         return self.experiment_dir.joinpath(self._stage_dir_name)
 
     def stage_dir(self, stage_idx: int = -1) -> Optional[Path]:
+        r"""Return the stage directory containing task subdirectories.
+
+        Each stage type has a directory containing subdirectories stageXXXX.
+        In each stageXXXX there are several task directories labeled taskXXXX.
+        This function returns a particular stageXXXX directory selected with
+        `stage_idx`. Each iteration of DeepDriveMD corresponds to a stageXXXX
+        directory, they are labeled in increasing order.
+        """
         if stage_idx == -1:
             return self.get_latest(self.runs_dir, pattern="stage*", is_dir=True)
         return self.runs_dir.joinpath(self.stage_name(stage_idx))
@@ -162,7 +170,9 @@ class DeepDriveMD_API:
         # /self.molecular_dynamics_dir
         #   /stage_{stage_idx}
         #       /task_{task_idx}
-        run_dirs = self.molecular_dynamics_stage.runs_dir.glob("*/task*")
+        print(self.molecular_dynamics_stage.runs_dir)
+        run_dirs = list(self.molecular_dynamics_stage.runs_dir.glob("*/task*"))
+        print(run_dirs)
         # Remove any potential files
         run_dirs = filter(lambda x: x.is_dir(), run_dirs)
         # Sort by deepdrivemd iteration and sim task id
