@@ -253,18 +253,20 @@ def main(cfg: LOFConfig, distributed: bool):
             node_local_path=cfg.node_local_path,
         )
 
+        # Get best model hyperparameters and weights
+        token = get_model_path(experiment_dir=cfg.experiment_directory)
+        assert token is not None
+        model_cfg_path, init_weights = token
+
     else:
-        virtual_h5_file = None
+        virtual_h5_file, model_cfg_path, init_weights = None, None, None
 
     if comm_size > 1:
         virtual_h5_file = comm.bcast(virtual_h5_file, 0)
+        model_cfg_path = comm.bcast(model_cfg_path, 0)
+        init_weights = comm.bcast(init_weights, 0)
 
-    # Get model hyperparameters and weights
-    token = get_model_path(experiment_dir=cfg.experiment_directory)
-    assert token is not None
-    model_cfg_path, init_weights = token
-
-    # Generate embeddings for all contact matrices produced during MD stage
+    # Generate embeddings with a distributed forward pass
     embeddings = generate_embeddings(
         cfg, model_cfg_path, virtual_h5_file, init_weights, comm=comm
     )
