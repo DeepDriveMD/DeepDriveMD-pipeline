@@ -1,4 +1,3 @@
-import json
 import argparse
 from pathlib import Path
 from typing import Optional, Union, Tuple
@@ -46,12 +45,9 @@ def get_model_path(
         assert experiment_dir is not None
         api = DeepDriveMD_API(experiment_dir)
 
-    path = api.get_model_selection_json_path()
-    if path is None:
-        return None
-
-    with open(path, "r") as f:
-        data = json.load(f)
+    data = api.model_selection_stage.read_task_json()
+    if data is None:
+        return
 
     model_config = Path(data[0]["model_config"])
     model_checkpoint = Path(data[0]["model_checkpoint"])
@@ -88,11 +84,9 @@ def latest_checkpoint(
         Path to the latest model checkpoint file.
 
     """
-    checkpoint_files = (
-        api.machine_learning_path()
-        .joinpath(checkpoint_dir)
-        .glob(f"*{checkpoint_suffix}")
-    )
+    task_dir = api.machine_learning_stage.task_dir()
+    assert task_dir is not None
+    checkpoint_files = task_dir.joinpath(checkpoint_dir).glob(f"*{checkpoint_suffix}")
     # Format: epoch-1-20200922-131947.pt, select latest epoch checkpoint
     return max(checkpoint_files, key=lambda x: x.as_posix().split("-")[1])
 
@@ -113,11 +107,11 @@ def latest_model_checkpoint(cfg: LatestCheckpointConfig):
     # Select latest PyTorch model checkpoint.
     checkpoint_path = latest_checkpoint(api)
     # Get latest model YAML configuration.
-    config_path = api.machine_learning_config_path()
+    cfg_path = api.machine_learning_stage.config_path()
+    # Format data into JSON serializable list of dictionaries
+    data = [{"model_checkpoint": str(checkpoint_path), "model_config": str(cfg_path)}]
     # Dump metadata to disk for MD stage
-    api.write_model_selection_json(
-        [{"model_checkpoint": str(checkpoint_path), "model_config": str(config_path)}]
-    )
+    api.model_selection_stage.write_task_json(cfg.stage_idx, cfg.task_idx, data)
 
 
 def parse_args() -> argparse.Namespace:
