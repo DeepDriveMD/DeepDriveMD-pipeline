@@ -219,12 +219,13 @@ def generate_outliers(
         # Need to remap subsampled h5_file index back to all md_data
         all_index = h5_sample_ind_to_all[sampled_h5_files[sampled_index]]
 
-        # Collect data to be passed into DeepDriveMD_API.write_pdb()
+        # Collect data to be passed into DeepDriveMD_API.write_task_json()
+        # Data must be JSON serializable.
         outlier = {
-            "pdb_file": all_pdb_files[all_index],
-            "dcd_file": all_traj_files[all_index],
-            "frame": frame,
-            "outlier_ind": outlier_ind,
+            "pdb_file": str(all_pdb_files[all_index]),
+            "dcd_file": str(all_traj_files[all_index]),
+            "frame": int(frame),
+            "outlier_ind": int(outlier_ind),
         }
         outliers.append(outlier)
 
