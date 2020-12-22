@@ -222,8 +222,8 @@ def generate_outliers(
         # Collect data to be passed into DeepDriveMD_API.write_task_json()
         # Data must be JSON serializable.
         outlier = {
-            "pdb_file": str(all_pdb_files[all_index]),
-            "dcd_file": str(all_traj_files[all_index]),
+            "structure_file": str(all_pdb_files[all_index]),
+            "traj_file": str(all_traj_files[all_index]),
             "frame": int(frame),
             "outlier_ind": int(outlier_ind),
         }
