@@ -57,10 +57,9 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Path:
     # Collect training data
     api = DeepDriveMD_API(cfg.experiment_directory)
     md_data = api.get_last_n_md_runs()
-    print("md_data:", md_data)
     all_h5_files = md_data["data_files"]
 
-    virtual_h5_path, _ = get_virtual_h5_file(
+    virtual_h5_path, h5_files = get_virtual_h5_file(
         output_path=cfg.output_path,
         all_h5_files=all_h5_files,
         last_n=cfg.last_n_h5_files,
@@ -68,6 +67,10 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Path:
         virtual_name=cfg.model_id,
         node_local_path=cfg.node_local_path,
     )
+
+    from pprint import pprint
+
+    pprint(h5_files)
 
     return virtual_h5_path
 

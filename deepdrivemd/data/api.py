@@ -170,9 +170,7 @@ class DeepDriveMD_API:
         # /self.molecular_dynamics_dir
         #   /stage_{stage_idx}
         #       /task_{task_idx}
-        print(self.molecular_dynamics_stage.runs_dir)
         run_dirs = list(self.molecular_dynamics_stage.runs_dir.glob("*/task*"))
-        print(run_dirs)
         # Remove any potential files
         run_dirs = filter(lambda x: x.is_dir(), run_dirs)
         # Sort by deepdrivemd iteration and sim task id
