@@ -25,13 +25,6 @@ from molecules.ml.callbacks import (
 from molecules.ml.unsupervised.point_autoencoder import AAE3d, AAE3dHyperparams
 
 
-# mpi4py
-import mpi4py
-
-mpi4py.rc.initialize = False
-from mpi4py import MPI  # noqa: E402
-
-
 def setup_wandb(
     cfg: AAEModelConfig, model: torch.nn.Module, model_path: Path, comm_rank: int
 ) -> Optional[wandb.config]:
@@ -164,7 +157,12 @@ def main(
     comm_size = 1
     comm = None
     if distributed and dist.is_available():
-        # init mpi4py:
+
+        import mpi4py
+
+        mpi4py.rc.initialize = False
+        from mpi4py import MPI  # noqa: E402
+
         MPI.Init_thread()
 
         # get communicator: duplicate from comm world
