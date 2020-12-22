@@ -249,7 +249,7 @@ def main(cfg: LOFConfig, distributed: bool):
             all_h5_files=md_data["data_files"],
             last_n=cfg.last_n_h5_files,
             k_random_old=cfg.k_random_old_h5_files,
-            virtual_name=cfg.output_path.name,
+            virtual_name=api.agent_stage.unique_name(cfg.output_path),
             node_local_path=cfg.node_local_path,
         )
 
