@@ -40,8 +40,8 @@ def setup_wandb(
     if (comm_rank == 0) and (cfg.wandb_project_name is not None):
         wandb.init(
             project=cfg.wandb_project_name,
-            name=cfg.model_id,
-            id=cfg.model_id,
+            name=cfg.model_tag,
+            id=cfg.model_tag,
             dir=model_path.as_posix(),
             config=cfg.dict(),
             resume=False,
@@ -64,7 +64,7 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Path:
         all_h5_files=all_h5_files,
         last_n=cfg.last_n_h5_files,
         k_random_old=cfg.k_random_old_h5_files,
-        virtual_name=cfg.model_id,
+        virtual_name=cfg.model_tag,
         node_local_path=cfg.node_local_path,
     )
 
