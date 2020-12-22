@@ -159,7 +159,7 @@ class PipelineManager:
         cfg.task_config.task_idx = task_idx
         cfg.task_config.node_local_path = self.cfg.node_local_path
         cfg.task_config.output_path = output_path
-        cfg.task_config.model_id = stage_api.unique_name(output_path)
+        cfg.task_config.model_tag = stage_api.unique_name(output_path)
         if self.stage_idx > 0:
             # Machine learning should use model selection API
             cfg.task_config.init_weights_path = None

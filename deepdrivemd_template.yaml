@@ -100,7 +100,7 @@ ml_stage:
         dataset_name: point_cloud
         rmsd_name: rmsd
         fnc_name: fnc
-        model_id: model_name
+        model_tag: model_name
         num_points: 3375
         num_features: 0
         epochs: 10

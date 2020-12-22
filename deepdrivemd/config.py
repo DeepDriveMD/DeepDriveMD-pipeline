@@ -137,8 +137,8 @@ class AggregationStageConfig(BaseStageConfig):
 class MachineLearningTaskConfig(BaseTaskConfig):
     """Base class for specific model configs to inherit."""
 
-    # Model ID in for file naming (set by DeepDriveMD)
-    model_id: str = "set_by_deepdrivemd"
+    # Model ID for file naming (set by DeepDriveMD)
+    model_tag: str = "set_by_deepdrivemd"
     # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
     init_weights_path: Optional[Path]
 
