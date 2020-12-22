@@ -274,7 +274,6 @@ def main(cfg: LOFConfig, distributed: bool):
             embeddings,
             n_outliers=cfg.num_outliers,
             n_jobs=cfg.sklearn_num_jobs,
-            comm=comm,
         )
 
         outliers = generate_outliers(md_data, sampled_h5_files, list(outlier_inds))
