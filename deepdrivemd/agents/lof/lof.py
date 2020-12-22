@@ -284,8 +284,9 @@ def main(cfg: LOFConfig, distributed: bool):
 
         print(f"Outlier Detection Time: {time.time() - t_start}s")
 
-    # Final barrier
-    comm.barrier()
+    if comm is not None:
+        # Final barrier
+        comm.barrier()
 
 
 def parse_args() -> argparse.Namespace:
