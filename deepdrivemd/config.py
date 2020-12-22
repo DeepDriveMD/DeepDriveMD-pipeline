@@ -203,6 +203,14 @@ class ExperimentConfig(BaseSettings):
     model_selection_stage: ModelSelectionStageConfig
     agent_stage: AgentStageConfig
 
+    @validator("experiment_directory")
+    def experiment_directory_cannot_exist(cls, v):
+        if v.exists():
+            raise FileNotFoundError(f"experiment_directory already exists! {v}")
+        if not v.is_absolute():
+            raise ValueError(f"experiment_directory must be an absolute path! Not {v}")
+        return v
+
 
 def generate_sample_config():
     return ExperimentConfig(
