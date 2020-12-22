@@ -1,174 +1,48 @@
-import argparse
-import itertools
 import time
+import argparse
 from pathlib import Path
 from typing import List, Tuple, Dict, Union
-
-import numpy as np
 import torch
+import numpy as np
+from sklearn.neighbors import LocalOutlierFactor
+from deepdrivemd.utils import setup_mpi_comm, setup_mpi, topk
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
-from deepdrivemd.models.aae.config import AAEModelConfig
 from deepdrivemd.agents.lof.config import LOFConfig
 from deepdrivemd.selection.latest.select import get_model_path
-from molecules.ml.datasets import PointCloudDataset
-from molecules.ml.unsupervised.point_autoencoder import AAE3dHyperparams
-from molecules.ml.unsupervised.point_autoencoder.aae import Encoder
-from sklearn.neighbors import LocalOutlierFactor
-from torch.utils.data import DataLoader, Subset
 
 PathLike = Union[str, Path]
 
-# Helper function for LocalOutlierFactor
-def topk(a, k):
-    """
-    Parameters
-    ----------
-    a : np.ndarray
-        array of dim (N,)
-    k : int
-        specifies which element to partition upon
-    Returns
-    -------
-    np.ndarray of length k containing indices of input array a
-    coresponding to the k smallest values in a.
-    """
-    return np.argpartition(a, k)[:k]
 
-
-def setup_mpi_comm(distributed: bool):
-    if distributed:
-        # get communicator: duplicate from comm world
-        from mpi4py import MPI
-
-        return MPI.COMM_WORLD.Dup()
-    return None
-
-
-def setup_mpi(comm):
-    comm_size = 1
-    comm_rank = 0
-    if comm is not None:
-        comm_size = comm.Get_size()
-        comm_rank = comm.Get_rank()
-
-    return comm_size, comm_rank
-
-
-def shard_dataset(
-    dataset: torch.utils.data.Dataset, comm_size: int, comm_rank: int
-) -> torch.utils.data.Dataset:
-
-    fullsize = len(dataset)
-    chunksize = fullsize // comm_size
-    start = comm_rank * chunksize
-    end = start + chunksize
-    subset_indices = list(range(start, end))
-    # deal with remainder
-    for idx, i in enumerate(range(comm_size * chunksize, fullsize)):
-        if idx == comm_rank:
-            subset_indices.append(i)
-    # split the set
-    dataset = Subset(dataset, subset_indices)
-
-    return dataset
-
-
-def generate_embeddings(
-    cfg: LOFConfig,
+def get_representation(
+    model_type: str,
     model_cfg_path: PathLike,
+    model_weights_path: PathLike,
     h5_file: PathLike,
-    init_weights: PathLike,
+    inference_batch_size: int = 128,
+    device: str = "cuda:0",
     comm=None,
 ) -> np.ndarray:
+    if model_type == "AAE3d":
+        from deepdrivemd.models.aae.inference import generate_embeddings
 
-    comm_size, comm_rank = setup_mpi(comm)
-
-    if comm_rank == 0:
-        t_start = time.time()  # Start timer
-        print("Generating embeddings")
-
-    model_cfg = AAEModelConfig.from_yaml(model_cfg_path)
-
-    model_hparams = AAE3dHyperparams(
-        num_features=model_cfg.num_features,
-        encoder_filters=model_cfg.encoder_filters,
-        encoder_kernel_sizes=model_cfg.encoder_kernel_sizes,
-        generator_filters=model_cfg.generator_filters,
-        discriminator_filters=model_cfg.discriminator_filters,
-        latent_dim=model_cfg.latent_dim,
-        encoder_relu_slope=model_cfg.encoder_relu_slope,
-        generator_relu_slope=model_cfg.generator_relu_slope,
-        discriminator_relu_slope=model_cfg.discriminator_relu_slope,
-        use_encoder_bias=model_cfg.use_encoder_bias,
-        use_generator_bias=model_cfg.use_generator_bias,
-        use_discriminator_bias=model_cfg.use_discriminator_bias,
-        noise_mu=model_cfg.noise_mu,
-        noise_std=model_cfg.noise_std,
-        lambda_rec=model_cfg.lambda_rec,
-        lambda_gp=model_cfg.lambda_gp,
-    )
-
-    encoder = Encoder(
-        cfg.num_points,
-        model_cfg.num_features,
-        model_hparams,
-        str(init_weights),
-    )
-
-    dataset = PointCloudDataset(
-        str(h5_file),
-        "point_cloud",
-        "rmsd",
-        "fnc",
-        cfg.num_points,
-        model_hparams.num_features,
-        split="train",
-        split_ptc=1.0,
-        normalize="box",
-        cms_transform=False,
-    )
-
-    # shard the dataset
-    if comm_size > 1:
-        dataset = shard_dataset(dataset, comm_size, comm_rank)
-
-    # Put encoder on specified CPU/GPU
-    encoder.to(cfg.device)
-
-    # create data loader
-    data_loader = DataLoader(
-        dataset,
-        batch_size=cfg.inference_batch_size,
-        drop_last=False,
-        shuffle=False,
-        pin_memory=True,
-        num_workers=0,
-    )
-
-    # Collect embeddings (requires shuffle=False)
-    embeddings = []
-    for i, (data, *_) in enumerate(data_loader):
-        data = data.to(cfg.device)
-        embeddings.append(encoder.encode(data).cpu().numpy())
-        if (comm_rank == 0) and (i % 100 == 0):
-            print(f"Batch {i}/{len(data_loader)}")
-
-    if comm_size > 1:
-        # gather results
-        embeddings = comm.allgather(embeddings)
-        embeddings = list(itertools.chain.from_iterable(embeddings))
-
-    embeddings = np.concatenate(embeddings)
-
-    if comm_rank == 0:
-        print(f"Generating Embeddings Time: {time.time() - t_start}s")
+        # Generate embeddings with a distributed forward pass
+        embeddings = generate_embeddings(
+            model_cfg_path,
+            h5_file,
+            model_weights_path,
+            inference_batch_size,
+            device,
+            comm,
+        )
+    else:
+        raise ValueError(f"model_type {cfg.model_type} not supported")
 
     return embeddings
 
 
 def local_outlier_factor(
-    embeddings: np.ndarray, n_outliers: int = 500, **kwargs
+    embeddings: np.ndarray, n_outliers: int, **kwargs
 ) -> Tuple[np.ndarray, np.ndarray]:
 
     t_start = time.time()  # Start timer
@@ -180,10 +54,7 @@ def local_outlier_factor(
     # Array with 1 if inlier, -1 if outlier
     clf.fit_predict(embeddings)
 
-    # Only sorts 1 element of negative_outlier_factors_, namely the element
-    # that is position k in the sorted array. The elements above and below
-    # the kth position are partitioned but not sorted. Returns the indices
-    # of the elements of left hand side of the parition i.e. the top k.
+    # Get best scores and corresponding indices
     outlier_inds = topk(clf.negative_outlier_factor_, k=n_outliers)
     outlier_scores = clf.negative_outlier_factor_[outlier_inds]
 
@@ -256,26 +127,32 @@ def main(cfg: LOFConfig, distributed: bool):
         # Get best model hyperparameters and weights
         token = get_model_path(experiment_dir=cfg.experiment_directory)
         assert token is not None
-        model_cfg_path, init_weights = token
+        model_cfg_path, model_weights_path = token
 
     else:
-        virtual_h5_file, model_cfg_path, init_weights = None, None, None
+        virtual_h5_file, model_cfg_path, model_weights_path = None, None, None
 
     if comm_size > 1:
         virtual_h5_file = comm.bcast(virtual_h5_file, 0)
         model_cfg_path = comm.bcast(model_cfg_path, 0)
-        init_weights = comm.bcast(init_weights, 0)
+        model_weights_path = comm.bcast(model_weights_path, 0)
 
-    # Generate embeddings with a distributed forward pass
-    embeddings = generate_embeddings(
-        cfg, model_cfg_path, virtual_h5_file, init_weights, comm=comm
+    # Select machine learning model and generate embeddings
+    embeddings = get_representation(
+        cfg.model_type,
+        model_cfg_path,
+        model_weights_path,
+        virtual_h5_file,
+        cfg.inference_batch_size,
+        cfg.device,
+        comm,
     )
 
     if comm_rank == 0:
         # Perform LocalOutlierFactor outlier detection on embeddings
         outlier_inds, _ = local_outlier_factor(
             embeddings,
-            n_outliers=cfg.num_outliers,
+            cfg.num_outliers,
             n_jobs=cfg.sklearn_num_jobs,
         )
 
