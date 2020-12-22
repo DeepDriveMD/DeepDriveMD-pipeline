@@ -60,6 +60,12 @@ class BaseTaskConfig(BaseSettings):
 
     # Path to experiment directory in order to access data API (set by DeepDriveMD)
     experiment_directory: Path = Path("set_by_deepdrivemd")
+    # Unique stage index (set by DeepDriveMD)
+    stage_idx: int = 0
+    # Unique task index (set by DeepDriveMD)
+    task_idx: int = 0
+    # Output directory for model data (set by DeepDriveMD)
+    output_path: Path = Path("set_by_deepdrivemd")
     # Node local storage path
     node_local_path: Optional[Path] = Path("set_by_deepdrivemd")
 
@@ -79,14 +85,8 @@ class MolecularDynamicsTaskConfig(BaseTaskConfig):
     Auto-generates configuration file for run_openmm.py
     """
 
-    # Directory to store output MD data (set by DeepDriveMD)
-    result_dir: Path = Path("set_by_deepdrivemd")
-    # Unique name for each MD run directory (set by DeepDriveMD)
-    dir_prefix: str = "set_by_deepdrivemd"
     # PDB file used to start MD run (set by DeepDriveMD)
     pdb_file: Optional[Path] = Path("set_by_deepdrivemd")
-    # Index into restart points json
-    restart_point: Optional[int]
     # Initial data directory passed containing PDBs and optional topologies
     initial_pdb_dir: Path = Path(".").resolve()
 
@@ -122,8 +122,6 @@ class MolecularDynamicsStageConfig(BaseStageConfig):
 class AggregationTaskConfig(BaseTaskConfig):
     """Base class for specific aggregation configs to inherit."""
 
-    output_path: Path = Path("set_by_deepdrivemd")
-
 
 class AggregationStageConfig(BaseStageConfig):
     """
@@ -139,8 +137,6 @@ class AggregationStageConfig(BaseStageConfig):
 class MachineLearningTaskConfig(BaseTaskConfig):
     """Base class for specific model configs to inherit."""
 
-    # Output directory for model data (set by DeepDriveMD)
-    output_path: Path = Path("set_by_deepdrivemd")
     # Model ID in for file naming (set by DeepDriveMD)
     model_id: str = "set_by_deepdrivemd"
     # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
@@ -172,9 +168,7 @@ class ModelSelectionStageConfig(BaseStageConfig):
 
 
 class AgentTaskConfig(BaseTaskConfig):
-
-    # Output directory for model data (set by DeepDriveMD)
-    output_path: Path = Path("set_by_deepdrivemd")
+    """Base class for specific agent configs to inherit."""
 
 
 class AgentStageConfig(BaseStageConfig):
