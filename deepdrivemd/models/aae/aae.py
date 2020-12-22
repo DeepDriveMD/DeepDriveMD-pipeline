@@ -68,10 +68,6 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Path:
         node_local_path=cfg.node_local_path,
     )
 
-    from pprint import pprint
-
-    pprint(h5_files)
-
     return virtual_h5_path
 
 

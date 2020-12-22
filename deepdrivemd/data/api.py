@@ -170,17 +170,19 @@ class DeepDriveMD_API:
         # /self.molecular_dynamics_dir
         #   /stage_{stage_idx}
         #       /task_{task_idx}
-        run_dirs = list(self.molecular_dynamics_stage.runs_dir.glob("*/task*"))
+        run_dirs = self.molecular_dynamics_stage.runs_dir.glob("*/task*")
         # Remove any potential files
-        run_dirs = filter(lambda x: x.is_dir(), run_dirs)
+        run_dirs = filter(lambda p: p.is_dir(), run_dirs)
         # Sort by deepdrivemd iteration and sim task id
         run_dirs = sorted(run_dirs)
         # Reverse sort to get last n
         run_dirs = reversed(run_dirs)
         # Evaluate generator up to n items
         run_dirs = list(itertools.islice(run_dirs, n))
+        # Put back in sequential order
+        run_dirs = reversed(run_dirs)
         # Convert pathlib.Path to str
-        run_dirs = list(map(lambda p: p.as_posix(), run_dirs))
+        run_dirs = list(map(str, run_dirs))
 
         return {
             "data_files": glob_file_from_dirs(run_dirs, f"*{data_file_suffix}"),
