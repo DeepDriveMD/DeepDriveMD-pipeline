@@ -1,9 +1,9 @@
-experiment_directory: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment
+experiment_directory: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment_2
+stage_idx: 0
+task_idx: 0
+output_path: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment_2/molecular_dynamics_runs/stage0000/task0000
 node_local_path: null
-result_dir: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment/molecular_dynamics_runs
-dir_prefix: run000_0000
 pdb_file: /homes/abrace/tmp/deepdrivemd_tests/bba_test/inputs/system/1FME-unfolded.pdb
-restart_point: null
 initial_pdb_dir: /homes/abrace/tmp/deepdrivemd_tests/bba_test/inputs
 solvent_type: implicit
 simulation_length_ns: 1.0
