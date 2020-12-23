@@ -3,8 +3,8 @@ stage_idx: 0
 task_idx: 0
 output_path: /homes/abrace/tmp/deepdrivemd_tests/topology_test/test_experiment/molecular_dynamics_runs/stage0000/task0000
 node_local_path: null
-pdb_file: /homes/abrace/tmp/deepdrivemd_tests/bba_test/inputs/l5655_rep2_frame-40-outlier-ind-519040/l5655_rep2_frame-40-outlier-ind-519040.pdb
-initial_pdb_dir: /homes/abrace/tmp/deepdrivemd_tests/bba_test/inputs
+pdb_file: /homes/abrace/tmp/deepdrivemd_tests/topology_test/inputs/l5655_rep2_frame-40-outlier-ind-519040/l5655_rep2_frame-40-outlier-ind-519040.pdb
+initial_pdb_dir: /homes/abrace/tmp/deepdrivemd_tests/topology_test/inputs
 solvent_type: explicit
 top_suffix: ".prmtop"
 simulation_length_ns: 1.0
