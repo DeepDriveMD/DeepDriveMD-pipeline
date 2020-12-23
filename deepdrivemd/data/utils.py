@@ -103,8 +103,6 @@ def get_virtual_h5_file(
     ValueError
         If `all_h5_files` is empty.
         If `last_n` is greater than len(all_h5_files).
-        If `k_random_old` is greater than the number of files
-        left over after selection `last_n`.
     """
 
     if not all_h5_files:
@@ -115,11 +113,6 @@ def get_virtual_h5_file(
     # Partition all HDF5 files into old and new
     last_n_h5_files = all_h5_files[-1 * last_n :]
     old_h5_files = all_h5_files[: -1 * last_n]
-
-    if len(old_h5_files) < k_random_old:
-        raise ValueError(
-            "k_random_old is greater than the number files left over after selecting last_n"
-        )
 
     # Get a random sample of old HDF5 files, or use all
     # if the length of old files is less then k_random_old
