@@ -25,13 +25,6 @@ from molecules.ml.callbacks import (
 from molecules.ml.unsupervised.point_autoencoder import AAE3d, AAE3dHyperparams
 
 
-# mpi4py
-import mpi4py
-
-mpi4py.rc.initialize = False
-from mpi4py import MPI  # noqa: E402
-
-
 def setup_wandb(
     cfg: AAEModelConfig, model: torch.nn.Module, model_path: Path, comm_rank: int
 ) -> Optional[wandb.config]:
@@ -40,8 +33,8 @@ def setup_wandb(
     if (comm_rank == 0) and (cfg.wandb_project_name is not None):
         wandb.init(
             project=cfg.wandb_project_name,
-            name=cfg.model_id,
-            id=cfg.model_id,
+            name=cfg.model_tag,
+            id=cfg.model_tag,
             dir=model_path.as_posix(),
             config=cfg.dict(),
             resume=False,
@@ -57,15 +50,14 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Path:
     # Collect training data
     api = DeepDriveMD_API(cfg.experiment_directory)
     md_data = api.get_last_n_md_runs()
-    print("md_data:", md_data)
     all_h5_files = md_data["data_files"]
 
-    virtual_h5_path, _ = get_virtual_h5_file(
+    virtual_h5_path, h5_files = get_virtual_h5_file(
         output_path=cfg.output_path,
         all_h5_files=all_h5_files,
         last_n=cfg.last_n_h5_files,
         k_random_old=cfg.k_random_old_h5_files,
-        virtual_name=cfg.model_id,
+        virtual_name=cfg.model_tag,
         node_local_path=cfg.node_local_path,
     )
 
@@ -165,7 +157,12 @@ def main(
     comm_size = 1
     comm = None
     if distributed and dist.is_available():
-        # init mpi4py:
+
+        import mpi4py
+
+        mpi4py.rc.initialize = False
+        from mpi4py import MPI  # noqa: E402
+
         MPI.Init_thread()
 
         # get communicator: duplicate from comm world

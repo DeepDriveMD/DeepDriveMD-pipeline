@@ -1,7 +1,7 @@
 import json
 import itertools
 from pathlib import Path
-from typing import Any, List, Dict, Optional, Union
+from typing import Any, List, Dict, Optional, Union, Callable
 import MDAnalysis
 
 PathLike = Union[str, Path]
@@ -12,220 +12,128 @@ def glob_file_from_dirs(dirs: List[str], pattern: str) -> List[str]:
     return [next(Path(d).glob(pattern)).as_posix() for d in dirs]
 
 
+class Stage_API:
+    @staticmethod
+    def task_name(task_idx: int):
+        return f"task{task_idx:04d}"
+
+    @staticmethod
+    def stage_name(stage_idx: int):
+        return f"stage{stage_idx:04d}"
+
+    @staticmethod
+    def unique_name(task_path: Path) -> str:
+        # <stage_name>_<task_name>
+        return f"{task_path.parent.name}_{task_path.name}"
+
+    @staticmethod
+    def get_latest(
+        path: Path, pattern: str, is_dir: bool = False, key: Callable = lambda x: x
+    ) -> Optional[Path]:
+        matches = list(filter(lambda p: p.is_dir() == is_dir, path.glob(pattern)))
+        if not matches:
+            return None
+        return max(matches, key=key)
+
+    def __init__(self, experiment_dir, stage_dir_name):
+        self.experiment_dir = experiment_dir
+        self._stage_dir_name = stage_dir_name
+
+    @property
+    def runs_dir(self) -> Path:
+        return self.experiment_dir.joinpath(self._stage_dir_name)
+
+    def stage_dir(self, stage_idx: int = -1) -> Optional[Path]:
+        r"""Return the stage directory containing task subdirectories.
+
+        Each stage type has a directory containing subdirectories stageXXXX.
+        In each stageXXXX there are several task directories labeled taskXXXX.
+        This function returns a particular stageXXXX directory selected with
+        `stage_idx`. Each iteration of DeepDriveMD corresponds to a stageXXXX
+        directory, they are labeled in increasing order.
+        """
+        if stage_idx == -1:
+            return self.get_latest(self.runs_dir, pattern="stage*", is_dir=True)
+        return self.runs_dir.joinpath(self.stage_name(stage_idx))
+
+    def task_dir(
+        self, stage_idx: int = -1, task_idx: int = 0, mkdir: bool = False
+    ) -> Optional[Path]:
+        _stage_dir = self.stage_dir(stage_idx)
+        if _stage_dir is None:
+            return None
+        _task_dir = _stage_dir.joinpath(self.task_name(task_idx))
+
+        if mkdir:
+            _task_dir.mkdir(exist_ok=True, parents=True)
+
+        return _task_dir
+
+    def _task_file_path(
+        self, stage_idx: int = -1, task_idx: int = 0, suffix=".yaml"
+    ) -> Optional[Path]:
+        _task_dir = self.task_dir(stage_idx, task_idx)
+        if _task_dir is None:
+            return None
+        file_name = f"{self.unique_name(_task_dir)}{suffix}"
+        return _task_dir.joinpath(file_name)
+
+    def config_path(self, stage_idx: int = -1, task_idx: int = 0) -> Optional[Path]:
+        return self._task_file_path(stage_idx, task_idx, suffix=".yaml")
+
+    def json_path(self, stage_idx: int = -1, task_idx: int = 0) -> Optional[Path]:
+        return self._task_file_path(stage_idx, task_idx, suffix=".json")
+
+    def write_task_json(
+        self, data: List[Dict[str, Any]], stage_idx: int = -1, task_idx: int = 0
+    ):
+        r"""Dump `data` to a new JSON file for the agent.
+
+        Dump `data` to a JSON file written to the directory specified
+        by `stage_idx` and `task_idx`.
+
+        Parameters
+        ----------
+        data : List[Dict[str, Any]]
+            List of dictionarys to pass to `json.dump()`. Values in the
+            dictionarys must be JSON serializable.
+        """
+        path = self.json_path(stage_idx, task_idx)
+        assert path is not None
+        with open(path, "w") as f:
+            json.dump(data, f)
+
+    def read_task_json(
+        self, stage_idx: int = -1, task_idx: int = 0
+    ) -> Optional[List[Dict[str, Any]]]:
+        path = self.json_path(stage_idx, task_idx)
+        if path is None:
+            return None
+        with open(path, "r") as f:
+            data = json.load(f)
+        return data
+
+
 class DeepDriveMD_API:
 
-    # Directory structure for experiment
+    # Directory structure for experiment stages
     MOLECULAR_DYNAMICS_DIR = "molecular_dynamics_runs"
     AGGREGATE_DIR = "aggregation_runs"
     MACHINE_LEARNING_DIR = "machine_learning_runs"
     MODEL_SELECTION_DIR = "model_selection_runs"
     AGENT_DIR = "agent_runs"
-    TMP_DIR = "tmp"
-
-    # File name and subdirectory prefixes
-    AGGREGATION_PREFIX = "aggregation_"
-    ML_PREFIX = "ml_"
-    MODEL_SELECTION_PREFIX = "modelselection_"
-    AGENT_PREFIX = "agent_"
-
-    @staticmethod
-    def idx_label(idx):
-        return f"{idx:04d}"
-
-    @staticmethod
-    def get_idx_label(path: Path) -> str:
-        return path.with_suffix("").name.split("_")[-1]
-
-    @staticmethod
-    def get_latest(path: Path, pattern: str, is_dir=False) -> Optional[Path]:
-        # Assumes file has format XXX_YYY_..._{iteration:03d}.ZZZ
-        matches = list(filter(lambda p: p.is_dir() == is_dir, path.glob(pattern)))
-        if not matches:
-            return None
-        return max(matches, key=DeepDriveMD_API.get_idx_label)
-
-    @staticmethod
-    def next_idx(path: Path, pattern: str) -> int:
-        latest = DeepDriveMD_API.get_latest(path, pattern)
-        if latest is None:
-            return 0
-        idx = int(DeepDriveMD_API.get_idx_label(latest))
-        return idx
 
     def __init__(self, experiment_directory: PathLike):
         self.experiment_dir = Path(experiment_directory)
+        self.molecular_dynamics_stage = self._stage_api(self.MOLECULAR_DYNAMICS_DIR)
+        self.aggregation_stage = self._stage_api(self.AGGREGATE_DIR)
+        self.machine_learning_stage = self._stage_api(self.MACHINE_LEARNING_DIR)
+        self.model_selection_stage = self._stage_api(self.MODEL_SELECTION_DIR)
+        self.agent_stage = self._stage_api(self.AGENT_DIR)
 
-    @property
-    def molecular_dynamics_dir(self) -> Path:
-        return self.experiment_dir.joinpath(self.MOLECULAR_DYNAMICS_DIR)
-
-    @property
-    def aggregation_dir(self) -> Path:
-        return self.experiment_dir.joinpath(self.AGGREGATE_DIR)
-
-    @property
-    def machine_learning_dir(self) -> Path:
-        return self.experiment_dir.joinpath(self.MACHINE_LEARNING_DIR)
-
-    @property
-    def model_selection_dir(self) -> Path:
-        return self.experiment_dir.joinpath(self.MODEL_SELECTION_DIR)
-
-    @property
-    def agent_dir(self) -> Path:
-        return self.experiment_dir.joinpath(self.AGENT_DIR)
-
-    @property
-    def tmp_dir(self) -> Path:
-        return self.experiment_dir.joinpath(self.TMP_DIR)
-
-    def aggregation_path(self, iteration: int = -1) -> Optional[Path]:
-        r"""Return the aggregated HDF5 path for a given `iteration`.
-
-        Parameters
-        ----------
-        iteration : int
-            Iteration of DeepDriveMD. Defaults to most recently created.
-
-        Returns
-        -------
-        Path, optional
-            Path to HDF5 file containing aggregated data. or
-            `None` if `iteration == -1` and no HDF5 files exist.
-        """
-        if iteration == -1:
-            return self.get_latest(
-                self.aggregation_dir, f"{self.AGGREGATION_PREFIX}*.h5"
-            )
-        return self.aggregation_dir.joinpath(
-            f"{self.AGGREGATION_PREFIX}{self.idx_label(iteration)}.h5"
-        )
-
-    def machine_learning_path(self, iteration: int = -1) -> Optional[Path]:
-        r"""Return the ML model path for a given `iteration`.
-
-        Parameters
-        ----------
-        iteration : int
-            Iteration of DeepDriveMD. Defaults to most recently created.
-
-        Returns
-        -------
-        Path, optional
-            Path to model directory containing ML run. or `None` if
-            `iteration == -1` and no machine learning directories exist.
-        """
-        if iteration == -1:
-            return self.get_latest(
-                self.machine_learning_dir, f"{self.ML_PREFIX}*", is_dir=True
-            )
-        return self.machine_learning_dir.joinpath(
-            f"{self.ML_PREFIX}{self.idx_label(iteration)}"
-        )
-
-    def agent_path(self, iteration: int = -1) -> Optional[Path]:
-        r"""Return the agent path for a given `iteration`.
-
-        Parameters
-        ----------
-        iteration : int
-            Iteration of DeepDriveMD. Defaults to most recently created.
-
-        Returns
-        -------
-        Path, optional
-            Path to agent directory containing agent run. or
-            `None` if `iteration == -1` and no agent directories exist.
-        """
-        if iteration == -1:
-            return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*", is_dir=True)
-        return self.agent_dir.joinpath(
-            f"{self.AGENT_PREFIX}{self.idx_label(iteration)}"
-        )
-
-    def aggregation_config_path(self, iteration: int = -1) -> Optional[Path]:
-        r"""Return the aggregation config file path for a given `iteration`.
-
-        Parameters
-        ----------
-        iteration : int
-            Iteration of DeepDriveMD. Defaults to most recently created.
-
-        Returns
-        -------
-        Path, optional
-            Path to yaml file containing aggregation config or
-            `None` if `iteration == -1` and no yaml files exist.
-        """
-        if iteration == -1:
-            return self.get_latest(
-                self.aggregation_dir, f"{self.AGGREGATION_PREFIX}*.yaml"
-            )
-        return self.aggregation_dir.joinpath(
-            f"{self.AGGREGATION_PREFIX}{self.idx_label(iteration)}.yaml"
-        )
-
-    def machine_learning_config_path(self, iteration: int = -1) -> Optional[Path]:
-        r"""Return the machine learning config file path for a given `iteration`,
-
-        Parameters
-        ----------
-        iteration : int
-            Iteration of DeepDriveMD. Defaults to most recently created.
-
-        Returns
-        -------
-        Path, optional
-            Path to yaml file containing machine learning config or
-            `None` if `iteration == -1` and no yaml files exist.
-        """
-        if iteration == -1:
-            return self.get_latest(self.machine_learning_dir, f"{self.ML_PREFIX}*.yaml")
-        return self.machine_learning_dir.joinpath(
-            f"{self.ML_PREFIX}{self.idx_label(iteration)}.yaml"
-        )
-
-    def model_selection_config_path(self, iteration: int = -1) -> Optional[Path]:
-        r"""Return the model selection config file path for a given `iteration`,
-
-        Parameters
-        ----------
-        iteration : int
-            Iteration of DeepDriveMD. Defaults to most recently created.
-
-        Returns
-        -------
-        Path, optional
-            Path to yaml file containing machine learning config or
-            `None` if `iteration == -1` and no yaml files exist.
-        """
-        if iteration == -1:
-            return self.get_latest(
-                self.model_selection_dir, f"{self.MODEL_SELECTION_PREFIX}*.yaml"
-            )
-        return self.model_selection_dir.joinpath(
-            f"{self.MODEL_SELECTION_PREFIX}{self.idx_label(iteration)}.yaml"
-        )
-
-    def agent_config_path(self, iteration: int = -1) -> Optional[Path]:
-        r"""Return the agent config file path for a given `iteration`.
-
-        Parameters
-        ----------
-        iteration : int
-            Iteration of DeepDriveMD. Defaults to most recently created.
-
-        Returns
-        -------
-        Path, optional
-            Path to yaml file containing agent config or
-            `None` if `iteration == -1` and no yaml files exist.
-        """
-        if iteration == -1:
-            return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*.yaml")
-        return self.agent_dir.joinpath(
-            f"{self.AGENT_PREFIX}{self.idx_label(iteration)}.yaml"
-        )
+    def _stage_api(self, dirname):
+        """Factory function for Stage_API."""
+        return Stage_API(self.experiment_dir, dirname)
 
     def get_last_n_md_runs(
         self,
@@ -259,18 +167,22 @@ class DeepDriveMD_API:
             each containing a list of `n` paths globed from the the latest `n`
             MD run directories.
         """
-        # Run dirs: f"run{deepdrivemd_iteration:03d}_{sim_task_id:04d}"
-        run_dirs = self.molecular_dynamics_dir.glob("*")
+        # /self.molecular_dynamics_dir
+        #   /stage_{stage_idx}
+        #       /task_{task_idx}
+        run_dirs = self.molecular_dynamics_stage.runs_dir.glob("*/task*")
         # Remove any potential files
-        run_dirs = filter(lambda x: x.is_dir(), run_dirs)
-        # Convert pathlib.Path to str
-        run_dirs = map(lambda x: x.as_posix(), run_dirs)
+        run_dirs = filter(lambda p: p.is_dir(), run_dirs)
         # Sort by deepdrivemd iteration and sim task id
         run_dirs = sorted(run_dirs)
         # Reverse sort to get last n
         run_dirs = reversed(run_dirs)
         # Evaluate generator up to n items
         run_dirs = list(itertools.islice(run_dirs, n))
+        # Put back in sequential order
+        run_dirs = reversed(run_dirs)
+        # Convert pathlib.Path to str
+        run_dirs = list(map(str, run_dirs))
 
         return {
             "data_files": glob_file_from_dirs(run_dirs, f"*{data_file_suffix}"),
@@ -280,87 +192,9 @@ class DeepDriveMD_API:
             ),
         }
 
-    def get_model_selection_json_path(self, iteration: int = -1) -> Optional[Path]:
-        r"""Get the JSON path written by the model selection at `iteration`.
-
-        Parameters
-        ----------
-        iteration : int
-            Iteration of DeepDriveMD. Defaults to most recently created.
-
-        Returns
-        -------
-        Path, optional
-            Path to JSON file containing model selection metadata or
-            `None` if `iteration == -1` and no JSON files exist.
-        """
-        if iteration == -1:
-            return self.get_latest(
-                self.model_selection_dir, f"{self.MODEL_SELECTION_PREFIX}*.json"
-            )
-        return self.model_selection_dir.joinpath(
-            f"{self.MODEL_SELECTION_PREFIX}{self.idx_label(iteration)}.json"
-        )
-
-    def write_model_selection_json(self, data: List[Dict[str, Any]]):
-        r"""Dump `data` to a new JSON file for the agent.
-
-        Dump `data` to a JSON file with the file name in increasing order
-        from previous calls to `write_model_selection_json`.
-
-        Parameters
-        ----------
-        data : List[Dict[str, Any]]
-            List of dictionarys to pass to `json.dump()`. Values in the
-            dictionarys must be JSON serializable.
-        """
-        idx = self.next_idx(
-            self.model_selection_dir, f"{self.MODEL_SELECTION_PREFIX}*.json"
-        )
-        new_restart_path = self.get_model_selection_json_path(idx)
-        assert new_restart_path is not None
-        with open(new_restart_path, "w") as f:
-            json.dump(data, f)
-
-    def get_agent_json_path(self, iteration: int = -1) -> Optional[Path]:
-        r"""Get the JSON path written by the agent at `iteration`.
-
-        Parameters
-        ----------
-        iteration : int
-            Iteration of DeepDriveMD. Defaults to most recently created.
-
-        Returns
-        -------
-        Path, optional
-            Path to JSON file containing agent metadata or
-            `None` if `iteration == -1` and no JSON files exist.
-        """
-        if iteration == -1:
-            return self.get_latest(self.agent_dir, f"{self.AGENT_PREFIX}*.json")
-        return self.agent_dir.joinpath(
-            f"{self.AGENT_PREFIX}{self.idx_label(iteration)}.json"
-        )
-
-    def write_agent_json(self, data: List[Dict[str, Any]]):
-        r"""Dump `data` to a new JSON file for the agent.
-
-        Dump `data` to a JSON file with the file name in increasing order
-        from previous calls to `write_agent_json`.
-
-        Parameters
-        ----------
-        data : List[Dict[str, Any]]
-            List of dictionarys to pass to `json.dump()`. Values in the
-            dictionarys must be JSON serializable.
-        """
-        idx = self.next_idx(self.agent_dir, f"{self.AGENT_PREFIX}*.json")
-        new_restart_path = self.get_agent_json_path(idx)
-        assert new_restart_path is not None
-        with open(new_restart_path, "w") as f:
-            json.dump(data, f)
-
-    def get_restart_pdb(self, index: int) -> Dict[str, Any]:
+    def get_restart_pdb(
+        self, index: int, stage_idx: int = -1, task_idx: int = 0
+    ) -> Dict[str, Any]:
         r"""Gets a single datum for the restart points JSON file.
 
         Parameters
@@ -374,10 +208,9 @@ class DeepDriveMD_API:
         Dict[Any]
             Dictionary entry written by the outlier detector.
         """
-        path = self.get_agent_json_path()
-        assert path is not None
-        with open(path, "r") as f:
-            return json.load(f)[index]
+        data = self.agent_stage.read_task_json(stage_idx, task_idx)
+        assert data is not None
+        return data[index]
 
     @staticmethod
     def get_initial_pdbs(initial_pdb_dir: PathLike) -> List[Path]:

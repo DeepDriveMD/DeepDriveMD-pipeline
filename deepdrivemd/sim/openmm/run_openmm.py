@@ -16,18 +16,19 @@ class SimulationContext:
 
         self.cfg = cfg
         self.api = DeepDriveMD_API(cfg.experiment_directory)
+        self._prefix = self.api.molecular_dynamics_stage.unique_name(cfg.output_path)
 
-        # Use node local storage if available. Otherwise, write to result directory.
+        # Use node local storage if available. Otherwise, write to output directory.
         if cfg.node_local_path is not None:
-            self.workdir = cfg.node_local_path.joinpath(cfg.dir_prefix)
+            self.workdir = cfg.node_local_path.joinpath(self._prefix)
         else:
-            self.workdir = cfg.result_dir.joinpath(cfg.dir_prefix)
+            self.workdir = cfg.output_path
 
         self._init_workdir()
 
     @property
     def _sim_prefix(self) -> Path:
-        return self.workdir.joinpath(self.cfg.dir_prefix)
+        return self.workdir.joinpath(self._prefix)
 
     @property
     def pdb_file(self) -> str:
@@ -60,7 +61,7 @@ class SimulationContext:
     def _init_workdir(self):
         """Setup workdir and copy PDB/TOP files."""
 
-        self.workdir.mkdir()
+        self.workdir.mkdir(exist_ok=True)
 
         self._pdb_file = self._get_pdb_file()
 
@@ -74,13 +75,13 @@ class SimulationContext:
             # Initial iteration
             return self._copy_pdb_file()
 
-        assert self.cfg.restart_point is not None
         # Iterations after outlier detection
-        outlier = self.api.get_restart_pdb(self.cfg.restart_point)
-        pdb_file = self.workdir.joinpath("input.pdb")
+        outlier = self.api.get_restart_pdb(self.cfg.task_idx)
+        system_name = self.api.get_system_name(outlier["structure_file"])
+        pdb_file = self.workdir.joinpath(f"{system_name}__{self._prefix}.pdb")
         self.api.write_pdb(
             pdb_file,
-            outlier["input_pdb_file"],
+            outlier["structure_file"],
             outlier["traj_file"],
             outlier["frame"],
             self.cfg.in_memory,
@@ -102,7 +103,9 @@ class SimulationContext:
         return Path(local_top_file)
 
     def move_results(self):
-        shutil.move(self.workdir, self.cfg.result_dir)
+        if self.workdir != self.cfg.output_path:
+            for p in self.workdir.iterdir():
+                p.rename(self.cfg.output_path.joinpath(p.name))
 
 
 def configure_reporters(

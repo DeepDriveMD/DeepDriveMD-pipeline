@@ -9,4 +9,4 @@ export LC_ALL=en_US.utf-8
 export LANG=en_US.utf-8
 
 echo ${cmd_params}
-python3 /path/to/optics.py $cmd_params --distributed
+python3 deepdrivemd/agents/lof/lof.py $cmd_params --distributed
