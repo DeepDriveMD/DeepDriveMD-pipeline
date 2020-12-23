@@ -1,4 +1,4 @@
-title: BBA refactor test
+title: BBA integration test
 resource: llnl.lassen
 queue: pbatch
 schema_: local

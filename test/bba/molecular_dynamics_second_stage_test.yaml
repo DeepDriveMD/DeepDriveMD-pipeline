@@ -6,6 +6,7 @@ node_local_path: null
 pdb_file: null 
 initial_pdb_dir: /homes/abrace/tmp/deepdrivemd_tests/bba_test/inputs
 solvent_type: implicit
+top_suffix: null
 simulation_length_ns: 1.0
 report_interval_ps: 1.0
 dt_ps: 0.002
