@@ -1,0 +1,57 @@
+experiment_directory: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment_2
+stage_idx: 0
+task_idx: 0
+output_path: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment_2/machine_learning_runs/stage0000/task0000
+node_local_path: null
+model_tag: stage0000_task0000
+init_weights_path: /homes/abrace/runs/model-bba-pasc-run1/checkpoint/epoch-78-20201203-023309.pt
+last_n_h5_files: 2
+k_random_old_h5_files: 3
+dataset_name: point_cloud
+rmsd_name: rmsd
+fnc_name: fnc
+num_points: 28
+num_features: 0
+epochs: 10
+batch_size: 32
+optimizer_name: Adam
+optimizer_lr: 0.0001
+latent_dim: 10
+encoder_filters:
+- 64
+- 128
+- 256
+- 256
+- 512
+encoder_kernel_sizes:
+- 5
+- 3
+- 3
+- 1
+- 1
+generator_filters:
+- 64
+- 128
+- 512
+- 1024
+discriminator_filters:
+- 512
+- 512
+- 128
+- 64
+encoder_relu_slope: 0.0
+generator_relu_slope: 0.0
+discriminator_relu_slope: 0.0
+use_encoder_bias: true
+use_generator_bias: true
+use_discriminator_bias: true
+noise_mu: 0.0
+noise_std: 1.0
+lambda_rec: 0.5
+lambda_gp: 10.0
+embed_interval: 1
+tsne_interval: 5
+sample_interval: 20
+num_data_workers: 0
+dataset_location: storage
+wandb_project_name: null
