@@ -27,11 +27,11 @@ molecular_dynamics_stage:
     num_tasks: 1
     task_config:
         experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
-        result_dir: set_by_deepdrivemd
-        dir_prefix: set_by_deepdrivemd
         pdb_file: set_by_deepdrivemd
-        restart_point: null
         initial_pdb_dir: /Users/abrace/src/DeepDriveMD-pipeline
 aggregation_stage:
     pre_exec: []
@@ -50,8 +50,10 @@ aggregation_stage:
     skip_aggregation: false
     task_config:
         experiment_directory: set_by_deepdrivemd
-        node_local_path: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
         output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
 machine_learning_stage:
     pre_exec: []
     executable: []
@@ -69,8 +71,11 @@ machine_learning_stage:
     retrain_freq: 1
     task_config:
         experiment_directory: set_by_deepdrivemd
-        node_local_path: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
         output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        model_tag: set_by_deepdrivemd
         init_weights_path: null
 model_selection_stage:
     pre_exec: []
@@ -88,6 +93,9 @@ model_selection_stage:
         thread_type: null
     task_config:
         experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
 agent_stage:
     pre_exec: []
@@ -105,5 +113,7 @@ agent_stage:
         thread_type: null
     task_config:
         experiment_directory: set_by_deepdrivemd
-        node_local_path: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
         output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
