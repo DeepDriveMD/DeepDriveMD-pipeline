@@ -89,7 +89,7 @@ machine_learning_stage:
     - unset CUDA_VISIBLE_DEVICES
     - export OMP_NUM_THREADS=4
     executable:
-    - cat /dev/null; jsrun -n 1 -g 4 -a 4 -c 44 -d packed /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/bin/lassen.sh
+    - cat /dev/null; jsrun -n 1 -g 4 -a 4 -c 40 -d packed /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/bin/lassen.sh
     arguments:
     - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/train.py
