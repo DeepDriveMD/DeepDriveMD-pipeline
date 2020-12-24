@@ -191,6 +191,7 @@ class PipelineManager:
         cfg.task_config.stage_idx = self.stage_idx
         cfg.task_config.task_idx = task_idx
         cfg.task_config.node_local_path = self.cfg.node_local_path
+        cfg.task_config.output_path = output_path
 
         # Write yaml configuration
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
