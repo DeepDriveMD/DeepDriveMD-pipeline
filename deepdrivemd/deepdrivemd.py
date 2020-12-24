@@ -12,6 +12,7 @@ def generate_task(cfg: BaseStageConfig) -> Task:
     task = Task()
     task.cpu_reqs = cfg.cpu_reqs.dict()
     task.gpu_reqs = cfg.gpu_reqs.dict()
+    print("task dbg: ", task.cpu_reqs, "\n", task.gpu_reqs)
     task.pre_exec = cfg.pre_exec
     task.executable = cfg.executable
     task.arguments = cfg.arguments
@@ -112,7 +113,8 @@ class PipelineManager:
             cfg_path = stage_api.config_path(self.stage_idx, task_idx)
             cfg.task_config.dump_yaml(cfg_path)
             task = generate_task(cfg)
-            task.arguments += ["-c", cfg_path]
+            task.arguments += ["-c", cfg_path.as_posix()]
+            print("MD dbg: ", vars(task))
             stage.add_tasks(task)
 
         return stage
@@ -138,7 +140,7 @@ class PipelineManager:
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
-        task.arguments += ["-c", cfg_path]
+        task.arguments += ["-c", cfg_path.as_posix()]
         stage.add_tasks(task)
 
         return stage
@@ -168,7 +170,8 @@ class PipelineManager:
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
-        task.arguments += ["-c", cfg_path]
+        task.arguments += ["-c", cfg_path.as_posix()]
+        print("ML dbg: ", vars(task))
         stage.add_tasks(task)
 
         return stage
@@ -193,7 +196,8 @@ class PipelineManager:
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
-        task.arguments += ["-c", cfg_path]
+        task.arguments += ["-c", cfg_path.as_posix()]
+        print("MS dbg: ", vars(task))
         stage.add_tasks(task)
 
         return stage
@@ -219,7 +223,8 @@ class PipelineManager:
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
-        task.arguments += ["-c", cfg_path]
+        task.arguments += ["-c", cfg_path.as_posix()]
+        print("Agent dbg: ", vars(task))
         stage.add_tasks(task)
 
         return stage
