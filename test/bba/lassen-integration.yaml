@@ -29,7 +29,7 @@ molecular_dynamics_stage:
         process_type: null
         threads_per_process: 1
         thread_type: CUDA
-    num_tasks: 10
+    num_tasks: 12
     task_config:
         experiment_directory: set_by_deepdrivemd
         stage_idx: 0
@@ -112,8 +112,8 @@ machine_learning_stage:
         node_local_path: set_by_deepdrivemd
         model_tag: set_by_deepdrivemd
         init_weights_path: /p/gpfs1/brace3/src/DeepDriveMD-pipeline/data/bba/epoch-130-20201203-150026.pt
-        last_n_h5_files: 10
-        k_random_old_h5_files: 10
+        last_n_h5_files: 12
+        k_random_old_h5_files: 12
         dataset_name: point_cloud
         rmsd_name: rmsd
         fnc_name: fnc
@@ -215,10 +215,10 @@ agent_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
-        num_outliers: 10
+        num_outliers: 12
         n_traj_frames: 1000
-        k_random_old_h5_files: 10
-        last_n_h5_files: 10
+        k_random_old_h5_files: 12
+        last_n_h5_files: 12
         sklearn_num_jobs: -1
         model_type: "AAE3d"
         inference_batch_size: 128
