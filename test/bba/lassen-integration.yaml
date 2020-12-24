@@ -173,8 +173,8 @@ model_selection_stage:
     cpu_reqs:
         processes: 1
         process_type: null
-        threads_per_process: 1
-        thread_type: null
+        threads_per_process: 4
+        thread_type: OpenMP
     gpu_reqs:
         processes: 0
         process_type: null
