@@ -8,17 +8,17 @@ max_iteration: 4
 cpus_per_node: 42
 gpus_per_node: 4
 hardware_threads_per_cpu: 4
-experiment_directory: /TODO/ddmd_refactor_experiments/tests/bba_short_test
+experiment_directory: /p/gpfs1/brace3/runs/ddmd_test_experiments/bba_integration_0
 node_local_path: null
 molecular_dynamics_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh
     - module load cuda/9.1.85
-    - conda activate /usr/workspace/cv_ddmd/conda/openmm
+    - conda activate conda-openmm
     executable:
-    - /usr/workspace/cv_ddmd/conda/openmm/bin/python
+    - /g/g15/brace3/.conda/envs/conda-openmm/bin/python
     arguments:
-    - /TODO/deepdrivemd/sim/openmm/run_openmm.py
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/sim/openmm/run_openmm.py
     cpu_reqs:
         processes: 1
         process_type: null
@@ -37,7 +37,7 @@ molecular_dynamics_stage:
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
         pdb_file: set_by_deepdrivemd
-        initial_pdb_dir: /TODO/inputs
+        initial_pdb_dir: /p/gpfs1/brace3/data/bba/ddmd_input
         solvent_type: implicit
         top_suffix: null
         simulation_length_ns: 1.0
@@ -46,7 +46,7 @@ molecular_dynamics_stage:
         temperature_kelvin: 310.0
         heat_bath_friction_coef: 1.0
         wrap: false
-        reference_pdb_file: /TODO/inputs/1FME-folded.pdb
+        reference_pdb_file: /p/gpfs1/brace3/data/bba/ddmd_input/1FME-folded.pdb
         openmm_selection:
         - CA
         mda_selection: protein and name CA
@@ -84,15 +84,15 @@ machine_learning_stage:
     - export LANG=en_US.utf-8
     - export LC_ALL=en_US.utf-8
     - export HDF5_USE_FILE_LOCKING=FALSE
-    - conda activate /usr/workspace/cv_ddmd/conda/pytorch
+    - conda activate conda-pytorch
     - export LD_LIBRARY_PATH=/usr/workspace/cv_ddmd/lee1078/anaconda/envs/cuda/targets/ppc64le-linux/lib/:$LD_LIBRARY_PATH
     - unset CUDA_VISIBLE_DEVICES
     - export OMP_NUM_THREADS=4
     executable:
-    - cat /dev/null; jsrun -n 1 -g 4 -a 4 -c 44 -d packed /TODO/deepdrivemd/models/aae/bin/lassen.sh
+    - cat /dev/null; jsrun -n 1 -g 4 -a 4 -c 44 -d packed /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/bin/lassen.sh
     arguments:
-    - /usr/workspace/cv_ddmd/conda/pytorch/bin/python
-    - /TODO/deepdrivemd/models/aae/train.py
+    - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/train.py
     cpu_reqs:
         processes: 1
         process_type: MPI
@@ -111,7 +111,7 @@ machine_learning_stage:
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
         model_tag: set_by_deepdrivemd
-        init_weights_path: /TODO/inputs/epoch-78-20201203-023309.pt
+        init_weights_path: /p/gpfs1/brace3/src/DeepDriveMD-pipeline/data/bba/epoch-130-20201203-150026.pt
         last_n_h5_files: 10
         k_random_old_h5_files: 10
         dataset_name: point_cloud
@@ -165,11 +165,11 @@ machine_learning_stage:
 model_selection_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh
-    - conda activate /usr/workspace/cv_ddmd/conda/pytorch
+    - conda activate conda-pytorch
     executable:
-    - /usr/workspace/cv_ddmd/conda/pytorch/bin/python
+    - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
     arguments:
-    - /TODO/deepdrivemd/selection/latest/select.py
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select.py
     cpu_reqs:
         processes: 1
         process_type: null
@@ -189,16 +189,16 @@ model_selection_stage:
 agent_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh
-    - conda activate /usr/workspace/cv_ddmd/conda/pytorch
+    - conda activate conda-pytorch
     - export LANG=en_US.utf-8
     - export LC_ALL=en_US.utf-8
     - unset CUDA_VISIBLE_DEVICES
     - export OMP_NUM_THREADS=4
     executable:
-    - cat /dev/null; jsrun -n 1 -a 4 -g 4 -r 1 -c 10 /TODO/deepdrivemd/agents/lof/bin/lassen.sh
+    - cat /dev/null; jsrun -n 1 -a 4 -g 4 -r 1 -c 10 /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/agents/lof/bin/lassen.sh
     arguments:
-    - /usr/workspace/cv_ddmd/conda/pytorch/bin/python
-    - /TODO/deepdrivemd/agents/lof/lof.py
+    - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/agents/lof/lof.py
     cpu_reqs:
         processes: 1
         process_type: null
