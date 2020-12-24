@@ -6,7 +6,7 @@ import wandb
 from deepdrivemd.models.aae.config import AAEModelConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
-from deepdrivemd.selection.latest.select import get_model_path
+from deepdrivemd.selection.latest.select_model import get_model_path
 
 # torch stuff
 import torch

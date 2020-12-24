@@ -9,7 +9,7 @@ from deepdrivemd.utils import setup_mpi_comm, setup_mpi, topk
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
 from deepdrivemd.agents.lof.config import LOFConfig
-from deepdrivemd.selection.latest.select import get_model_path
+from deepdrivemd.selection.latest.select_model import get_model_path
 
 PathLike = Union[str, Path]
 

@@ -169,7 +169,7 @@ model_selection_stage:
     executable:
     - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
     arguments:
-    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select.py
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select_model.py
     cpu_reqs:
         processes: 1
         process_type: null
