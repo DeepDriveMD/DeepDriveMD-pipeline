@@ -1,4 +1,4 @@
-title: BBA refactor test
+title: BBA integration test
 resource: llnl.lassen
 queue: pbatch
 schema_: local
@@ -6,33 +6,55 @@ project: cv19-a01
 walltime_min: 60
 max_iteration: 4
 cpus_per_node: 42
-gpus_per_node: 6
+gpus_per_node: 4
 hardware_threads_per_cpu: 4
-experiment_directory: /path/to/experiment
+experiment_directory: /p/gpfs1/brace3/runs/ddmd_test_experiments/bba_integration_0
 node_local_path: null
 molecular_dynamics_stage:
-    pre_exec: []
-    executable: []
-    arguments: []
+    pre_exec:
+    - . /etc/profile.d/conda.sh
+    - module load cuda/9.1.85
+    - conda activate conda-openmm
+    executable:
+    - /g/g15/brace3/.conda/envs/conda-openmm/bin/python
+    arguments:
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/sim/openmm/run_openmm.py
     cpu_reqs:
         processes: 1
         process_type: null
-        threads_per_process: 1
-        thread_type: null
+        threads_per_process: 4
+        thread_type: OpenMP
     gpu_reqs:
-        processes: 0
+        processes: 1
         process_type: null
-        threads_per_process: 0
-        thread_type: null
-    num_tasks: 1
+        threads_per_process: 1
+        thread_type: CUDA
+    num_tasks: 10
     task_config:
         experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
-        result_dir: set_by_deepdrivemd
-        dir_prefix: set_by_deepdrivemd
         pdb_file: set_by_deepdrivemd
-        restart_point: null
-        initial_pdb_dir: /Users/abrace/src/DeepDriveMD-pipeline
+        initial_pdb_dir: /p/gpfs1/brace3/data/bba/ddmd_input
+        solvent_type: implicit
+        top_suffix: null
+        simulation_length_ns: 1.0
+        report_interval_ps: 1.0
+        dt_ps: 0.002
+        temperature_kelvin: 310.0
+        heat_bath_friction_coef: 1.0
+        wrap: false
+        reference_pdb_file: /p/gpfs1/brace3/data/bba/ddmd_input/1FME-folded.pdb
+        openmm_selection:
+        - CA
+        mda_selection: protein and name CA
+        threshold: 8.0
+        contact_map: true
+        point_cloud: true
+        fraction_of_contacts: true
+        in_memory: true
 aggregation_stage:
     pre_exec: []
     executable: []
@@ -47,35 +69,107 @@ aggregation_stage:
         process_type: null
         threads_per_process: 0
         thread_type: null
-    skip_aggregation: false
+    skip_aggregation: true
     task_config:
         experiment_directory: set_by_deepdrivemd
-        node_local_path: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
         output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
 machine_learning_stage:
-    pre_exec: []
-    executable: []
-    arguments: []
+    pre_exec:
+    - . /etc/profile.d/conda.sh
+    - module load gcc/7.3.1
+    - module load cuda/10.1.243
+    - export LANG=en_US.utf-8
+    - export LC_ALL=en_US.utf-8
+    - export HDF5_USE_FILE_LOCKING=FALSE
+    - conda activate conda-pytorch
+    - export LD_LIBRARY_PATH=/usr/workspace/cv_ddmd/lee1078/anaconda/envs/cuda/targets/ppc64le-linux/lib/:$LD_LIBRARY_PATH
+    - unset CUDA_VISIBLE_DEVICES
+    - export OMP_NUM_THREADS=4
+    executable:
+    - cat /dev/null; jsrun -n 1 -g 4 -a 4 -c 44 -d packed /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/bin/lassen.sh
+    arguments:
+    - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/train.py
     cpu_reqs:
+        processes: 1
+        process_type: MPI
+        threads_per_process: 4
+        thread_type: OpenMP
+    gpu_reqs:
         processes: 1
         process_type: null
         threads_per_process: 1
-        thread_type: null
-    gpu_reqs:
-        processes: 0
-        process_type: null
-        threads_per_process: 0
-        thread_type: null
+        thread_type: CUDA
     retrain_freq: 1
     task_config:
         experiment_directory: set_by_deepdrivemd
-        node_local_path: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
         output_path: set_by_deepdrivemd
-        init_weights_path: null
+        node_local_path: set_by_deepdrivemd
+        model_tag: set_by_deepdrivemd
+        init_weights_path: /p/gpfs1/brace3/src/DeepDriveMD-pipeline/data/bba/epoch-130-20201203-150026.pt
+        last_n_h5_files: 10
+        k_random_old_h5_files: 10
+        dataset_name: point_cloud
+        rmsd_name: rmsd
+        fnc_name: fnc
+        num_points: 28
+        num_features: 0
+        epochs: 10
+        batch_size: 32
+        optimizer_name: Adam
+        optimizer_lr: 0.0001
+        latent_dim: 10
+        encoder_filters:
+        - 64
+        - 128
+        - 256
+        - 256
+        - 512
+        encoder_kernel_sizes:
+        - 5
+        - 3
+        - 3
+        - 1
+        - 1
+        generator_filters:
+        - 64
+        - 128
+        - 512
+        - 1024
+        discriminator_filters:
+        - 512
+        - 512
+        - 128
+        - 64
+        encoder_relu_slope: 0.0
+        generator_relu_slope: 0.0
+        discriminator_relu_slope: 0.0
+        use_encoder_bias: true
+        use_generator_bias: true
+        use_discriminator_bias: true
+        noise_mu: 0.0
+        noise_std: 1.0
+        lambda_rec: 0.5
+        lambda_gp: 10.0
+        embed_interval: 1
+        tsne_interval: 11
+        sample_interval: 20
+        num_data_workers: 0
+        dataset_location: storage
+        wandb_project_name: null
 model_selection_stage:
-    pre_exec: []
-    executable: []
-    arguments: []
+    pre_exec:
+    - . /etc/profile.d/conda.sh
+    - conda activate conda-pytorch
+    executable:
+    - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
+    arguments:
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select.py
     cpu_reqs:
         processes: 1
         process_type: null
@@ -88,22 +182,44 @@ model_selection_stage:
         thread_type: null
     task_config:
         experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
 agent_stage:
-    pre_exec: []
-    executable: []
-    arguments: []
+    pre_exec:
+    - . /etc/profile.d/conda.sh
+    - conda activate conda-pytorch
+    - export LANG=en_US.utf-8
+    - export LC_ALL=en_US.utf-8
+    - unset CUDA_VISIBLE_DEVICES
+    - export OMP_NUM_THREADS=4
+    executable:
+    - cat /dev/null; jsrun -n 1 -a 4 -g 4 -r 1 -c 10 /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/agents/lof/bin/lassen.sh
+    arguments:
+    - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/agents/lof/lof.py
     cpu_reqs:
         processes: 1
         process_type: null
-        threads_per_process: 1
-        thread_type: null
+        threads_per_process: 12
+        thread_type: OpenMP
     gpu_reqs:
-        processes: 0
+        processes: 1
         process_type: null
-        threads_per_process: 0
-        thread_type: null
+        threads_per_process: 1
+        thread_type: CUDA
     task_config:
         experiment_directory: set_by_deepdrivemd
-        node_local_path: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
         output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        num_outliers: 10
+        n_traj_frames: 1000
+        k_random_old_h5_files: 10
+        last_n_h5_files: 10
+        sklearn_num_jobs: -1
+        model_type: "AAE3d"
+        inference_batch_size: 128
+        device: cuda:0

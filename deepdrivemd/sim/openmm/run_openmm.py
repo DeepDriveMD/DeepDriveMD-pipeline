@@ -97,7 +97,10 @@ class SimulationContext:
         return Path(local_pdb_file)
 
     def _copy_top_file(self) -> Path:
-        top_file = self.api.get_topology(self.cfg.initial_pdb_dir, Path(self.pdb_file))
+        assert self.cfg.top_suffix is not None
+        top_file = self.api.get_topology(
+            self.cfg.initial_pdb_dir, Path(self.pdb_file), self.cfg.top_suffix
+        )
         assert top_file is not None
         local_top_file = shutil.copy(top_file, self.workdir.joinpath(top_file.name))
         return Path(local_top_file)
