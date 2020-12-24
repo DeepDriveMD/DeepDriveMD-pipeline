@@ -3,7 +3,7 @@ resource: llnl.lassen
 queue: pbatch
 schema_: local
 project: cv19-a01
-walltime_min: 60
+walltime_min: 30
 max_iteration: 4
 cpus_per_node: 40
 gpus_per_node: 4
