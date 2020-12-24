@@ -10,12 +10,12 @@ from deepdrivemd.data.api import DeepDriveMD_API
 
 def generate_task(cfg: BaseStageConfig) -> Task:
     task = Task()
-    task.cpu_reqs = cfg.cpu_reqs.dict()
-    task.gpu_reqs = cfg.gpu_reqs.dict()
+    task.cpu_reqs = cfg.cpu_reqs.dict().copy()
+    task.gpu_reqs = cfg.gpu_reqs.dict().copy()
     print("task dbg: ", task.cpu_reqs, "\n", task.gpu_reqs)
-    task.pre_exec = cfg.pre_exec
-    task.executable = cfg.executable
-    task.arguments = cfg.arguments
+    task.pre_exec = cfg.pre_exec.copy()
+    task.executable = cfg.executable.copy()
+    task.arguments = cfg.arguments.copy()
     return task
 
 
