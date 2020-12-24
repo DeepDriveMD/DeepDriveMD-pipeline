@@ -82,7 +82,6 @@ def latest_checkpoint(
     -------
     Path
         Path to the latest model checkpoint file.
-
     """
     task_dir = api.machine_learning_stage.task_dir()
     assert task_dir is not None
