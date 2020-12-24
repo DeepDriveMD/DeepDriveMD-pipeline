@@ -58,6 +58,9 @@ class GPUReqs(BaseSettings):
 class BaseTaskConfig(BaseSettings):
     """Base configuration for all TaskConfig objects."""
 
+    class Config:
+        extra = "allow"
+
     # Path to experiment directory in order to access data API (set by DeepDriveMD)
     experiment_directory: Path = Path("set_by_deepdrivemd")
     # Unique stage index (set by DeepDriveMD)
