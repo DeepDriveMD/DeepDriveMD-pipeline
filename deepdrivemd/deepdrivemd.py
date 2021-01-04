@@ -12,7 +12,6 @@ def generate_task(cfg: BaseStageConfig) -> Task:
     task = Task()
     task.cpu_reqs = cfg.cpu_reqs.dict().copy()
     task.gpu_reqs = cfg.gpu_reqs.dict().copy()
-    print("task dbg: ", task.cpu_reqs, "\n", task.gpu_reqs)
     task.pre_exec = cfg.pre_exec.copy()
     task.executable = cfg.executable.copy()
     task.arguments = cfg.arguments.copy()
@@ -114,7 +113,6 @@ class PipelineManager:
             cfg.task_config.dump_yaml(cfg_path)
             task = generate_task(cfg)
             task.arguments += ["-c", cfg_path.as_posix()]
-            print("MD dbg: ", vars(task))
             stage.add_tasks(task)
 
         return stage
@@ -171,7 +169,6 @@ class PipelineManager:
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
         task.arguments += ["-c", cfg_path.as_posix()]
-        print("ML dbg: ", vars(task))
         stage.add_tasks(task)
 
         return stage
@@ -198,7 +195,6 @@ class PipelineManager:
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
         task.arguments += ["-c", cfg_path.as_posix()]
-        print("MS dbg: ", vars(task))
         stage.add_tasks(task)
 
         return stage
@@ -225,7 +221,6 @@ class PipelineManager:
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
         task.arguments += ["-c", cfg_path.as_posix()]
-        print("Agent dbg: ", vars(task))
         stage.add_tasks(task)
 
         return stage
