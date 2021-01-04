@@ -10,11 +10,11 @@ from deepdrivemd.data.api import DeepDriveMD_API
 
 def generate_task(cfg: BaseStageConfig) -> Task:
     task = Task()
-    task.cpu_reqs = cfg.cpu_reqs.dict()
-    task.gpu_reqs = cfg.gpu_reqs.dict()
-    task.pre_exec = cfg.pre_exec
-    task.executable = cfg.executable
-    task.arguments = cfg.arguments
+    task.cpu_reqs = cfg.cpu_reqs.dict().copy()
+    task.gpu_reqs = cfg.gpu_reqs.dict().copy()
+    task.pre_exec = cfg.pre_exec.copy()
+    task.executable = cfg.executable.copy()
+    task.arguments = cfg.arguments.copy()
     return task
 
 
@@ -112,7 +112,7 @@ class PipelineManager:
             cfg_path = stage_api.config_path(self.stage_idx, task_idx)
             cfg.task_config.dump_yaml(cfg_path)
             task = generate_task(cfg)
-            task.arguments += ["-c", cfg_path]
+            task.arguments += ["-c", cfg_path.as_posix()]
             stage.add_tasks(task)
 
         return stage
@@ -138,7 +138,7 @@ class PipelineManager:
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
-        task.arguments += ["-c", cfg_path]
+        task.arguments += ["-c", cfg_path.as_posix()]
         stage.add_tasks(task)
 
         return stage
@@ -168,7 +168,7 @@ class PipelineManager:
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
-        task.arguments += ["-c", cfg_path]
+        task.arguments += ["-c", cfg_path.as_posix()]
         stage.add_tasks(task)
 
         return stage
@@ -188,12 +188,13 @@ class PipelineManager:
         cfg.task_config.stage_idx = self.stage_idx
         cfg.task_config.task_idx = task_idx
         cfg.task_config.node_local_path = self.cfg.node_local_path
+        cfg.task_config.output_path = output_path
 
         # Write yaml configuration
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
-        task.arguments += ["-c", cfg_path]
+        task.arguments += ["-c", cfg_path.as_posix()]
         stage.add_tasks(task)
 
         return stage
@@ -219,7 +220,7 @@ class PipelineManager:
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
-        task.arguments += ["-c", cfg_path]
+        task.arguments += ["-c", cfg_path.as_posix()]
         stage.add_tasks(task)
 
         return stage
@@ -253,7 +254,11 @@ if __name__ == "__main__":
 
     # Calculate total number of nodes required. Assumes 1 MD job per GPU
     # TODO: fix this assumption for NAMD
-    num_nodes = max(1, cfg.molecular_dynamics_stage.num_tasks // cfg.gpus_per_node)
+    num_full_nodes, extra_gpus = divmod(
+        cfg.molecular_dynamics_stage.num_tasks, cfg.gpus_per_node
+    )
+    extra_node = int(extra_gpus > 0)
+    num_nodes = max(1, num_full_nodes + extra_node)
 
     appman.resource_desc = {
         "resource": cfg.resource,

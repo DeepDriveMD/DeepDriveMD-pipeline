@@ -2,7 +2,6 @@
 import json
 import yaml
 import argparse
-from enum import Enum
 from pydantic import validator
 from pydantic import BaseSettings as _BaseSettings
 from pathlib import Path
@@ -27,36 +26,54 @@ class BaseSettings(_BaseSettings):
 class CPUReqs(BaseSettings):
     """radical.entk task.cpu_reqs parameters."""
 
-    class CPUProcessType(str, Enum):
-        mpi = "MPI"
-
-    class CPUThreadType(str, Enum):
-        open_mp = "OpenMP"
-
     processes: int = 1
-    process_type: Optional[CPUProcessType]
+    process_type: Optional[str]
     threads_per_process: int = 1
-    thread_type: Optional[CPUThreadType]
+    thread_type: Optional[str]
+
+    @validator("process_type")
+    def process_type_check(cls, v):
+        valid_process_types = {None, "MPI"}
+        if v not in valid_process_types:
+            raise ValueError(f"process_type must be one of {valid_process_types}")
+        return v
+
+    @validator("thread_type")
+    def thread_type_check(cls, v):
+        thread_process_types = {None, "OpenMP"}
+        if v not in thread_process_types:
+            raise ValueError(f"thread_type must be one of {thread_process_types}")
+        return v
 
 
 class GPUReqs(BaseSettings):
     """radical.entk task.gpu_reqs parameters."""
 
-    class GPUProcessType(str, Enum):
-        mpi = "MPI"
-
-    class GPUThreadType(str, Enum):
-        open_mp = "OpenMP"
-        cuda = "CUDA"
-
     processes: int = 0
-    process_type: Optional[GPUProcessType]
+    process_type: Optional[str]
     threads_per_process: int = 0
-    thread_type: Optional[GPUThreadType]
+    thread_type: Optional[str]
+
+    @validator("process_type")
+    def process_type_check(cls, v):
+        valid_process_types = {None, "MPI"}
+        if v not in valid_process_types:
+            raise ValueError(f"process_type must be one of {valid_process_types}")
+        return v
+
+    @validator("thread_type")
+    def thread_type_check(cls, v):
+        thread_process_types = {None, "OpenMP", "CUDA"}
+        if v not in thread_process_types:
+            raise ValueError(f"thread_type must be one of {thread_process_types}")
+        return v
 
 
 class BaseTaskConfig(BaseSettings):
     """Base configuration for all TaskConfig objects."""
+
+    class Config:
+        extra = "allow"
 
     # Path to experiment directory in order to access data API (set by DeepDriveMD)
     experiment_directory: Path = Path("set_by_deepdrivemd")

@@ -3,12 +3,12 @@ resource: llnl.lassen
 queue: pbatch
 schema_: local
 project: cv19-a01
-walltime_min: 60
+walltime_min: 30
 max_iteration: 4
-cpus_per_node: 42
+cpus_per_node: 40
 gpus_per_node: 4
 hardware_threads_per_cpu: 4
-experiment_directory: /p/gpfs1/brace3/runs/ddmd_test_experiments/bba_integration_0
+experiment_directory: /p/gpfs1/brace3/runs/ddmd_test_experiments/bba_integration_1
 node_local_path: null
 molecular_dynamics_stage:
     pre_exec:
@@ -29,7 +29,7 @@ molecular_dynamics_stage:
         process_type: null
         threads_per_process: 1
         thread_type: CUDA
-    num_tasks: 10
+    num_tasks: 12
     task_config:
         experiment_directory: set_by_deepdrivemd
         stage_idx: 0
@@ -89,7 +89,7 @@ machine_learning_stage:
     - unset CUDA_VISIBLE_DEVICES
     - export OMP_NUM_THREADS=4
     executable:
-    - cat /dev/null; jsrun -n 1 -g 4 -a 4 -c 44 -d packed /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/bin/lassen.sh
+    - cat /dev/null; jsrun -n 1 -g 4 -a 4 -c 40 -d packed /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/bin/lassen.sh
     arguments:
     - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/train.py
@@ -112,8 +112,8 @@ machine_learning_stage:
         node_local_path: set_by_deepdrivemd
         model_tag: set_by_deepdrivemd
         init_weights_path: /p/gpfs1/brace3/src/DeepDriveMD-pipeline/data/bba/epoch-130-20201203-150026.pt
-        last_n_h5_files: 10
-        k_random_old_h5_files: 10
+        last_n_h5_files: 12
+        k_random_old_h5_files: 12
         dataset_name: point_cloud
         rmsd_name: rmsd
         fnc_name: fnc
@@ -169,12 +169,12 @@ model_selection_stage:
     executable:
     - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
     arguments:
-    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select.py
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select_model.py
     cpu_reqs:
         processes: 1
         process_type: null
-        threads_per_process: 1
-        thread_type: null
+        threads_per_process: 4
+        thread_type: OpenMP
     gpu_reqs:
         processes: 0
         process_type: null
@@ -215,10 +215,10 @@ agent_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
-        num_outliers: 10
+        num_outliers: 12
         n_traj_frames: 1000
-        k_random_old_h5_files: 10
-        last_n_h5_files: 10
+        k_random_old_h5_files: 12
+        last_n_h5_files: 12
         sklearn_num_jobs: -1
         model_type: "AAE3d"
         inference_batch_size: 128

@@ -6,7 +6,7 @@ import wandb
 from deepdrivemd.models.aae.config import AAEModelConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
-from deepdrivemd.selection.latest.select import get_model_path
+from deepdrivemd.selection.latest.select_model import get_model_path
 
 # torch stuff
 import torch
@@ -66,10 +66,17 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Path:
 
 def get_init_weights(cfg: AAEModelConfig) -> Optional[str]:
     if cfg.init_weights_path is None:
-        token = get_model_path(experiment_dir=cfg.experiment_directory)
+
+        if cfg.stage_idx == 0:
+            # Case for first iteration with no pretrained weights
+            return
+
+        token = get_model_path(
+            stage_idx=cfg.stage_idx - 1, experiment_dir=cfg.experiment_directory
+        )
         if token is None:
             # Case for no pretrained weights
-            init_weights = None
+            return
         else:
             # Case where model selection has run before
             _, init_weights = token
@@ -77,10 +84,7 @@ def get_init_weights(cfg: AAEModelConfig) -> Optional[str]:
         # Case for pretrained weights
         init_weights = cfg.init_weights_path
 
-    if init_weights is not None:
-        init_weights = init_weights.as_posix()
-
-    return init_weights
+    return init_weights.as_posix()
 
 
 def get_dataset(
