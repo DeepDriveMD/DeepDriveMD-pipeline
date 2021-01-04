@@ -8,7 +8,10 @@ PathLike = Union[str, Path]
 
 
 def get_model_path(
-    api: Optional[DeepDriveMD_API] = None, experiment_dir: Optional[PathLike] = None
+    stage_idx: int = -1,
+    task_idx: int = 0,
+    api: Optional[DeepDriveMD_API] = None,
+    experiment_dir: Optional[PathLike] = None,
 ) -> Optional[Tuple[Path, Path]]:
     r"""Get the current best model.
 
@@ -45,7 +48,7 @@ def get_model_path(
         assert experiment_dir is not None
         api = DeepDriveMD_API(experiment_dir)
 
-    data = api.model_selection_stage.read_task_json()
+    data = api.model_selection_stage.read_task_json(stage_idx, task_idx)
     if data is None:
         return
 

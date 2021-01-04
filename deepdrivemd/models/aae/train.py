@@ -66,7 +66,9 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Path:
 
 def get_init_weights(cfg: AAEModelConfig) -> Optional[str]:
     if cfg.init_weights_path is None:
-        token = get_model_path(experiment_dir=cfg.experiment_directory)
+        token = get_model_path(
+            stage_idx=cfg.stage_idx - 1, experiment_dir=cfg.experiment_directory
+        )
         if token is None:
             # Case for no pretrained weights
             init_weights = None

@@ -125,7 +125,7 @@ def main(cfg: LOFConfig, distributed: bool):
         )
 
         # Get best model hyperparameters and weights
-        token = get_model_path(experiment_dir=cfg.experiment_directory)
+        token = get_model_path(api=api)
         assert token is not None
         model_cfg_path, model_weights_path = token
 
