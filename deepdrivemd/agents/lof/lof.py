@@ -5,10 +5,10 @@ from typing import List, Tuple, Dict, Union
 import torch
 import numpy as np
 from sklearn.neighbors import LocalOutlierFactor
-from deepdrivemd.utils import setup_mpi_comm, setup_mpi, topk
+from deepdrivemd.utils import setup_mpi_comm, setup_mpi, bestk
 from deepdrivemd.data.api import DeepDriveMD_API
-from deepdrivemd.data.utils import get_virtual_h5_file
-from deepdrivemd.agents.lof.config import LOFConfig
+from deepdrivemd.data.utils import get_virtual_h5_file, parse_h5
+from deepdrivemd.agents.lof.config import OutlierDetectionConfig
 from deepdrivemd.selection.latest.select_model import get_model_path
 
 PathLike = Union[str, Path]
@@ -41,37 +41,70 @@ def get_representation(
     return embeddings
 
 
-def local_outlier_factor(
-    embeddings: np.ndarray, n_outliers: int, **kwargs
+def get_intrinsic_score(
+    embeddings: np.ndarray, cfg: OutlierDetectionConfig
 ) -> Tuple[np.ndarray, np.ndarray]:
 
-    t_start = time.time()  # Start timer
-    print("Running LOF")
+    if cfg.intrinsic_score == "lof":
+        # Perform LocalOutlierFactor outlier detection on embeddings
+        t_start = time.time()  # Start timer
+        print("Running LOF")
 
-    # compute LOF
-    clf = LocalOutlierFactor(**kwargs)
-    embeddings = np.nan_to_num(embeddings, nan=0.0)
-    # Array with 1 if inlier, -1 if outlier
-    clf.fit_predict(embeddings)
+        # compute LOF
+        clf = LocalOutlierFactor(n_jobs=cfg.sklearn_num_jobs)
+        embeddings = np.nan_to_num(embeddings, nan=0.0)
+        # Array with 1 if inlier, -1 if outlier
+        clf.fit_predict(embeddings)
 
-    # Get best scores and corresponding indices
-    outlier_inds = topk(clf.negative_outlier_factor_, k=n_outliers)
-    outlier_scores = clf.negative_outlier_factor_[outlier_inds]
-
-    # Only sorts an array of size n_outliers
-    sort_inds = np.argsort(outlier_scores)
-
-    print(f"LOF Time: {time.time()- t_start}s")
+        assert cfg.num_intrinsic_outliers is not None
+        # Get best scores and corresponding indices
+        intrinsic_scores, intrinsic_inds = bestk(
+            clf.negative_outlier_factor_, k=cfg.num_intrinsic_outliers
+        )
+        print(f"LOF Time: {time.time()- t_start}s")
+    else:
+        # If no intrinsic_score, simply return all the data
+        intrinsic_inds = np.arange(len(embeddings))
+        intrinsic_scores = np.zeros(len(embeddings))
 
     # Returns n_outlier best outliers sorted from best to worst
-    return outlier_inds[sort_inds], outlier_scores[sort_inds]
+    return intrinsic_scores, intrinsic_inds
+
+
+def get_extrinsic_rank(
+    intrinsic_inds: np.ndarray, virtual_h5_file: Path, cfg: OutlierDetectionConfig
+) -> Tuple[np.ndarray, np.ndarray]:
+
+    if cfg.extrinsic_score == "rmsd":
+        # Get all RMSD values from virutal HDF5 file
+        rmsds = parse_h5(virtual_h5_file, fields=["rmsd"])["rmsd"]
+        # Select the subset choosen with the intrinsic score method
+        intrinsic_rmsds = rmsds[intrinsic_inds]
+        # Find the best points within the selected subset
+        extrinsic_scores, extrinsic_inds = bestk(
+            intrinsic_rmsds, k=cfg.num_extrinsic_outliers
+        )
+        # Map back into the intrinsic_inds (global index)
+        extrinsic_inds = intrinsic_inds[extrinsic_inds]
+    else:
+        # If no extrinsic_score, simply return the intrinsic selection
+        extrinsic_inds = intrinsic_inds[: cfg.num_extrinsic_outliers]
+        extrinsic_scores = np.zeros(len(extrinsic_inds))
+
+    return extrinsic_scores, extrinsic_inds
 
 
 def generate_outliers(
     md_data: Dict[str, List[str]],
     sampled_h5_files: List[str],
     outlier_inds: List[int],
+    intrinsic_scores: List[float],
+    extrinsic_scores: List[float],
 ) -> List[Dict[str, Union[str, int]]]:
+
+    assert len(intrinsic_scores) == len(extrinsic_scores)
+    assert len(intrinsic_scores) == len(outlier_inds)
+
     # Get all available MD data
     all_h5_files = md_data["data_files"]
     all_traj_files = md_data["traj_files"]
@@ -84,7 +117,9 @@ def generate_outliers(
 
     # Collect outlier metadata used to create PDB files down stream
     outliers = []
-    for outlier_ind in outlier_inds:
+    for outlier_ind, intrinsic_score, extrinsic_score in zip(
+        outlier_inds, intrinsic_scores, extrinsic_scores
+    ):
         # divmod returns a tuple of quotient and remainder
         sampled_index, frame = divmod(outlier_ind, cfg.n_traj_frames)
         # Need to remap subsampled h5_file index back to all md_data
@@ -97,13 +132,15 @@ def generate_outliers(
             "traj_file": str(all_traj_files[all_index]),
             "frame": int(frame),
             "outlier_ind": int(outlier_ind),
+            "intrinsic_score": float(intrinsic_score),
+            "extrinsic_score": float(extrinsic_score),
         }
         outliers.append(outlier)
 
     return outliers
 
 
-def main(cfg: LOFConfig, distributed: bool):
+def main(cfg: OutlierDetectionConfig, distributed: bool):
 
     comm = setup_mpi_comm(distributed)
     comm_size, comm_rank = setup_mpi(comm)
@@ -118,7 +155,7 @@ def main(cfg: LOFConfig, distributed: bool):
         virtual_h5_file, sampled_h5_files = get_virtual_h5_file(
             output_path=cfg.output_path,
             all_h5_files=md_data["data_files"],
-            last_n=cfg.last_n_h5_files,
+            last_n=cfg.n_most_recent_h5_files,
             k_random_old=cfg.k_random_old_h5_files,
             virtual_name=api.agent_stage.unique_name(cfg.output_path),
             node_local_path=cfg.node_local_path,
@@ -149,14 +186,23 @@ def main(cfg: LOFConfig, distributed: bool):
     )
 
     if comm_rank == 0:
-        # Perform LocalOutlierFactor outlier detection on embeddings
-        outlier_inds, _ = local_outlier_factor(
-            embeddings,
-            cfg.num_outliers,
-            n_jobs=cfg.sklearn_num_jobs,
+
+        intrinsic_scores, intrinsic_inds = get_intrinsic_score(embeddings, cfg)
+
+        extrinsic_scores, extrinsic_inds = get_extrinsic_rank(
+            intrinsic_inds, virtual_h5_file, cfg
         )
 
-        outliers = generate_outliers(md_data, sampled_h5_files, list(outlier_inds))
+        # Take the subset of indices selected by the extrinsic method
+        intrinsic_scores = intrinsic_scores[extrinsic_inds]
+
+        outliers = generate_outliers(
+            md_data,
+            sampled_h5_files,
+            extrinsic_inds,
+            intrinsic_scores,
+            extrinsic_scores,
+        )
 
         # Dump metadata to disk for MD stage
         api.agent_stage.write_task_json(outliers, cfg.stage_idx, cfg.task_idx)
@@ -185,5 +231,5 @@ if __name__ == "__main__":
     torch.multiprocessing.set_start_method("forkserver", force=True)
 
     args = parse_args()
-    cfg = LOFConfig.from_yaml(args.config)
+    cfg = OutlierDetectionConfig.from_yaml(args.config)
     main(cfg, args.distributed)

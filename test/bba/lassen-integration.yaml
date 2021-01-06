@@ -215,10 +215,13 @@ agent_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
-        num_outliers: 12
+        num_intrinsic_outliers: 100
+        num_extrinsic_outliers: 12
+        intrinsic_score: lof
+        extrinsic_score: rmsd
         n_traj_frames: 1000
+        n_most_recent_h5_files: 12
         k_random_old_h5_files: 12
-        last_n_h5_files: 12
         sklearn_num_jobs: -1
         model_type: "AAE3d"
         inference_batch_size: 128

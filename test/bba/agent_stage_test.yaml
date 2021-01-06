@@ -3,11 +3,14 @@ stage_idx: 0
 task_idx: 0
 output_path: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment_2/agent_runs/stage0000/task0000
 node_local_path: null
-num_outliers: 10
+num_intrinsic_outliers: 10
+num_extrinsic_outliers: 10
+intrinsic_score: lof
+extrinsic_score: null
 n_traj_frames: 1000
+n_most_recent_h5_files: 3
 k_random_old_h5_files: 2
-last_n_h5_files: 3
 sklearn_num_jobs: -1
-model_type: "AAE3d"
+model_type: AAE3d
 inference_batch_size: 128
 device: cuda:0
