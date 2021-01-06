@@ -154,6 +154,8 @@ def main(cfg: OutlierDetectionConfig, distributed: bool):
     comm = setup_mpi_comm(distributed)
     comm_size, comm_rank = setup_mpi(comm)
 
+    print("rank say hello")
+
     if comm_rank == 0:
         t_start = time.time()  # Start timer
 
