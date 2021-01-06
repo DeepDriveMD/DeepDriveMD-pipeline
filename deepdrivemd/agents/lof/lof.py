@@ -71,12 +71,12 @@ def get_intrinsic_score(
     return intrinsic_scores, intrinsic_inds
 
 
-def get_extrinsic_rank(
+def get_extrinsic_score(
     intrinsic_inds: np.ndarray, virtual_h5_file: Path, cfg: OutlierDetectionConfig
 ) -> Tuple[np.ndarray, np.ndarray]:
 
     t_start = time.time()  # Start timer
-    print("Running get_extrinsic_rank")
+    print("Running get_extrinsic_score")
 
     if cfg.extrinsic_score == "rmsd":
         print("parse h5")
@@ -98,7 +98,7 @@ def get_extrinsic_rank(
         extrinsic_inds = intrinsic_inds[: cfg.num_extrinsic_outliers]
         extrinsic_scores = np.zeros(len(extrinsic_inds))
 
-    print(f"get_extrinsic_rank time: {time.time()- t_start}s")
+    print(f"get_extrinsic_score time: {time.time()- t_start}s")
 
     return extrinsic_scores, extrinsic_inds
 
@@ -198,12 +198,29 @@ def main(cfg: OutlierDetectionConfig, distributed: bool):
 
         intrinsic_scores, intrinsic_inds = get_intrinsic_score(embeddings, cfg)
 
-        extrinsic_scores, extrinsic_inds = get_extrinsic_rank(
+        print("after get_intrinsic_score")
+        print(
+            f"intrinsic_scores\t{intrinsic_scores}\nintrinsic_inds\t{intrinsic_inds}\n"
+        )
+        print(
+            f"intrinsic_scores\t{intrinsic_scores.shape}\nintrinsic_inds\t{intrinsic_inds.shape}\n"
+        )
+
+        extrinsic_scores, extrinsic_inds = get_extrinsic_score(
             intrinsic_inds, virtual_h5_file, cfg
+        )
+        print("after get_extrinsic_score")
+        print(
+            f"extrinsic_scores\t{extrinsic_scores}\nextrinsic_inds\t{extrinsic_inds}\n"
+        )
+        print(
+            f"extrinsic_scores\t{extrinsic_scores.shape}\nextrinsic_inds\t{extrinsic_inds.shape}\n"
         )
 
         # Take the subset of indices selected by the extrinsic method
         intrinsic_scores = intrinsic_scores[extrinsic_inds]
+
+        print(f"final intrinsic_scores: {intrinsic_scores}\n {intrinsic_scores.shape}")
 
         outliers = generate_outliers(
             md_data,
@@ -212,6 +229,12 @@ def main(cfg: OutlierDetectionConfig, distributed: bool):
             intrinsic_scores,
             extrinsic_scores,
         )
+
+        print("finished generate_outliers")
+        from pprint import pprint
+
+        print("outliers:")
+        pprint(outliers)
 
         # Dump metadata to disk for MD stage
         api.agent_stage.write_task_json(outliers, cfg.stage_idx, cfg.task_idx)
