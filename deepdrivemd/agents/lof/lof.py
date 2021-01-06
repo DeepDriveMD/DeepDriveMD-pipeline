@@ -90,12 +90,9 @@ def get_extrinsic_score(
         extrinsic_scores, extrinsic_inds = bestk(
             intrinsic_rmsds, k=cfg.num_extrinsic_outliers
         )
-        print("get extrinsic inds")
-        # Map back into the intrinsic_inds (global index)
-        extrinsic_inds = intrinsic_inds[extrinsic_inds]
     else:
         # If no extrinsic_score, simply return the intrinsic selection
-        extrinsic_inds = intrinsic_inds[: cfg.num_extrinsic_outliers]
+        extrinsic_inds = np.arange(cfg.num_extrinsic_outliers)
         extrinsic_scores = np.zeros(len(extrinsic_inds))
 
     print(f"get_extrinsic_score time: {time.time()- t_start}s")
@@ -208,6 +205,7 @@ def main(cfg: OutlierDetectionConfig, distributed: bool):
             f"intrinsic_scores\t{intrinsic_scores.shape}\nintrinsic_inds\t{intrinsic_inds.shape}\n"
         )
 
+        # Prune the best intrinsically ranked points with an extrinsic score
         extrinsic_scores, extrinsic_inds = get_extrinsic_score(
             intrinsic_inds, virtual_h5_file, cfg
         )
@@ -220,15 +218,21 @@ def main(cfg: OutlierDetectionConfig, distributed: bool):
         )
 
         # Take the subset of indices selected by the extrinsic method
-        intrinsic_scores = intrinsic_scores[extrinsic_inds]
+        pruned_intrinsic_scores = intrinsic_scores[extrinsic_inds]
+        pruned_intrinsic_inds = intrinsic_inds[extrinsic_inds]
 
-        print(f"final intrinsic_scores: {intrinsic_scores}\n {intrinsic_scores.shape}")
+        print(
+            f"pruned intrinsic_scores: {pruned_intrinsic_scores}\n {intrinsic_scores.shape}"
+        )
+        print(
+            f"pruned pruned_intrinsic_inds: {pruned_intrinsic_inds}\n {pruned_intrinsic_inds.shape}"
+        )
 
         outliers = generate_outliers(
             md_data,
             sampled_h5_files,
-            extrinsic_inds,
-            intrinsic_scores,
+            pruned_intrinsic_inds,
+            pruned_intrinsic_scores,
             extrinsic_scores,
         )
 
