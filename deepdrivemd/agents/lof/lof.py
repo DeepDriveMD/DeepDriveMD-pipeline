@@ -75,21 +75,30 @@ def get_extrinsic_rank(
     intrinsic_inds: np.ndarray, virtual_h5_file: Path, cfg: OutlierDetectionConfig
 ) -> Tuple[np.ndarray, np.ndarray]:
 
+    t_start = time.time()  # Start timer
+    print("Running get_extrinsic_rank")
+
     if cfg.extrinsic_score == "rmsd":
+        print("parse h5")
         # Get all RMSD values from virutal HDF5 file
         rmsds = parse_h5(virtual_h5_file, fields=["rmsd"])["rmsd"]
+        print("get intrinsic rmsds")
         # Select the subset choosen with the intrinsic score method
         intrinsic_rmsds = rmsds[intrinsic_inds]
+        print("select kbest")
         # Find the best points within the selected subset
         extrinsic_scores, extrinsic_inds = bestk(
             intrinsic_rmsds, k=cfg.num_extrinsic_outliers
         )
+        print("get extrinsic inds")
         # Map back into the intrinsic_inds (global index)
         extrinsic_inds = intrinsic_inds[extrinsic_inds]
     else:
         # If no extrinsic_score, simply return the intrinsic selection
         extrinsic_inds = intrinsic_inds[: cfg.num_extrinsic_outliers]
         extrinsic_scores = np.zeros(len(extrinsic_inds))
+
+    print(f"get_extrinsic_rank time: {time.time()- t_start}s")
 
     return extrinsic_scores, extrinsic_inds
 
