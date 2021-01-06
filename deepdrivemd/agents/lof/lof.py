@@ -146,12 +146,14 @@ def generate_outliers(
     return outliers
 
 
-def main(cfg: OutlierDetectionConfig, distributed: bool):
+def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool):
 
     comm = setup_mpi_comm(distributed)
     comm_size, comm_rank = setup_mpi(comm)
 
-    print("rank say hello")
+    print(
+        f"rank say hello encoder gpu: {encoder_gpu}\tcomm_size: {comm_size}\tcomm_rank: {comm_rank}"
+    )
 
     if comm_rank == 0:
         t_start = time.time()  # Start timer
@@ -189,7 +191,7 @@ def main(cfg: OutlierDetectionConfig, distributed: bool):
         model_weights_path,
         virtual_h5_file,
         cfg.inference_batch_size,
-        cfg.device,
+        encoder_gpu,
         comm,
     )
 
@@ -258,6 +260,9 @@ def parse_args() -> argparse.Namespace:
         "-c", "--config", help="YAML config file", type=str, required=True
     )
     parser.add_argument(
+        "-E", "--encoder_gpu", help="GPU to place encoder", type=int, default=0
+    )
+    parser.add_argument(
         "--distributed", action="store_true", help="Enable distributed inference"
     )
     args = parser.parse_args()
@@ -270,4 +275,4 @@ if __name__ == "__main__":
 
     args = parse_args()
     cfg = OutlierDetectionConfig.from_yaml(args.config)
-    main(cfg, args.distributed)
+    main(cfg, args.encoder_gpu, args.distributed)
