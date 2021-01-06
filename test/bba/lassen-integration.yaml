@@ -8,7 +8,7 @@ max_iteration: 4
 cpus_per_node: 40
 gpus_per_node: 4
 hardware_threads_per_cpu: 4
-experiment_directory: /p/gpfs1/brace3/runs/ddmd_test_experiments/bba_integration_1
+experiment_directory: /p/gpfs1/brace3/runs/ddmd_test_experiments/bba_integration_2
 node_local_path: null
 molecular_dynamics_stage:
     pre_exec:
@@ -160,7 +160,7 @@ machine_learning_stage:
         tsne_interval: 11
         sample_interval: 20
         num_data_workers: 0
-        dataset_location: cpu-memory
+        dataset_location: storage
         wandb_project_name: null
 model_selection_stage:
     pre_exec:
