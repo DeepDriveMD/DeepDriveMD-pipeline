@@ -160,7 +160,7 @@ machine_learning_stage:
         tsne_interval: 11
         sample_interval: 20
         num_data_workers: 0
-        dataset_location: storage
+        dataset_location: cpu-memory
         wandb_project_name: null
 model_selection_stage:
     pre_exec:
