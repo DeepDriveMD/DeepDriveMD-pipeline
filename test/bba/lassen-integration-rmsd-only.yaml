@@ -225,4 +225,3 @@ agent_stage:
         sklearn_num_jobs: -1
         model_type: "AAE3d"
         inference_batch_size: 128
-        device: cuda:0

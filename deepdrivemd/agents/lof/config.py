@@ -27,8 +27,6 @@ class OutlierDetectionConfig(AgentTaskConfig):
     model_type: str = "AAE3d"
     # Inference batch size for encoder forward pass
     inference_batch_size: int = 128
-    # Inference forward pass device
-    device: str = "cuda:0"  # TODO: could be bug here for distributed mode
 
     @root_validator()
     def num_outliers_check(cls, values: dict):
