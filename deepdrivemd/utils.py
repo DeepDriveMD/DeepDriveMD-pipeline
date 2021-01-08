@@ -21,26 +21,28 @@ def setup_mpi(comm=None) -> Tuple[int, int]:
     return comm_size, comm_rank
 
 
-def bestk(a: np.ndarray, k: int, smallest=True) -> Tuple[np.ndarray, np.ndarray]:
+def bestk(
+    a: np.ndarray, k: int, smallest: bool = True
+) -> Tuple[np.ndarray, np.ndarray]:
     r"""Return the best k values and correspdonding indices.
-
-    Only sorts 1 element of `a`, namely the element that is position
-    k in the sorted array. The elements above and below the kth position
-    are partitioned but not sorted. Returns the indices of the elements
-    on the left hand side of the partition i.e. the top k.
 
     Parameters
     ----------
     a : np.ndarray
-        array of dim (N,)
+        Array of dim (N,)
     k : int
-        specifies which element to partition upon
+        Specifies which element to partition upon.
+    smallest : bool
+        True if the best values are small (or most negative).
+        False if the best values are most positive.
 
     Returns
     -------
     np.ndarray
-        Of length k containing indices of input array a
-        coresponding to the k smallest values in a.
+        Of length `k` containing the `k` smallest values in `a`.
+    np.ndarray
+        Of length `k` containing indices of input array `a`
+        coresponding to the `k` smallest values in `a`.
     """
     # If larger values are considered best, make large values the smallest
     # in order for the sort function to pick the best values.
