@@ -24,7 +24,7 @@ def setup_mpi(comm=None) -> Tuple[int, int]:
 def bestk(
     a: np.ndarray, k: int, smallest: bool = True
 ) -> Tuple[np.ndarray, np.ndarray]:
-    r"""Return the best k values and correspdonding indices.
+    r"""Return the best `k` values and correspdonding indices.
 
     Parameters
     ----------
