@@ -15,8 +15,6 @@ export WANDB_MODE=dryrun
 # determine gpu
 enc_gpu=$(( ${LOCAL_RANK} ))
 
-#echo "REPORT: rank:${RANK}, local_rank:${LOCAL_RANK} enc:${enc_gpu}"
-
 # launch code
 cmd="$cmd_params -E ${enc_gpu} -D ${enc_gpu} -G ${enc_gpu} --distributed"
 echo ${cmd}

@@ -37,7 +37,7 @@ This will write a file named `deepdrivemd_template.yaml` which should be adapted
 Then, launch an experiment with:
 
 ```
-python -m deepdrivemd.deepdrivemd <experiment_config.yaml>
+python -m deepdrivemd.deepdrivemd -c <experiment_config.yaml>
 ```
 
 This experiment should be launched

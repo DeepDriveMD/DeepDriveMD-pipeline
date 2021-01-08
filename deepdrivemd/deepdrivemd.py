@@ -1,5 +1,5 @@
 import os
-import sys
+import argparse
 import itertools
 from typing import List
 import radical.utils as ru
@@ -226,15 +226,19 @@ class PipelineManager:
         return stage
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c", "--config", help="YAML config file", type=str, required=True
+    )
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == "__main__":
 
-    # Read YAML configuration file from stdin
-    try:
-        config_filename = sys.argv[1]
-    except Exception:
-        raise ValueError(f"Usage:\tpython {sys.argv[0]} [config.json]\n\n")
-
-    cfg = ExperimentConfig.from_yaml(config_filename)
+    args = parse_args()
+    cfg = ExperimentConfig.from_yaml(args.config)
 
     reporter = ru.Reporter(name="radical.entk")
     reporter.title(cfg.title)

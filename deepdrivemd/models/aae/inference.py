@@ -3,6 +3,7 @@ import itertools
 from pathlib import Path
 from typing import Union
 import numpy as np
+import torch
 from torch.utils.data import DataLoader, Dataset, Subset
 from molecules.ml.datasets import PointCloudDataset
 from molecules.ml.unsupervised.point_autoencoder import AAE3dHyperparams
@@ -35,7 +36,7 @@ def generate_embeddings(
     h5_file: PathLike,
     model_weights_path: PathLike,
     inference_batch_size: int,
-    device: str,
+    encoder_gpu: int,
     comm=None,
 ) -> np.ndarray:
 
@@ -91,6 +92,7 @@ def generate_embeddings(
         dataset = shard_dataset(dataset, comm_size, comm_rank)
 
     # Put encoder on specified CPU/GPU
+    device = torch.device(f"cuda:{encoder_gpu}")
     encoder.to(device)
 
     # create data loader

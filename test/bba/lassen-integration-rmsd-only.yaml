@@ -8,7 +8,7 @@ max_iteration: 4
 cpus_per_node: 40
 gpus_per_node: 4
 hardware_threads_per_cpu: 4
-experiment_directory: /p/gpfs1/brace3/runs/ddmd_test_experiments/bba_integration_2
+experiment_directory: /p/gpfs1/brace3/runs/ddmd_test_experiments/bba_integration_3
 node_local_path: null
 molecular_dynamics_stage:
     pre_exec:
@@ -215,9 +215,9 @@ agent_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
-        num_intrinsic_outliers: 100
+        num_intrinsic_outliers: 12
         num_extrinsic_outliers: 12
-        intrinsic_score: lof
+        intrinsic_score: null
         extrinsic_score: rmsd
         n_traj_frames: 1000
         n_most_recent_h5_files: 12

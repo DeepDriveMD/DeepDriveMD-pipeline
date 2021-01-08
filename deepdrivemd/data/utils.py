@@ -1,8 +1,11 @@
 import h5py
 import shutil
 import random
+import numpy as np
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union, Dict
+
+PathLike = Union[str, Path]
 
 
 def concatenate_virtual_h5(
@@ -136,3 +139,26 @@ def get_virtual_h5_file(
 
     # Returns node local virtual file if available
     return virtual_h5_file, h5_files
+
+
+def parse_h5(path: PathLike, fields: List[str]) -> Dict[str, np.ndarray]:
+    r"""Helper function for accessing data fields in a HDF5 file.
+
+    Parameters
+    ----------
+    path : Union[Path, str]
+        Path to HDF5 file.
+    fields : List[str]
+        List of dataset field names inside of the HDF5 file.
+
+    Returns
+    -------
+    Dict[str, np.ndarray]
+        A dictionary maping each field name in `fields` to a numpy
+        array containing the data from the associated HDF5 dataset.
+    """
+    data = {}
+    with h5py.File(path, "r") as f:
+        for field in fields:
+            data[field] = f[field][...]
+    return data
