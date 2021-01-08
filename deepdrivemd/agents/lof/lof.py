@@ -76,16 +76,12 @@ def get_extrinsic_score(
 ) -> Tuple[np.ndarray, np.ndarray]:
 
     t_start = time.time()  # Start timer
-    print("Running get_extrinsic_score")
 
     if cfg.extrinsic_score == "rmsd":
-        print("parse h5")
         # Get all RMSD values from virutal HDF5 file
         rmsds = parse_h5(virtual_h5_file, fields=["rmsd"])["rmsd"]
-        print("get intrinsic rmsds")
         # Select the subset choosen with the intrinsic score method
         intrinsic_rmsds = rmsds[intrinsic_inds]
-        print("select kbest")
         # Find the best points within the selected subset
         extrinsic_scores, extrinsic_inds = bestk(
             intrinsic_rmsds, k=cfg.num_extrinsic_outliers
@@ -151,10 +147,6 @@ def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool):
     comm = setup_mpi_comm(distributed)
     comm_size, comm_rank = setup_mpi(comm)
 
-    print(
-        f"rank say hello encoder gpu: {encoder_gpu}\tcomm_size: {comm_size}\tcomm_rank: {comm_rank}"
-    )
-
     if comm_rank == 0:
         t_start = time.time()  # Start timer
 
@@ -199,36 +191,14 @@ def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool):
 
         intrinsic_scores, intrinsic_inds = get_intrinsic_score(embeddings, cfg)
 
-        print("after get_intrinsic_score")
-        print(
-            f"intrinsic_scores\t{intrinsic_scores}\nintrinsic_inds\t{intrinsic_inds}\n"
-        )
-        print(
-            f"intrinsic_scores\t{intrinsic_scores.shape}\nintrinsic_inds\t{intrinsic_inds.shape}\n"
-        )
-
         # Prune the best intrinsically ranked points with an extrinsic score
         extrinsic_scores, extrinsic_inds = get_extrinsic_score(
             intrinsic_inds, virtual_h5_file, cfg
-        )
-        print("after get_extrinsic_score")
-        print(
-            f"extrinsic_scores\t{extrinsic_scores}\nextrinsic_inds\t{extrinsic_inds}\n"
-        )
-        print(
-            f"extrinsic_scores\t{extrinsic_scores.shape}\nextrinsic_inds\t{extrinsic_inds.shape}\n"
         )
 
         # Take the subset of indices selected by the extrinsic method
         pruned_intrinsic_scores = intrinsic_scores[extrinsic_inds]
         pruned_intrinsic_inds = intrinsic_inds[extrinsic_inds]
-
-        print(
-            f"pruned intrinsic_scores: {pruned_intrinsic_scores}\n {intrinsic_scores.shape}"
-        )
-        print(
-            f"pruned pruned_intrinsic_inds: {pruned_intrinsic_inds}\n {pruned_intrinsic_inds.shape}"
-        )
 
         outliers = generate_outliers(
             md_data,
@@ -237,12 +207,6 @@ def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool):
             pruned_intrinsic_scores,
             extrinsic_scores,
         )
-
-        print("finished generate_outliers")
-        from pprint import pprint
-
-        print("outliers:")
-        pprint(outliers)
 
         # Dump metadata to disk for MD stage
         api.agent_stage.write_task_json(outliers, cfg.stage_idx, cfg.task_idx)
