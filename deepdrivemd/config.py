@@ -1,7 +1,6 @@
 # Schema of the YAML experiment file
 import json
 import yaml
-import argparse
 from pydantic import validator
 from pydantic import BaseSettings as _BaseSettings
 from pathlib import Path
@@ -241,15 +240,6 @@ def generate_sample_config():
         model_selection_stage=ModelSelectionStageConfig(),
         agent_stage=AgentStageConfig(),
     )
-
-
-def get_config() -> dict:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config", help="YAML config file", required=True)
-    path = parser.parse_args().config
-    with open(path) as fp:
-        config = yaml.safe_load(fp)
-    return config
 
 
 if __name__ == "__main__":
