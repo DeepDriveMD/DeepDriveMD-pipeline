@@ -205,7 +205,7 @@ def main(
         name=cfg.optimizer_name, hparams={"lr": cfg.optimizer_lr}
     )
 
-    # Save hparams to disk
+    # Save hparams to disk and load initial weights and create virtual h5 file
     if comm_rank == 0:
         cfg.output_path.mkdir(exist_ok=True)
         model_hparams.save(cfg.output_path.joinpath("model-hparams.json"))
