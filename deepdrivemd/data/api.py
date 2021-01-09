@@ -35,6 +35,11 @@ class Stage_API:
             return None
         return max(matches, key=key)
 
+    @staticmethod
+    def get_count(path: Path, pattern: str, is_dir: bool = False) -> int:
+        matches = list(filter(lambda p: p.is_dir() == is_dir, path.glob(pattern)))
+        return len(matches)
+
     def __init__(self, experiment_dir, stage_dir_name):
         self.experiment_dir = experiment_dir
         self._stage_dir_name = stage_dir_name
@@ -55,6 +60,10 @@ class Stage_API:
         if stage_idx == -1:
             return self.get_latest(self.runs_dir, pattern="stage*", is_dir=True)
         return self.runs_dir.joinpath(self.stage_name(stage_idx))
+
+    def stage_dir_count(self) -> int:
+        r"""Return the number of stage directories."""
+        return self.get_count(self.runs_dir, pattern="stage*", is_dir=True)
 
     def task_dir(
         self, stage_idx: int = -1, task_idx: int = 0, mkdir: bool = False
@@ -134,6 +143,9 @@ class DeepDriveMD_API:
     def _stage_api(self, dirname):
         """Factory function for Stage_API."""
         return Stage_API(self.experiment_dir, dirname)
+
+    def get_total_iterations(self):
+        return self.molecular_dynamics_stage.stage_dir_count()
 
     def get_last_n_md_runs(
         self,
