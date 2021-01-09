@@ -26,7 +26,7 @@ from molecules.ml.unsupervised.point_autoencoder import AAE3d, AAE3dHyperparams
 
 
 def setup_wandb(
-    cfg: AAEModelConfig, model: torch.nn.Module, model_path: Path, comm_rank: int
+    cfg: AAEModelConfig, model: torch.nn.Module, comm_rank: int
 ) -> Optional[wandb.config]:
     # Setup wandb
     wandb_config = None
@@ -35,7 +35,7 @@ def setup_wandb(
             project=cfg.wandb_project_name,
             name=cfg.model_tag,
             id=cfg.model_tag,
-            dir=model_path.as_posix(),
+            dir=cfg.output_path.as_posix(),
             config=cfg.dict(),
             resume=False,
         )
@@ -52,7 +52,7 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Path:
     md_data = api.get_last_n_md_runs()
     all_h5_files = md_data["data_files"]
 
-    virtual_h5_path, h5_files = get_virtual_h5_file(
+    virtual_h5_path, _ = get_virtual_h5_file(
         output_path=cfg.output_path,
         all_h5_files=all_h5_files,
         last_n=cfg.last_n_h5_files,
@@ -205,14 +205,19 @@ def main(
         name=cfg.optimizer_name, hparams={"lr": cfg.optimizer_lr}
     )
 
-    # create a dir for storing the model
-    model_path = cfg.output_path
-
     # Save hparams to disk
     if comm_rank == 0:
-        model_path.mkdir(exist_ok=True)
-        model_hparams.save(model_path.joinpath("model-hparams.json"))
-        optimizer_hparams.save(model_path.joinpath("optimizer-hparams.json"))
+        cfg.output_path.mkdir(exist_ok=True)
+        model_hparams.save(cfg.output_path.joinpath("model-hparams.json"))
+        optimizer_hparams.save(cfg.output_path.joinpath("optimizer-hparams.json"))
+        init_weights = get_init_weights(cfg)
+        h5_file = get_h5_training_file(cfg)
+    else:
+        init_weights, h5_file = None, None
+
+    if comm_size > 1:
+        init_weights = comm.bcast(init_weights, 0)
+        h5_file = comm.bcast(h5_file, 0)
 
     # construct model
     aae = AAE3d(
@@ -222,7 +227,7 @@ def main(
         model_hparams,
         optimizer_hparams,
         gpu=(encoder_gpu, generator_gpu, discriminator_gpu),
-        init_weights=get_init_weights(cfg),
+        init_weights=init_weights,
     )
 
     enc_device = torch.device(f"cuda:{encoder_gpu}")
@@ -241,8 +246,7 @@ def main(
         # Diplay model
         print(aae)
 
-    h5_file = get_h5_training_file(cfg)
-
+    assert isinstance(h5_file, Path)
     # set up dataloaders
     train_dataset = get_dataset(
         cfg.dataset_location,
@@ -296,19 +300,19 @@ def main(
         f"Having {len(train_dataset)} training and {len(valid_dataset)} validation samples."
     )
 
-    wandb_config = setup_wandb(cfg, aae.model, model_path, comm_rank)
+    wandb_config = setup_wandb(cfg, aae.model, comm_rank)
 
     # Optional callbacks
     loss_callback = LossCallback(
-        model_path.joinpath("loss.json"), wandb_config=wandb_config, mpi_comm=comm
+        cfg.output_path.joinpath("loss.json"), wandb_config=wandb_config, mpi_comm=comm
     )
 
     checkpoint_callback = CheckpointCallback(
-        out_dir=model_path.joinpath("checkpoint"), mpi_comm=comm
+        out_dir=cfg.output_path.joinpath("checkpoint"), mpi_comm=comm
     )
 
     save_callback = SaveEmbeddingsCallback(
-        out_dir=model_path.joinpath("embeddings"),
+        out_dir=cfg.output_path.joinpath("embeddings"),
         interval=cfg.embed_interval,
         sample_interval=cfg.sample_interval,
         mpi_comm=comm,
@@ -316,7 +320,7 @@ def main(
 
     # TSNEPlotCallback requires SaveEmbeddingsCallback to run first
     tsne_callback = TSNEPlotCallback(
-        out_dir=model_path.joinpath("embeddings"),
+        out_dir=cfg.output_path.joinpath("embeddings"),
         projection_type="3d",
         target_perplexity=100,
         interval=cfg.tsne_interval,
@@ -337,18 +341,18 @@ def main(
 
     # Save loss history to disk.
     if comm_rank == 0:
-        loss_callback.save(model_path.joinpath("loss.json"))
+        loss_callback.save(cfg.output_path.joinpath("loss.json"))
 
         # Save final model weights to disk
         aae.save_weights(
-            model_path.joinpath("encoder-weights.pt"),
-            model_path.joinpath("generator-weights.pt"),
-            model_path.joinpath("discriminator-weights.pt"),
+            cfg.output_path.joinpath("encoder-weights.pt"),
+            cfg.output_path.joinpath("generator-weights.pt"),
+            cfg.output_path.joinpath("discriminator-weights.pt"),
         )
 
     # Output directory structure
     #  out_path
-    # ├── model_path
+    # ├── cfg.output_path
     # │   ├── checkpoint
     # │   │   ├── epoch-1-20200606-125334.pt
     # │   │   └── epoch-2-20200606-125338.pt
