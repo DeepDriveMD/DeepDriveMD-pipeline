@@ -1,4 +1,5 @@
 import time
+import json
 import argparse
 from pathlib import Path
 from typing import List, Tuple, Dict, Union
@@ -162,6 +163,8 @@ def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool):
             virtual_name=api.agent_stage.unique_name(cfg.output_path),
             node_local_path=cfg.node_local_path,
         )
+        with open(cfg.output_path.joinpath("virtual-h5-metadata.json"), "w") as f:
+            json.dump(sampled_h5_files, f)
 
         # Get best model hyperparameters and weights
         token = get_model_path(api=api)

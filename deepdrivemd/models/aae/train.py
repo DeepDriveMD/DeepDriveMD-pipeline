@@ -1,7 +1,8 @@
 import os
+import json
 import argparse
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple, List
 import wandb
 from deepdrivemd.models.aae.config import AAEModelConfig
 from deepdrivemd.data.api import DeepDriveMD_API
@@ -46,13 +47,13 @@ def setup_wandb(
     return wandb_config
 
 
-def get_h5_training_file(cfg: AAEModelConfig) -> Path:
+def get_h5_training_file(cfg: AAEModelConfig) -> Tuple[Path, List[str]]:
     # Collect training data
     api = DeepDriveMD_API(cfg.experiment_directory)
     md_data = api.get_last_n_md_runs()
     all_h5_files = md_data["data_files"]
 
-    virtual_h5_path, _ = get_virtual_h5_file(
+    virtual_h5_path, h5_files = get_virtual_h5_file(
         output_path=cfg.output_path,
         all_h5_files=all_h5_files,
         last_n=cfg.last_n_h5_files,
@@ -61,7 +62,7 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Path:
         node_local_path=cfg.node_local_path,
     )
 
-    return virtual_h5_path
+    return virtual_h5_path, h5_files
 
 
 def get_init_weights(cfg: AAEModelConfig) -> Optional[str]:
@@ -211,7 +212,10 @@ def main(
         model_hparams.save(cfg.output_path.joinpath("model-hparams.json"))
         optimizer_hparams.save(cfg.output_path.joinpath("optimizer-hparams.json"))
         init_weights = get_init_weights(cfg)
-        h5_file = get_h5_training_file(cfg)
+        h5_file, h5_files = get_h5_training_file(cfg)
+        with open(cfg.output_path.joinpath("virtual-h5-metadata.json"), "w") as f:
+            json.dump(h5_files, f)
+
     else:
         init_weights, h5_file = None, None
 
