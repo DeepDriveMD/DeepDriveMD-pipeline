@@ -90,7 +90,7 @@ def latest_checkpoint(
     assert task_dir is not None
     checkpoint_files = task_dir.joinpath(checkpoint_dir).glob(f"*{checkpoint_suffix}")
     # Format: epoch-1-20200922-131947.pt, select latest epoch checkpoint
-    return max(checkpoint_files, key=lambda x: x.name.split("-")[1])
+    return max(checkpoint_files, key=lambda x: int(x.name.split("-")[1]))
 
 
 def latest_model_checkpoint(cfg: LatestCheckpointConfig):
