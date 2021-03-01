@@ -160,7 +160,7 @@ def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool):
             all_h5_files=md_data["data_files"],
             last_n=cfg.n_most_recent_h5_files,
             k_random_old=cfg.k_random_old_h5_files,
-            virtual_name=api.agent_stage.unique_name(cfg.output_path),
+            virtual_name=f"virtual_{api.agent_stage.unique_name(cfg.output_path)}",
             node_local_path=cfg.node_local_path,
         )
         with open(cfg.output_path.joinpath("virtual-h5-metadata.json"), "w") as f:

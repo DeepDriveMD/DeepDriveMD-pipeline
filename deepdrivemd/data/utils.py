@@ -133,9 +133,9 @@ def get_virtual_h5_file(
     # copy all HDF5 files to node local storage and make a
     # separate virtual HDF5 file on node local storage.
     if node_local_path is not None:
-        h5_files = [shutil.copy(f, node_local_path) for f in h5_files]
+        tmp_h5_files = [shutil.copy(f, node_local_path) for f in h5_files]
         virtual_h5_file = node_local_path.joinpath(f"{virtual_name}.h5")
-        concatenate_virtual_h5(h5_files, virtual_h5_file.as_posix())
+        concatenate_virtual_h5(tmp_h5_files, virtual_h5_file.as_posix())
 
     # Returns node local virtual file if available
     return virtual_h5_file, h5_files

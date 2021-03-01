@@ -58,7 +58,7 @@ def get_h5_training_file(cfg: AAEModelConfig) -> Tuple[Path, List[str]]:
         all_h5_files=all_h5_files,
         last_n=cfg.last_n_h5_files,
         k_random_old=cfg.k_random_old_h5_files,
-        virtual_name=cfg.model_tag,
+        virtual_name=f"virtual_{cfg.model_tag}",
         node_local_path=cfg.node_local_path,
     )
 

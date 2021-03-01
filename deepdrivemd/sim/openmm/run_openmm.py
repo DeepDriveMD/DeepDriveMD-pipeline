@@ -108,7 +108,7 @@ class SimulationContext:
     def move_results(self):
         if self.workdir != self.cfg.output_path:
             for p in self.workdir.iterdir():
-                p.rename(self.cfg.output_path.joinpath(p.name))
+                shutil.move(str(p), str(self.cfg.output_path.joinpath(p.name)))
 
 
 def configure_reporters(

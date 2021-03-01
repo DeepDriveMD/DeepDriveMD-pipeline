@@ -8,8 +8,8 @@ max_iteration: 4
 cpus_per_node: 40
 gpus_per_node: 4
 hardware_threads_per_cpu: 4
-experiment_directory: /p/gpfs1/brace3/runs/ddmd_test_experiments/bba_integration_john_test_1
-node_local_path: null
+experiment_directory: /p/gpfs1/brace3/runs/ddmd_test_experiments/bba_integration_5
+node_local_path: /tmp
 molecular_dynamics_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh
