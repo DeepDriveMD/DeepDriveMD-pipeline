@@ -341,7 +341,12 @@ def main(
         tsne_callback,
     ]
 
-    aae.train(train_loader, valid_loader, cfg.epochs, callbacks=callbacks)
+    if cfg.stage_idx == 0:
+        epochs = cfg.initial_epochs
+    else:
+        epochs = cfg.epochs
+
+    aae.train(train_loader, valid_loader, epochs, callbacks=callbacks)
 
     # Save loss history to disk.
     if comm_rank == 0:

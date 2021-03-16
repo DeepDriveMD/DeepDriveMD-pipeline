@@ -17,7 +17,9 @@ class AAEModelConfig(MachineLearningTaskConfig):
     num_points: int = 3375
     # Number of features per point in addition to 3D coordinates
     num_features: int = 0
-    # Number of epochs to train
+    # Number of epochs to train during first iteration
+    initial_epochs: int = 10
+    # Number of epochs to train on later iterations
     epochs: int = 10
     # Training batch size
     batch_size: int = 32

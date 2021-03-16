@@ -119,6 +119,7 @@ machine_learning_stage:
         fnc_name: fnc
         num_points: 309
         num_features: 0
+        initial_epochs: 10
         epochs: 10
         batch_size: 32
         optimizer_name: RMSprop
