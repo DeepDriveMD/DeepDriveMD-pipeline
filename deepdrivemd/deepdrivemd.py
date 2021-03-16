@@ -68,7 +68,7 @@ class PipelineManager:
 
         if self.stage_idx % cfg.machine_learning_stage.retrain_freq == 0:
             self.pipeline.add_stages(self.generate_machine_learning_stage())
-            self.pipeline.add_stages(self.generate_model_selection_stage())
+        self.pipeline.add_stages(self.generate_model_selection_stage())
 
         agent_stage = self.generate_agent_stage()
         agent_stage.post_exec = self.func_condition

@@ -187,6 +187,7 @@ model_selection_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
+        retrain_freq: 1
 agent_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh
