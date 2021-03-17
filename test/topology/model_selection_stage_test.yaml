@@ -3,3 +3,4 @@ stage_idx: 0
 task_idx: 0
 output_path: /homes/abrace/tmp/deepdrivemd_tests/topology_test/test_experiment/model_selection_runs/stage0000/task0000/
 node_local_path: null
+retrain_freq: 1

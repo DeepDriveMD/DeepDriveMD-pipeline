@@ -119,6 +119,7 @@ machine_learning_stage:
         fnc_name: fnc
         num_points: 28
         num_features: 0
+        initial_epochs: 10
         epochs: 10
         batch_size: 32
         optimizer_name: Adam
@@ -186,6 +187,7 @@ model_selection_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
+        retrain_freq: 1
 agent_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh

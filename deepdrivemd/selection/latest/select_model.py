@@ -90,7 +90,7 @@ def latest_checkpoint(
     assert task_dir is not None
     checkpoint_files = task_dir.joinpath(checkpoint_dir).glob(f"*{checkpoint_suffix}")
     # Format: epoch-1-20200922-131947.pt, select latest epoch checkpoint
-    return max(checkpoint_files, key=lambda x: x.as_posix().split("-")[1])
+    return max(checkpoint_files, key=lambda x: int(x.name.split("-")[1]))
 
 
 def latest_model_checkpoint(cfg: LatestCheckpointConfig):
@@ -106,12 +106,24 @@ def latest_model_checkpoint(cfg: LatestCheckpointConfig):
         pydantic YAML configuration for model selection task.
     """
     api = DeepDriveMD_API(cfg.experiment_directory)
-    # Select latest PyTorch model checkpoint.
-    checkpoint_path = latest_checkpoint(api)
-    # Get latest model YAML configuration.
-    cfg_path = api.machine_learning_stage.config_path(cfg.stage_idx, cfg.task_idx)
+
+    # Check if there is a new model
+    if cfg.stage_idx % cfg.retrain_freq == 0:
+        # Select latest model checkpoint.
+        model_checkpoint = latest_checkpoint(api)
+        # Get latest model YAML configuration.
+        model_config = api.machine_learning_stage.config_path(
+            cfg.stage_idx, cfg.task_idx
+        )
+    else:  # Use old model
+        token = get_model_path(cfg.stage_idx - 1, cfg.task_idx, api)
+        assert token is not None, f"{cfg.stage_idx - 1}, {cfg.task_idx}"
+        model_config, model_checkpoint = token
+
     # Format data into JSON serializable list of dictionaries
-    data = [{"model_checkpoint": str(checkpoint_path), "model_config": str(cfg_path)}]
+    data = [
+        {"model_checkpoint": str(model_checkpoint), "model_config": str(model_config)}
+    ]
     # Dump metadata to disk for MD stage
     api.model_selection_stage.write_task_json(data, cfg.stage_idx, cfg.task_idx)
 

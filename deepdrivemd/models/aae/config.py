@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from deepdrivemd.config import MachineLearningTaskConfig
 
 
@@ -17,7 +17,9 @@ class AAEModelConfig(MachineLearningTaskConfig):
     num_points: int = 3375
     # Number of features per point in addition to 3D coordinates
     num_features: int = 0
-    # Number of epochs to train
+    # Number of epochs to train during first iteration
+    initial_epochs: int = 10
+    # Number of epochs to train on later iterations
     epochs: int = 10
     # Training batch size
     batch_size: int = 32
@@ -32,13 +34,13 @@ class AAEModelConfig(MachineLearningTaskConfig):
     # Latent dimension of the AAE
     latent_dim: int = 64
     # Encoder filter sizes
-    encoder_filters: list = [64, 128, 256, 256, 512]
+    encoder_filters: List[int] = [64, 128, 256, 256, 512]
     # Encoder kernel sizes
-    encoder_kernel_sizes: list = [5, 5, 3, 1, 1]
+    encoder_kernel_sizes: List[int] = [5, 5, 3, 1, 1]
     # Generator filter sizes
-    generator_filters: list = [64, 128, 512, 1024]
+    generator_filters: List[int] = [64, 128, 512, 1024]
     # Discriminator filter sizes
-    discriminator_filters: list = [512, 512, 128, 64]
+    discriminator_filters: List[int] = [512, 512, 128, 64]
     encoder_relu_slope: float = 0.0
     generator_relu_slope: float = 0.0
     discriminator_relu_slope: float = 0.0
