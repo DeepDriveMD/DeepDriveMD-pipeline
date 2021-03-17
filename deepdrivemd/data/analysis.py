@@ -1,6 +1,8 @@
 from pathlib import Path
 import numpy as np
-from typing import Union, List, Dict, Any
+from tqdm import tqdm
+from typing import Union, List, Dict, Any, Optional, Callable
+from concurrent.futures import ProcessPoolExecutor
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import parse_h5
 
@@ -33,3 +35,21 @@ class DeepDriveMD_Analysis:
             for stage_idx in range(iterations)
         ]
         return h5_data
+
+    def apply_analysis_fn(
+        self,
+        fn: Callable,
+        num_workers: Optional[int] = None,
+        n: Optional[int] = None,
+        data_file_suffix: str = ".h5",
+        traj_file_suffix: str = ".dcd",
+        structure_file_suffix: str = ".pdb",
+    ) -> List[Any]:
+        md_data = self.api.get_last_n_md_runs(
+            n, data_file_suffix, traj_file_suffix, structure_file_suffix
+        )
+        output_data = []
+        with ProcessPoolExecutor(max_workers=num_workers) as executor:
+            for data in tqdm(executor.map(fn, zip(md_data.values()))):
+                output_data.append(data)
+        return output_data
