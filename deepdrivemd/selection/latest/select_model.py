@@ -110,7 +110,9 @@ def latest_model_checkpoint(cfg: LatestCheckpointConfig):
     # Check if there is a new model
     if cfg.stage_idx % cfg.retrain_freq == 0:
         # Select latest model checkpoint.
-        model_checkpoint = latest_checkpoint(api)
+        model_checkpoint = latest_checkpoint(
+            api, cfg.checkpoint_dir, cfg.checkpoint_suffix
+        )
         # Get latest model YAML configuration.
         model_config = api.machine_learning_stage.config_path(
             cfg.stage_idx, cfg.task_idx

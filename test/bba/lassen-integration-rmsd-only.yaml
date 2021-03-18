@@ -188,6 +188,8 @@ model_selection_stage:
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
         retrain_freq: 1
+        checkpoint_dir: checkpoint
+        checkpoint_suffix: .pt
 agent_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh
