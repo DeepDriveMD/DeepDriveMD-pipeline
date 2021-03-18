@@ -4,6 +4,7 @@ Reference: "Auto-Encoding Variational Bayes" (https://arxiv.org/abs/1312.6114);
 """
 
 import numpy as np
+import pandas as pd
 from tensorflow.keras.layers import Input, Dense, Lambda, Flatten, Reshape, Dropout
 from tensorflow.keras.layers import Convolution2D, Conv2DTranspose
 from tensorflow.keras.models import Model
@@ -24,6 +25,11 @@ class LossHistory(Callback):
     def on_epoch_end(self, epoch, logs={}):
         self.losses.append(logs.get("loss"))
         self.val_losses.append(logs.get("val_loss"))
+
+    def to_csv(self, path):
+        """Log loss values to a csv file."""
+        df = pd.DataFrame({"train_loss": self.losses, "valid_loss": self.val_losses})
+        df.to_csv(path, index_label="epoch")
 
 
 class conv_variational_autoencoder(object):
