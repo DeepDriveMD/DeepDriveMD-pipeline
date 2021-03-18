@@ -341,6 +341,8 @@ def main(
         tsne_callback,
     ]
 
+    # Optionaly train for a different number of
+    # epochs on the first DDMD iterations
     if cfg.stage_idx == 0:
         epochs = cfg.initial_epochs
     else:
