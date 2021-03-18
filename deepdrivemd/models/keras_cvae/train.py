@@ -1,16 +1,15 @@
 import time
 import json
-import h5py
 import argparse
 from pathlib import Path
 from typing import Tuple, List, Optional
 import numpy as np
-from scipy.sparse import coo_matrix
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
 from deepdrivemd.selection.latest.select_model import get_model_path
-from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
 from deepdrivemd.models.keras_cvae.config import KerasCVAEModelConfig
+from deepdrivemd.models.keras_cvae.utils import sparse_to_dense
+from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
 
 
 def get_init_weights(cfg: KerasCVAEModelConfig) -> Optional[str]:
@@ -52,31 +51,6 @@ def get_h5_training_file(cfg: KerasCVAEModelConfig) -> Tuple[Path, List[str]]:
     )
 
     return virtual_h5_path, h5_files
-
-
-def sparse_to_dense(
-    h5_file: Path,
-    dataset_name: str,
-    initial_shape: Tuple[int, ...],
-    final_shape: Tuple[int, ...],
-):
-    """Convert sparse COO formatted contact maps to dense."""
-    contact_maps = []
-    with h5py.File(h5_file, "r", libver="latest", swmr=False) as f:
-        for raw_indices in f[dataset_name]:
-            indices = raw_indices.reshape((2, -1)).astype("int16")
-            # Contact matrices are binary so we don't need to store the values
-            # in HDF5 format. Instead we create a vector of 1s on the fly.
-            values = np.ones(indices.shape[1]).astype("byte")
-            # Construct COO formated sparse matrix
-            contact_map = coo_matrix(
-                (values, (indices[0], indices[1])), shape=initial_shape
-            ).todense()
-            contact_map = np.array(
-                contact_map[: final_shape[0], : final_shape[1]], dtype=np.float16
-            )
-            contact_maps.append(contact_map)
-    return np.array(contact_maps)
 
 
 def preprocess(

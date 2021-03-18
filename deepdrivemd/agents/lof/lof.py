@@ -21,7 +21,7 @@ def get_representation(
     model_weights_path: PathLike,
     h5_file: PathLike,
     inference_batch_size: int = 128,
-    device: str = "cuda:0",
+    gpu_id: int = 0,
     comm=None,
 ) -> np.ndarray:
     if model_type == "AAE3d":
@@ -33,8 +33,17 @@ def get_representation(
             h5_file,
             model_weights_path,
             inference_batch_size,
-            device,
+            gpu_id,
             comm,
+        )
+    if model_type == "keras_cvae":
+        from deepdrivemd.models.keras_cvae.inference import generate_embeddings
+
+        embeddings = generate_embeddings(
+            model_cfg_path,
+            h5_file,
+            model_weights_path,
+            inference_batch_size,
         )
     else:
         raise ValueError(f"model_type {cfg.model_type} not supported")

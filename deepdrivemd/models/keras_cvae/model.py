@@ -373,7 +373,7 @@ class conv_variational_autoencoder(object):
         """
         return self.model.predict(data)
 
-    def return_embeddings(self, data):
+    def return_embeddings(self, data, batch_size: int = 32):
         """
         return the embeddings for given data
 
@@ -384,7 +384,7 @@ class conv_variational_autoencoder(object):
         outputs:
             numpy array of embeddings for input data
         """
-        return self.embedder.predict(data)
+        return self.embedder.predict(data, batch_size=batch_size)
 
     def generate(self, embedding):
         """

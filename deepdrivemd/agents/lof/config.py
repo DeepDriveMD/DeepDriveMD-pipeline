@@ -58,7 +58,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
 
     @validator("model_type")
     def model_type_check(cls, v):
-        valid_model_types = {"AAE3d"}
+        valid_model_types = {"AAE3d", "keras_cvae"}
         if v not in valid_model_types:
             raise ValueError(f"model_type must be one of {valid_model_types}, not {v}.")
         return v
