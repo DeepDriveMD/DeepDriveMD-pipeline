@@ -1,9 +1,11 @@
 import time
 import json
 import argparse
+import random
 from pathlib import Path
 from typing import List, Tuple, Dict, Union
-import torch
+
+# import torch
 import numpy as np
 from sklearn.neighbors import LocalOutlierFactor
 from deepdrivemd.utils import setup_mpi_comm, setup_mpi, bestk
@@ -51,6 +53,45 @@ def get_representation(
     return embeddings
 
 
+def run_dbscan(data: np.ndarray, eps: float = 0.35):
+    # RAPIDS.ai import as needed
+    import cupy as cp
+    from cuml import DBSCAN as DBSCAN
+
+    db = DBSCAN(eps=eps, min_samples=10, max_mbytes_per_batch=500).fit(cp.asarray(data))
+    outlier_inds = np.flatnonzero(db.labels_.to_array() == -1)
+    return outlier_inds
+
+
+def dbscan_outlier_search(embeddings: np.ndarray) -> np.ndarray:
+    """Find best eps and return corresponding outlier indices."""
+    eps = 1.3
+    outlier_max = 500
+    outlier_min = 200
+    attempts = 120
+
+    outliers = None
+    for _ in range(attempts):
+        n_outlier = 0
+        try:
+            outliers = run_dbscan(embeddings, eps=eps)
+            n_outlier = len(outliers)
+        except Exception as e:
+            print(e, "\nNo outliers found")
+
+        if n_outlier > outlier_max:
+            eps += 0.09 * random.random()
+        elif n_outlier < outlier_min:
+            eps = max(0.01, eps - 0.09 * random.random())
+        else:
+            break
+    else:
+        raise ValueError("Found no outliers after DBSCAN search.")
+
+    assert outliers is not None
+    return outliers
+
+
 def get_intrinsic_score(
     embeddings: np.ndarray, cfg: OutlierDetectionConfig
 ) -> Tuple[np.ndarray, np.ndarray]:
@@ -72,6 +113,10 @@ def get_intrinsic_score(
             clf.negative_outlier_factor_, k=cfg.num_intrinsic_outliers
         )
         print(f"LOF Time: {time.time()- t_start}s")
+    elif cfg.intrinsic_score == "dbscan":
+        intrinsic_inds = dbscan_outlier_search(embeddings)
+        # DBSCAN does not have an outlier score
+        intrinsic_scores = np.zeros(len(intrinsic_inds))
     else:
         # If no intrinsic_score, simply return all the data
         intrinsic_inds = np.arange(len(embeddings))
@@ -247,7 +292,7 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     # set forkserver (needed for summit runs, may cause errors elsewhere)
-    torch.multiprocessing.set_start_method("forkserver", force=True)
+    # torch.multiprocessing.set_start_method("forkserver", force=True)
 
     args = parse_args()
     cfg = OutlierDetectionConfig.from_yaml(args.config)
