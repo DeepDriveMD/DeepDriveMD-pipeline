@@ -122,8 +122,8 @@ machine_learning_stage:
         - 28
         - 28
         - 1
-        initial_epochs: 10
-        epochs: 10
+        initial_epochs: 5
+        epochs: 5
         batch_size: 32
         split_pct: 0.8
         shuffle: true
