@@ -114,9 +114,12 @@ def get_intrinsic_score(
         )
         print(f"LOF Time: {time.time()- t_start}s")
     elif cfg.intrinsic_score == "dbscan":
+        t_start = time.time()  # Start timer
+        print("Running DBSCAN")
         intrinsic_inds = dbscan_outlier_search(embeddings)
         # DBSCAN does not have an outlier score
         intrinsic_scores = np.zeros(len(intrinsic_inds))
+        print(f"DBSCAN Time: {time.time()- t_start}s")
     else:
         # If no intrinsic_score, simply return all the data
         intrinsic_inds = np.arange(len(embeddings))
