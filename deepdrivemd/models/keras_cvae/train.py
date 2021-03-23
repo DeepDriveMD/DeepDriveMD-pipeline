@@ -130,7 +130,7 @@ def main(cfg: KerasCVAEModelConfig):
     checkpoint_path = cfg.output_path / "checkpoint"
     checkpoint_path.mkdir()
     time_stamp = time.strftime(f"epoch-{epochs}-%Y%m%d-%H%M%S.h5")
-    cvae.model.save_weights(checkpoint_path / time_stamp)
+    cvae.model.save_weights(str(checkpoint_path / time_stamp))
 
     # Log loss history
     cvae.history.to_csv(cfg.output_path / "loss.csv")

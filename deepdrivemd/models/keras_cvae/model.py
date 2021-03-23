@@ -328,9 +328,9 @@ class conv_variational_autoencoder(object):
             validation_data=(validation_data, validation_data),
             callbacks=[
                 self.history,
-                ModelCheckpoint(
-                    "best.h5", monitor="val_loss", save_best_only=True, verbose=1
-                ),
+                #ModelCheckpoint(
+                #    "best.h5", monitor="val_loss", save_best_only=True, verbose=1
+                #),
             ],
         )
 

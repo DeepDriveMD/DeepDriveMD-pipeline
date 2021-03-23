@@ -34,7 +34,7 @@ def generate_embeddings(
         latent_dim=cfg.latent_dim,
     )
 
-    cvae.model.load_weights(model_weights_path)
+    cvae.model.load_weights(str(model_weights_path))
 
     data = sparse_to_dense(
         h5_file, cfg.dataset_name, cfg.initial_shape, cfg.final_shape

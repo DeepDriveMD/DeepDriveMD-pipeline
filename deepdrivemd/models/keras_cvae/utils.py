@@ -27,6 +27,6 @@ def sparse_to_dense(
             ).todense()
             contact_map = np.array(
                 contact_map[: final_shape[0], : final_shape[1]], dtype=np.float16
-            )
+            ).reshape(final_shape) # Incase of extra 1 e.g. (N, N, 1)
             contact_maps.append(contact_map)
     return np.array(contact_maps)
