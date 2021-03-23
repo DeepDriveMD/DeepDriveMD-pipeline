@@ -70,7 +70,6 @@ def dbscan_outlier_search(embeddings: np.ndarray) -> np.ndarray:
     outlier_min = 200
     attempts = 120
 
-    outliers = None
     for _ in range(attempts):
         n_outlier = 0
         try:
@@ -84,12 +83,9 @@ def dbscan_outlier_search(embeddings: np.ndarray) -> np.ndarray:
         elif n_outlier < outlier_min:
             eps = max(0.01, eps - 0.09 * random.random())
         else:
-            break
-    else:
-        raise ValueError("Found no outliers after DBSCAN search.")
+            return outliers
 
-    assert outliers is not None
-    return outliers
+    raise ValueError("Found no outliers after DBSCAN search.")
 
 
 def get_intrinsic_score(
