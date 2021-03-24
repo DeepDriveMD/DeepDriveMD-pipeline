@@ -14,6 +14,7 @@ molecular_dynamics_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh
     - module load cuda/9.1.85
+    - unset PYTHONPATH
     - conda activate /p/gpfs1/brace3/envs/conda-openmm
     executable:
     - /p/gpfs1/brace3/envs/conda-openmm/bin/python
@@ -85,6 +86,7 @@ machine_learning_stage:
     - export LC_ALL=en_US.utf-8
     - export HDF5_USE_FILE_LOCKING=FALSE
     - export IBM_POWERAI_LICENSE_ACCEPT=yes
+    - unset PYTHONPATH
     - conda activate /p/gpfs1/brace3/envs/conda-keras-powerai
     - unset CUDA_VISIBLE_DEVICES
     - export OMP_NUM_THREADS=4
@@ -166,6 +168,7 @@ model_selection_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh
     - export IBM_POWERAI_LICENSE_ACCEPT=yes
+    - unset PYTHONPATH
     - conda activate /p/gpfs1/brace3/envs/conda-keras-powerai
     executable:
     - /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
@@ -194,6 +197,7 @@ agent_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh
     - export IBM_POWERAI_LICENSE_ACCEPT=yes
+    - unset PYTHONPATH
     - conda activate /p/gpfs1/brace3/envs/conda-keras-powerai
     - export LANG=en_US.utf-8
     - export LC_ALL=en_US.utf-8

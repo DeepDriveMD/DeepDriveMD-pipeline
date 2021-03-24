@@ -86,12 +86,14 @@ machine_learning_stage:
     - export HDF5_USE_FILE_LOCKING=FALSE
     - conda activate /p/gpfs1/brace3/envs/conda-pytorch-gpfs
     - export LD_LIBRARY_PATH=/p/gpfs1/brace3/envs/cuda/targets/ppc64le-linux/lib/:$LD_LIBRARY_PATH
-    - unset CUDA_VISIBLE_DEVICES
+    #- unset CUDA_VISIBLE_DEVICES
+    - export CUDA_VISIBLE_DEVICES=0
     - export OMP_NUM_THREADS=4
     executable:
-    - cat /dev/null; jsrun -n 1 -g 4 -a 4 -c 40 -d packed /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/bin/lassen.sh
-    arguments:
+    #- cat /dev/null; jsrun -n 1 -g 4 -a 4 -c 40 -d packed /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/bin/lassen.sh
     - /p/gpfs1/brace3/envs/conda-pytorch-gpfs/bin/python
+    arguments:
+    # - /p/gpfs1/brace3/envs/conda-pytorch-gpfs/bin/python
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/train.py
     cpu_reqs:
         processes: 1

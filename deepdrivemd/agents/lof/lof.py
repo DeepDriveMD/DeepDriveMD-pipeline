@@ -38,7 +38,7 @@ def get_representation(
             gpu_id,
             comm,
         )
-    if model_type == "keras_cvae":
+    elif model_type == "keras_cvae":
         from deepdrivemd.models.keras_cvae.inference import generate_embeddings
 
         embeddings = generate_embeddings(
