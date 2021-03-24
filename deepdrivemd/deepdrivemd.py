@@ -1,4 +1,5 @@
 import os
+import shutil
 import argparse
 import itertools
 from typing import List
@@ -275,8 +276,10 @@ if __name__ == "__main__":
     }
 
     pipeline_manager = PipelineManager(cfg)
-    pipelines = pipeline_manager.generate_pipelines()
+    # Back up configuration file (PipelineManager must create cfg.experiment_dir)
+    shutil.copy(args.config, cfg.experiment_directory)
 
+    pipelines = pipeline_manager.generate_pipelines()
     # Assign the workflow as a list of Pipelines to the Application Manager.
     # All the pipelines in the list will execute concurrently.
     appman.workflow = pipelines
