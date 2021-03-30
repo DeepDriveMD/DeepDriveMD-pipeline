@@ -62,11 +62,13 @@ def run_dbscan(data: np.ndarray, eps: float = 0.35):
     return outlier_inds
 
 
-def dbscan_outlier_search(embeddings: np.ndarray) -> np.ndarray:
+def dbscan_outlier_search(
+    embeddings: np.ndarray, num_intrinsic_outliers: int
+) -> np.ndarray:
     """Find best eps and return corresponding outlier indices."""
     eps = 1.3
-    outlier_max = 500
-    outlier_min = 200
+    outlier_min = num_intrinsic_outliers
+    outlier_max = num_intrinsic_outliers + 200
     attempts = 120
 
     for _ in range(attempts):
@@ -104,7 +106,7 @@ def get_intrinsic_score(
             clf.negative_outlier_factor_, k=cfg.num_intrinsic_outliers
         )
     elif cfg.intrinsic_score == "dbscan":
-        intrinsic_inds = dbscan_outlier_search(embeddings)
+        intrinsic_inds = dbscan_outlier_search(embeddings, cfg.num_intrinsic_outliers)
         # DBSCAN does not have an outlier score
         intrinsic_scores = np.zeros(len(intrinsic_inds))
     else:
