@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 from typing import Tuple, List, Optional
 import numpy as np
+from deepdrivemd.utils import Timer
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
 from deepdrivemd.selection.latest.select_model import get_model_path
@@ -80,33 +81,40 @@ def preprocess(
 def main(cfg: KerasCVAEModelConfig):
 
     cfg.output_path.mkdir(exist_ok=True)
-    init_weights = get_init_weights(cfg)
-    h5_file, h5_files = get_h5_training_file(cfg)
+
+    with Timer("machine_learning_get_init_weights"):
+        init_weights = get_init_weights(cfg)
+
+    with Timer("machine_learning_get_h5_training_file"):
+        h5_file, h5_files = get_h5_training_file(cfg)
+
     # Log selected H5 files
     with open(cfg.output_path / "virtual-h5-metadata.json", "w") as f:
         json.dump(h5_files, f)
 
-    train_data, valid_data = preprocess(
-        h5_file,
-        cfg.initial_shape,
-        cfg.final_shape,
-        cfg.dataset_name,
-        cfg.split_pct,
-        cfg.shuffle,
-    )
+    with Timer("machine_learning_preprocess"):
+        train_data, valid_data = preprocess(
+            h5_file,
+            cfg.initial_shape,
+            cfg.final_shape,
+            cfg.dataset_name,
+            cfg.split_pct,
+            cfg.shuffle,
+        )
 
-    cvae = conv_variational_autoencoder(
-        image_size=cfg.final_shape,
-        channels=cfg.final_shape[-1],
-        conv_layers=cfg.conv_layers,
-        feature_maps=cfg.conv_filters,
-        filter_shapes=cfg.conv_filter_shapes,
-        strides=cfg.conv_strides,
-        dense_layers=cfg.dense_layers,
-        dense_neurons=cfg.dense_neurons,
-        dense_dropouts=cfg.dense_dropouts,
-        latent_dim=cfg.latent_dim,
-    )
+    with Timer("machine_learning_conv_variational_autoencoder"):
+        cvae = conv_variational_autoencoder(
+            image_size=cfg.final_shape,
+            channels=cfg.final_shape[-1],
+            conv_layers=cfg.conv_layers,
+            feature_maps=cfg.conv_filters,
+            filter_shapes=cfg.conv_filter_shapes,
+            strides=cfg.conv_strides,
+            dense_layers=cfg.dense_layers,
+            dense_neurons=cfg.dense_neurons,
+            dense_dropouts=cfg.dense_dropouts,
+            latent_dim=cfg.latent_dim,
+        )
     cvae.model.summary()
 
     if init_weights is not None:
@@ -119,21 +127,23 @@ def main(cfg: KerasCVAEModelConfig):
     else:
         epochs = cfg.epochs
 
-    cvae.train(
-        train_data,
-        validation_data=valid_data,
-        batch_size=cfg.batch_size,
-        epochs=epochs,
-    )
+    with Timer("machine_learning_train"):
+        cvae.train(
+            train_data,
+            validation_data=valid_data,
+            batch_size=cfg.batch_size,
+            epochs=epochs,
+        )
 
     # Log checkpoint
-    checkpoint_path = cfg.output_path / "checkpoint"
-    checkpoint_path.mkdir()
-    time_stamp = time.strftime(f"epoch-{epochs}-%Y%m%d-%H%M%S.h5")
-    cvae.model.save_weights(str(checkpoint_path / time_stamp))
+    with Timer("machine_learning_logging"):
+        checkpoint_path = cfg.output_path / "checkpoint"
+        checkpoint_path.mkdir()
+        time_stamp = time.strftime(f"epoch-{epochs}-%Y%m%d-%H%M%S.h5")
+        cvae.model.save_weights(str(checkpoint_path / time_stamp))
 
-    # Log loss history
-    cvae.history.to_csv(cfg.output_path / "loss.csv")
+        # Log loss history
+        cvae.history.to_csv(cfg.output_path / "loss.csv")
 
 
 def parse_args() -> argparse.Namespace:
@@ -146,6 +156,7 @@ def parse_args() -> argparse.Namespace:
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    cfg = KerasCVAEModelConfig.from_yaml(args.config)
-    main(cfg)
+    with Timer("machine_learning_stage"):
+        args = parse_args()
+        cfg = KerasCVAEModelConfig.from_yaml(args.config)
+        main(cfg)

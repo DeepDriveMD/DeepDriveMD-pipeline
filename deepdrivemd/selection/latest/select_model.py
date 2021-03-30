@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 from typing import Optional, Union, Tuple
+from deepdrivemd.utils import Timer
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.selection.latest.config import LatestCheckpointConfig
 
@@ -140,6 +141,7 @@ def parse_args() -> argparse.Namespace:
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    cfg = LatestCheckpointConfig.from_yaml(args.config)
-    latest_model_checkpoint(cfg)
+    with Timer("model_selection_stage"):
+        args = parse_args()
+        cfg = LatestCheckpointConfig.from_yaml(args.config)
+        latest_model_checkpoint(cfg)

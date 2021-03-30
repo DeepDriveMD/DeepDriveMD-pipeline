@@ -1,4 +1,3 @@
-import time
 import json
 import argparse
 import random
@@ -8,7 +7,7 @@ from typing import List, Tuple, Dict, Union
 # import torch
 import numpy as np
 from sklearn.neighbors import LocalOutlierFactor
-from deepdrivemd.utils import setup_mpi_comm, setup_mpi, bestk
+from deepdrivemd.utils import setup_mpi_comm, setup_mpi, bestk, Timer
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file, parse_h5
 from deepdrivemd.agents.lof.config import OutlierDetectionConfig
@@ -94,10 +93,6 @@ def get_intrinsic_score(
 
     if cfg.intrinsic_score == "lof":
         # Perform LocalOutlierFactor outlier detection on embeddings
-        t_start = time.time()  # Start timer
-        print("Running LOF")
-
-        # compute LOF
         clf = LocalOutlierFactor(n_jobs=cfg.sklearn_num_jobs)
         embeddings = np.nan_to_num(embeddings, nan=0.0)
         # Array with 1 if inlier, -1 if outlier
@@ -108,14 +103,10 @@ def get_intrinsic_score(
         intrinsic_scores, intrinsic_inds = bestk(
             clf.negative_outlier_factor_, k=cfg.num_intrinsic_outliers
         )
-        print(f"LOF Time: {time.time()- t_start}s")
     elif cfg.intrinsic_score == "dbscan":
-        t_start = time.time()  # Start timer
-        print("Running DBSCAN")
         intrinsic_inds = dbscan_outlier_search(embeddings)
         # DBSCAN does not have an outlier score
         intrinsic_scores = np.zeros(len(intrinsic_inds))
-        print(f"DBSCAN Time: {time.time()- t_start}s")
     else:
         # If no intrinsic_score, simply return all the data
         intrinsic_inds = np.arange(len(embeddings))
@@ -128,8 +119,6 @@ def get_intrinsic_score(
 def get_extrinsic_score(
     intrinsic_inds: np.ndarray, virtual_h5_file: Path, cfg: OutlierDetectionConfig
 ) -> Tuple[np.ndarray, np.ndarray]:
-
-    t_start = time.time()  # Start timer
 
     if cfg.extrinsic_score == "rmsd":
         # Get all RMSD values from virutal HDF5 file
@@ -144,8 +133,6 @@ def get_extrinsic_score(
         # If no extrinsic_score, simply return the intrinsic selection
         extrinsic_inds = np.arange(cfg.num_extrinsic_outliers)
         extrinsic_scores = np.zeros(len(extrinsic_inds))
-
-    print(f"get_extrinsic_score time: {time.time()- t_start}s")
 
     return extrinsic_scores, extrinsic_inds
 
@@ -202,27 +189,31 @@ def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool):
     comm_size, comm_rank = setup_mpi(comm)
 
     if comm_rank == 0:
-        t_start = time.time()  # Start timer
 
         # Collect training data
         api = DeepDriveMD_API(cfg.experiment_directory)
-        md_data = api.get_last_n_md_runs()
 
-        virtual_h5_file, sampled_h5_files = get_virtual_h5_file(
-            output_path=cfg.output_path,
-            all_h5_files=md_data["data_files"],
-            last_n=cfg.n_most_recent_h5_files,
-            k_random_old=cfg.k_random_old_h5_files,
-            virtual_name=f"virtual_{api.agent_stage.unique_name(cfg.output_path)}",
-            node_local_path=cfg.node_local_path,
-        )
+        with Timer("agent_get_last_n_md_runs"):
+            md_data = api.get_last_n_md_runs()
+
+        with Timer("agent_get_virtual_h5_file"):
+            virtual_h5_file, sampled_h5_files = get_virtual_h5_file(
+                output_path=cfg.output_path,
+                all_h5_files=md_data["data_files"],
+                last_n=cfg.n_most_recent_h5_files,
+                k_random_old=cfg.k_random_old_h5_files,
+                virtual_name=f"virtual_{api.agent_stage.unique_name(cfg.output_path)}",
+                node_local_path=cfg.node_local_path,
+            )
+
         with open(cfg.output_path.joinpath("virtual-h5-metadata.json"), "w") as f:
             json.dump(sampled_h5_files, f)
 
         # Get best model hyperparameters and weights
-        token = get_model_path(api=api)
-        assert token is not None
-        model_cfg_path, model_weights_path = token
+        with Timer("agent_get_model_path"):
+            token = get_model_path(api=api)
+            assert token is not None
+            model_cfg_path, model_weights_path = token
 
     else:
         virtual_h5_file, model_cfg_path, model_weights_path = None, None, None
@@ -233,41 +224,44 @@ def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool):
         model_weights_path = comm.bcast(model_weights_path, 0)
 
     # Select machine learning model and generate embeddings
-    embeddings = get_representation(
-        cfg.model_type,
-        model_cfg_path,
-        model_weights_path,
-        virtual_h5_file,
-        cfg.inference_batch_size,
-        encoder_gpu,
-        comm,
-    )
+    with Timer("agent_get_representation"):
+        embeddings = get_representation(
+            cfg.model_type,
+            model_cfg_path,
+            model_weights_path,
+            virtual_h5_file,
+            cfg.inference_batch_size,
+            encoder_gpu,
+            comm,
+        )
 
     if comm_rank == 0:
 
-        intrinsic_scores, intrinsic_inds = get_intrinsic_score(embeddings, cfg)
+        with Timer("agent_get_intrinsic_score"):
+            intrinsic_scores, intrinsic_inds = get_intrinsic_score(embeddings, cfg)
 
         # Prune the best intrinsically ranked points with an extrinsic score
-        extrinsic_scores, extrinsic_inds = get_extrinsic_score(
-            intrinsic_inds, virtual_h5_file, cfg
-        )
+        with Timer("agent_get_extrinsic_score"):
+            extrinsic_scores, extrinsic_inds = get_extrinsic_score(
+                intrinsic_inds, virtual_h5_file, cfg
+            )
 
         # Take the subset of indices selected by the extrinsic method
         pruned_intrinsic_scores = intrinsic_scores[extrinsic_inds]
         pruned_intrinsic_inds = intrinsic_inds[extrinsic_inds]
 
-        outliers = generate_outliers(
-            md_data,
-            sampled_h5_files,
-            pruned_intrinsic_inds,
-            pruned_intrinsic_scores,
-            extrinsic_scores,
-        )
+        with Timer("agent_generate_outliers"):
+            outliers = generate_outliers(
+                md_data,
+                sampled_h5_files,
+                pruned_intrinsic_inds,
+                pruned_intrinsic_scores,
+                extrinsic_scores,
+            )
 
         # Dump metadata to disk for MD stage
-        api.agent_stage.write_task_json(outliers, cfg.stage_idx, cfg.task_idx)
-
-        print(f"Outlier Detection Time: {time.time() - t_start}s")
+        with Timer("agent_write_task_json"):
+            api.agent_stage.write_task_json(outliers, cfg.stage_idx, cfg.task_idx)
 
     if comm is not None:
         # Final barrier
@@ -292,7 +286,7 @@ def parse_args() -> argparse.Namespace:
 if __name__ == "__main__":
     # set forkserver (needed for summit runs, may cause errors elsewhere)
     # torch.multiprocessing.set_start_method("forkserver", force=True)
-
-    args = parse_args()
-    cfg = OutlierDetectionConfig.from_yaml(args.config)
-    main(cfg, args.encoder_gpu, args.distributed)
+    with Timer("agent_stage"):
+        args = parse_args()
+        cfg = OutlierDetectionConfig.from_yaml(args.config)
+        main(cfg, args.encoder_gpu, args.distributed)

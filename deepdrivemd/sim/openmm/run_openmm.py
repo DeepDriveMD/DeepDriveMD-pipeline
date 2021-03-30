@@ -7,6 +7,7 @@ import simtk.openmm as omm
 import simtk.openmm.app as app
 from mdtools.openmm.sim import configure_simulation
 from mdtools.openmm.reporter import OfflineReporter
+from deepdrivemd.utils import Timer
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.sim.openmm.config import OpenMMConfig
 
@@ -162,18 +163,20 @@ def run_simulation(cfg: OpenMMConfig):
     temperature_kelvin = cfg.temperature_kelvin * u.kelvin
 
     # Handle files
-    ctx = SimulationContext(cfg)
+    with Timer("molecular_dynamics_SimulationContext"):
+        ctx = SimulationContext(cfg)
 
     # Create openmm simulation object
-    sim = configure_simulation(
-        pdb_file=ctx.pdb_file,
-        top_file=ctx.top_file,
-        solvent_type=cfg.solvent_type,
-        gpu_index=0,
-        dt_ps=dt_ps,
-        temperature_kelvin=temperature_kelvin,
-        heat_bath_friction_coef=cfg.heat_bath_friction_coef,
-    )
+    with Timer("molecular_dynamics_configure_simulation"):
+        sim = configure_simulation(
+            pdb_file=ctx.pdb_file,
+            top_file=ctx.top_file,
+            solvent_type=cfg.solvent_type,
+            gpu_index=0,
+            dt_ps=dt_ps,
+            temperature_kelvin=temperature_kelvin,
+            heat_bath_friction_coef=cfg.heat_bath_friction_coef,
+        )
 
     # Write all frames to a single HDF5 file
     frames_per_h5 = int(simulation_length_ns / report_interval_ps)
@@ -183,14 +186,17 @@ def run_simulation(cfg: OpenMMConfig):
     nsteps = int(simulation_length_ns / dt_ps)
 
     # Configure reporters to write output files
-    configure_reporters(sim, ctx, cfg, report_steps, frames_per_h5)
+    with Timer("molecular_dynamics_configure_reporters"):
+        configure_reporters(sim, ctx, cfg, report_steps, frames_per_h5)
 
     # Run simulation for nsteps
-    sim.step(nsteps)
+    with Timer("molecular_dynamics_step"):
+        sim.step(nsteps)
 
     # Move simulation data to persistent storage
-    if cfg.node_local_path is not None:
-        ctx.move_results()
+    with Timer("molecular_dynamics_move_results"):
+        if cfg.node_local_path is not None:
+            ctx.move_results()
 
 
 def parse_args() -> argparse.Namespace:
@@ -203,6 +209,7 @@ def parse_args() -> argparse.Namespace:
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    cfg = OpenMMConfig.from_yaml(args.config)
-    run_simulation(cfg)
+    with Timer("molecular_dynamics_stage"):
+        args = parse_args()
+        cfg = OpenMMConfig.from_yaml(args.config)
+        run_simulation(cfg)

@@ -1,4 +1,3 @@
-import time
 from pathlib import Path
 from typing import Union
 import numpy as np
@@ -15,9 +14,6 @@ def generate_embeddings(
     model_weights_path: PathLike,
     inference_batch_size: int,
 ) -> np.ndarray:
-
-    t_start = time.time()  # Start timer
-    print("Generating embeddings")
 
     cfg = KerasCVAEModelConfig.from_yaml(model_cfg_path)
 
@@ -41,7 +37,5 @@ def generate_embeddings(
     )
 
     embeddings = cvae.return_embeddings(data, inference_batch_size)
-
-    print(f"Generating Embeddings Time: {time.time() - t_start}s")
 
     return embeddings

@@ -9,7 +9,7 @@ from tensorflow.keras.layers import Input, Dense, Lambda, Flatten, Reshape, Drop
 from tensorflow.keras.layers import Convolution2D, Conv2DTranspose
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import RMSprop
-from tensorflow.keras.callbacks import Callback, ModelCheckpoint
+from tensorflow.keras.callbacks import Callback  # , ModelCheckpoint
 import tensorflow.keras.backend as K
 import tensorflow.keras.losses as objectives
 
@@ -328,9 +328,9 @@ class conv_variational_autoencoder(object):
             validation_data=(validation_data, validation_data),
             callbacks=[
                 self.history,
-                #ModelCheckpoint(
+                # ModelCheckpoint(
                 #    "best.h5", monitor="val_loss", save_best_only=True, verbose=1
-                #),
+                # ),
             ],
         )
 

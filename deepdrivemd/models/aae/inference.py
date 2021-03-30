@@ -1,4 +1,3 @@
-import time
 import itertools
 from pathlib import Path
 from typing import Union
@@ -41,10 +40,6 @@ def generate_embeddings(
 ) -> np.ndarray:
 
     comm_size, comm_rank = setup_mpi(comm)
-
-    if comm_rank == 0:
-        t_start = time.time()  # Start timer
-        print("Generating embeddings")
 
     model_cfg = AAEModelConfig.from_yaml(model_cfg_path)
 
@@ -119,8 +114,5 @@ def generate_embeddings(
         embeddings = list(itertools.chain.from_iterable(embeddings))
 
     embeddings = np.concatenate(embeddings)
-
-    if comm_rank == 0:
-        print(f"Generating Embeddings Time: {time.time() - t_start}s")
 
     return embeddings

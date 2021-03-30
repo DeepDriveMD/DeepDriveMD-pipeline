@@ -25,8 +25,9 @@ def sparse_to_dense(
             contact_map = coo_matrix(
                 (values, (indices[0], indices[1])), shape=initial_shape
             ).todense()
+            # Crop and reshape incase of extra 1 e.g. (N, N, 1)
             contact_map = np.array(
                 contact_map[: final_shape[0], : final_shape[1]], dtype=np.float16
-            ).reshape(final_shape) # Incase of extra 1 e.g. (N, N, 1)
+            ).reshape(final_shape)
             contact_maps.append(contact_map)
     return np.array(contact_maps)

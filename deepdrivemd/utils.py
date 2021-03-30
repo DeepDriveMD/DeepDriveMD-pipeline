@@ -1,3 +1,6 @@
+import sys
+import time
+from inspect import currentframe, getframeinfo
 import numpy as np
 from typing import Tuple
 
@@ -19,6 +22,35 @@ def setup_mpi(comm=None) -> Tuple[int, int]:
         comm_rank = comm.Get_rank()
 
     return comm_size, comm_rank
+
+
+def timer(
+    label: str, start: int = 1, frameinfo=None
+):  # start = 1 - start, start = -1 - stop, start = 0 - neither
+    t = time.localtime()
+    gps = time.mktime(t)
+    readable = time.asctime(t)
+    if frameinfo is None:
+        frameinfo = getframeinfo(currentframe().f_back)
+    fractions = time.perf_counter()
+    print(
+        f"TLaBeL|{label}|{start}|{gps}|{readable}|{frameinfo.filename}|{frameinfo.lineno}|{fractions}"
+    )
+    sys.stdout.flush()
+
+
+class Timer:
+    def __init__(self, label: str):
+        self.label = label
+
+    def __enter__(self):
+        frameinfo = getframeinfo(currentframe().f_back)
+        timer(self.label, 1, frameinfo)
+        return self
+
+    def __exit__(self, type, value, traceback):
+        frameinfo = getframeinfo(currentframe().f_back)
+        timer(self.label, -1, frameinfo)
 
 
 def bestk(
