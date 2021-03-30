@@ -55,7 +55,7 @@ molecular_dynamics_stage:
         contact_map: true
         point_cloud: false
         fraction_of_contacts: false
-        in_memory: true
+        in_memory: false
 aggregation_stage:
     pre_exec: []
     executable: []
@@ -232,4 +232,4 @@ agent_stage:
         k_random_old_h5_files: 12
         sklearn_num_jobs: -1
         model_type: "keras_cvae"
-        inference_batch_size: 128
+        inference_batch_size: 1024
