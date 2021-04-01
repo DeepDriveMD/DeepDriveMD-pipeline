@@ -90,7 +90,7 @@ class BaseStageConfig(BaseSettings):
     """Base configuration for all StageConfig objects."""
 
     pre_exec: List[str] = []
-    executable: List[str] = []
+    executable: str = ""
     arguments: List[str] = []
     cpu_reqs: CPUReqs = CPUReqs()
     gpu_reqs: GPUReqs = GPUReqs()

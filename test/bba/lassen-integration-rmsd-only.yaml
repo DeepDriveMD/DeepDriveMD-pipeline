@@ -15,8 +15,7 @@ molecular_dynamics_stage:
     - . /etc/profile.d/conda.sh
     - module load cuda/9.1.85
     - conda activate conda-openmm
-    executable:
-    - /g/g15/brace3/.conda/envs/conda-openmm/bin/python
+    executable: /g/g15/brace3/.conda/envs/conda-openmm/bin/python
     arguments:
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/sim/openmm/run_openmm.py
     cpu_reqs:
@@ -57,7 +56,7 @@ molecular_dynamics_stage:
         in_memory: true
 aggregation_stage:
     pre_exec: []
-    executable: []
+    executable: ''
     arguments: []
     cpu_reqs:
         processes: 1
@@ -88,8 +87,7 @@ machine_learning_stage:
     - export LD_LIBRARY_PATH=/usr/workspace/cv_ddmd/lee1078/anaconda/envs/cuda/targets/ppc64le-linux/lib/:$LD_LIBRARY_PATH
     - unset CUDA_VISIBLE_DEVICES
     - export OMP_NUM_THREADS=4
-    executable:
-    - cat /dev/null; jsrun -n 1 -g 4 -a 4 -c 40 -d packed /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/bin/lassen.sh
+    executable: cat /dev/null; jsrun -n 1 -g 4 -a 4 -c 40 -d packed /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/bin/lassen.sh
     arguments:
     - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/aae/train.py
@@ -167,8 +165,7 @@ model_selection_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh
     - conda activate conda-pytorch
-    executable:
-    - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
+    executable: /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
     arguments:
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select_model.py
     cpu_reqs:
@@ -198,8 +195,7 @@ agent_stage:
     - export LC_ALL=en_US.utf-8
     - unset CUDA_VISIBLE_DEVICES
     - export OMP_NUM_THREADS=4
-    executable:
-    - cat /dev/null; jsrun -n 1 -a 4 -g 4 -r 1 -c 10 /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/agents/lof/bin/lassen.sh
+    executable: cat /dev/null; jsrun -n 1 -a 4 -g 4 -r 1 -c 10 /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/agents/lof/bin/lassen.sh
     arguments:
     - /g/g15/brace3/.conda/envs/conda-pytorch/bin/python
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/agents/lof/lof.py

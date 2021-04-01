@@ -16,8 +16,7 @@ molecular_dynamics_stage:
     - module load cuda/9.1.85
     - unset PYTHONPATH
     - conda activate /p/gpfs1/brace3/envs/conda-openmm
-    executable:
-    - /p/gpfs1/brace3/envs/conda-openmm/bin/python
+    executable: /p/gpfs1/brace3/envs/conda-openmm/bin/python
     arguments:
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/sim/openmm/run_openmm.py
     cpu_reqs:
@@ -58,7 +57,7 @@ molecular_dynamics_stage:
         in_memory: false
 aggregation_stage:
     pre_exec: []
-    executable: []
+    executable: ''
     arguments: []
     cpu_reqs:
         processes: 1
@@ -90,8 +89,7 @@ machine_learning_stage:
     - conda activate /p/gpfs1/brace3/envs/conda-keras-powerai
     - unset CUDA_VISIBLE_DEVICES
     - export OMP_NUM_THREADS=4
-    executable:
-    - /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
+    executable: /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
     arguments:
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/keras_cvae/train.py
     cpu_reqs:
@@ -170,8 +168,7 @@ model_selection_stage:
     - export IBM_POWERAI_LICENSE_ACCEPT=yes
     - unset PYTHONPATH
     - conda activate /p/gpfs1/brace3/envs/conda-keras-powerai
-    executable:
-    - /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
+    executable: /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
     arguments:
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select_model.py
     cpu_reqs:
@@ -203,8 +200,7 @@ agent_stage:
     - export LC_ALL=en_US.utf-8
     - unset CUDA_VISIBLE_DEVICES
     - export OMP_NUM_THREADS=4
-    executable:
-    - /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
+    executable: /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
     arguments:
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/agents/lof/lof.py
     cpu_reqs:

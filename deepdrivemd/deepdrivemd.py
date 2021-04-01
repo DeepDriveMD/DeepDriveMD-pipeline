@@ -14,7 +14,7 @@ def generate_task(cfg: BaseStageConfig) -> Task:
     task.cpu_reqs = cfg.cpu_reqs.dict().copy()
     task.gpu_reqs = cfg.gpu_reqs.dict().copy()
     task.pre_exec = cfg.pre_exec.copy()
-    task.executable = cfg.executable.copy()
+    task.executable = cfg.executable
     task.arguments = cfg.arguments.copy()
     return task
 
