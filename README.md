@@ -1,6 +1,6 @@
-# DeepDriveMD-pipeline
+# DeepDriveMD-F (DeepDriveMD-pipeline)
 
-DeepDriveMD: Deep-Learning Driven Adaptive Molecular Simulations
+DeepDriveMD-F: Deep-Learning Driven Adaptive Molecular Simulations (file-based continual learning loop)
 
 ## How to run
 
