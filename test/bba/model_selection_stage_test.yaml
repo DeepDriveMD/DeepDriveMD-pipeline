@@ -4,3 +4,5 @@ task_idx: 0
 output_path: /homes/abrace/tmp/deepdrivemd_tests/bba_test/test_experiment_2/model_selection_runs/stage0000/task0000/
 node_local_path: null
 retrain_freq: 1
+checkpoint_dir: checkpoint
+checkpoint_suffix: .pt

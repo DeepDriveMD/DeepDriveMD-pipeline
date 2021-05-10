@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 from typing import Optional, Union, Tuple
+from deepdrivemd.utils import Timer
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.selection.latest.config import LatestCheckpointConfig
 
@@ -110,7 +111,9 @@ def latest_model_checkpoint(cfg: LatestCheckpointConfig):
     # Check if there is a new model
     if cfg.stage_idx % cfg.retrain_freq == 0:
         # Select latest model checkpoint.
-        model_checkpoint = latest_checkpoint(api)
+        model_checkpoint = latest_checkpoint(
+            api, cfg.checkpoint_dir, cfg.checkpoint_suffix
+        )
         # Get latest model YAML configuration.
         model_config = api.machine_learning_stage.config_path(
             cfg.stage_idx, cfg.task_idx
@@ -138,6 +141,7 @@ def parse_args() -> argparse.Namespace:
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    cfg = LatestCheckpointConfig.from_yaml(args.config)
-    latest_model_checkpoint(cfg)
+    with Timer("model_selection_stage"):
+        args = parse_args()
+        cfg = LatestCheckpointConfig.from_yaml(args.config)
+        latest_model_checkpoint(cfg)
