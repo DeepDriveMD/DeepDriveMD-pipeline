@@ -35,8 +35,6 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     conv_filter_shapes: List[Tuple[int, int]] = [(3, 3), (3, 3), (3, 3), (3, 3)]
     # Convolutional strides
     conv_strides: List[Tuple[int, int]] = [(1, 1), (2, 2), (1, 1), (1, 1)]
-    # Encoder kernel sizes
-    encoder_kernel_sizes: List[int] = [5, 5, 3, 1, 1]
     # Number of dense layers
     dense_layers: int = 1
     # Number of neurons in each dense layer
