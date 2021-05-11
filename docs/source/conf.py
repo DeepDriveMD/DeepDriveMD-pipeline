@@ -39,7 +39,6 @@ extensions = [
     "sphinx_rtd_theme",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
-    "numpydoc",
 ]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

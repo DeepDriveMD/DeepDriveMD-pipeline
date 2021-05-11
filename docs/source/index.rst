@@ -45,7 +45,6 @@ Installation with `pip` and a *minimal set of dependencies*:
    :maxdepth: 2
    :caption: Tutorials:
 
-
 Indices and tables
 ==================
 
