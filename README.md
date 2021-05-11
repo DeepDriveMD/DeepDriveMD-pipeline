@@ -22,6 +22,10 @@ pre-commit install
 pre-commit autoupdate
 ```
 
+In some places, DeepDriveMD relies on external libraries to configure MD simulations and import specific ML models.
+For MD, install the `mdtools` package found here: https://github.com/braceal/MD-tools
+For ML (specifically the AAE model), install the `molecules` package found here: https://github.com/braceal/molecules/tree/main
+
 ### Generating a YAML input spec:
 
 First, run this command to get a _sample_ YAML config file:
