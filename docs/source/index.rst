@@ -1,15 +1,49 @@
-.. deepdrivemd documentation master file, created by
-   sphinx-quickstart on Tue May 11 15:49:30 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+:github_url: https://github.com/DeepDriveMD/DeepDriveMD-pipeline
 
-Welcome to deepdrivemd's documentation!
+DeepDriveMD Documentation
 =======================================
+
+DeepDriveMD: Deep-Learning Driven Adaptive Molecular Simulations.
+
+:Release: |release|
+:Date: |today|
+
+Getting involved
+================
+
+Please report **bugs** or **enhancement requests** through the `Issue
+Tracker`_.
+
+.. _Issue Tracker: https://github.com/DeepDriveMD/DeepDriveMD-pipeline/issues
+
+Installing deepdrivemd
+======================
+
+To install the latest release, clone the code from the `main branch`_ and use pip to install the package.
+
+.. _main branch: https://github.com/DeepDriveMD/DeepDriveMD-pipeline
+
+pip
+---
+
+Installation with `pip` and a *minimal set of dependencies*:
+
+.. code-block:: bash 
+
+   git clone https://github.com/DeepDriveMD/DeepDriveMD-pipeline
+   cd deepdrivemd
+   pip install -e .
+
+.. toctree::
+   :maxdepth: 4
+   :numbered:		
+   :hidden:
+   
+   ./documentation_pages/overview
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
-
+   :caption: Tutorials:
 
 
 Indices and tables

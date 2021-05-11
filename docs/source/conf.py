@@ -10,21 +10,24 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
-
+import os
+import sys
+import datetime
 import sphinx_rtd_theme
+
+sys.path.insert(0, os.path.abspath("../.."))
+import deepdrivemd  # noqa
 
 
 # -- Project information -----------------------------------------------------
 
 project = "deepdrivemd"
-copyright = "2021, Alexander Brace"
-author = "Alexander Brace"
+author = "Arvind Ramanathan, Shantenu Jha, Ian Foster, Tod Munson, Alexander Brace, Hyungro Lee, Heng Ma, Anda Trifan, Matteo Turilli, Igor Yakushin, Li Tan, Andre Merzky"
+now = datetime.datetime.now()
+copyright = "2020-{}, ".format(now.year) + author
 
 # The full version, including alpha/beta/rc tags
-release = "0.0.1"
+release = deepdrivemd.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -34,6 +37,9 @@ release = "0.0.1"
 # ones.
 extensions = [
     "sphinx_rtd_theme",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "numpydoc",
 ]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
