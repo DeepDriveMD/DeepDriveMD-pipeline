@@ -1,6 +1,6 @@
 title: BBA integration test
 resource: llnl.lassen
-queue: pdebug
+queue: pbatch
 schema_: local
 project: cv19-a01
 walltime_min: 30
@@ -17,6 +17,7 @@ molecular_dynamics_stage:
     - conda activate /usr/workspace/cv_ddmd/conda1/powerai
     - module use /usr/workspace/cv_ddmd/software1/modules
     - module load adios2
+    executable: '/usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python'
     arguments:
     - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm-s/run_openmm.py
     cpu_reqs:
@@ -37,7 +38,7 @@ molecular_dynamics_stage:
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
         pdb_file: set_by_deepdrivemd
-        initial_pdb_dir: /p/gpfs1/brace3/data/bba/ddmd_input
+        initial_pdb_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input
         solvent_type: implicit
         top_suffix: null
         simulation_length_ns: 1.0
@@ -46,7 +47,7 @@ molecular_dynamics_stage:
         temperature_kelvin: 310.0
         heat_bath_friction_coef: 1.0
         wrap: false
-        reference_pdb_file: /p/gpfs1/brace3/data/bba/ddmd_input/1FME-folded.pdb
+        reference_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-folded.pdb
         openmm_selection:
         - CA
         mda_selection: protein and name CA
@@ -56,9 +57,15 @@ molecular_dynamics_stage:
         fraction_of_contacts: false
         in_memory: false
 aggregation_stage:
-    pre_exec: []
-    executable: ''
-    arguments: []
+    pre_exec:
+    - module load gcc/7.3.1
+    - . /etc/profile.d/conda.sh
+    - conda activate /usr/workspace/cv_ddmd/conda1/powerai
+    - module use /usr/workspace/cv_ddmd/software1/modules
+    - module load adios2
+    executable: '/usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python'
+    arguments: 
+    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/aggregation/basic/aggregate.py
     cpu_reqs:
         processes: 1
         process_type: null
@@ -69,7 +76,8 @@ aggregation_stage:
         process_type: null
         threads_per_process: 0
         thread_type: null
-    skip_aggregation: true
+    skip_aggregation: false
+    num_tasks: 1
     task_config:
         experiment_directory: set_by_deepdrivemd
         stage_idx: 0
