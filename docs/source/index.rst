@@ -40,6 +40,7 @@ Installation with `pip` and a *minimal set of dependencies*:
    :hidden:
    
    ./documentation_pages/overview
+   ./documentation_pages/deepdrivemd_api
 
 .. toctree::
    :maxdepth: 2
