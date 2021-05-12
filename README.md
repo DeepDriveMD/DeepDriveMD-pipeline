@@ -4,9 +4,7 @@ DeepDriveMD-F: Deep-Learning Driven Adaptive Molecular Simulations (file-based c
 
 [![Documentation Status](https://readthedocs.org/projects/deepdrivemd-pipeline/badge/?version=latest)](https://deepdrivemd-pipeline.readthedocs.io/en/latest/?badge=latest)
 
-Details can be found in the [ducumentation](https://deepdrivemd-pipeline.readthedocs.io/en/latest/).
-
-For more information, please see our [website](https://deepdrivemd.github.io/).
+Details can be found in the [ducumentation](https://deepdrivemd-pipeline.readthedocs.io/en/latest/). For more information, please see our [website](https://deepdrivemd.github.io/).
 
 ## How to run
 
