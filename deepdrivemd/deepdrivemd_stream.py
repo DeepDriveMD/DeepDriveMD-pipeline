@@ -34,34 +34,8 @@ class PipelineManager:
     
     def __init__(self, cfg: ExperimentConfig):
         self.cfg = cfg
-
-        '''
-        #### for debugging
-        print('='*20)
-        print(type(cfg))
-        print(dir(cfg))
-        print("="*3)
-        print(cfg)
-        print('='*20)
-        sys.stdout.flush()
-        ###
-        '''
-
-        self.stage_idx = 0 ###?
-        
-        self.api = DeepDriveMD_API(cfg.experiment_directory) ###?
-
-        '''
-        ### for debugging
-        print('='*20)
-        print(type(self.api))
-        print(dir(self.api))
-        print("="*3)
-        print(self.api)
-        print('='*20)
-        sys.stdout.flush()
-        ### 
-        '''
+        self.stage_idx = 0
+        self.api = DeepDriveMD_API(cfg.experiment_directory)
         
         self.pipelines = {}
 
@@ -107,7 +81,7 @@ class PipelineManager:
 
     def _generate_pipeline_iteration(self):
 
-        self.pipeline.add_stages(self.generate_molecular_dynamics_stage())
+        self.pipelines[self.MOLECULAR_DYNAMICS_PIPELINE_NAME].add_stages(self.generate_molecular_dynamics_stage())
 
         if not cfg.aggregation_stage.skip_aggregation:
             self.pipeline.add_stages(self.generate_aggregating_stage())
@@ -124,46 +98,16 @@ class PipelineManager:
 
     def generate_pipelines(self) -> List[Pipeline]:
         # self._generate_pipeline_iteration()
-        return self.pipelines
+        return self.pipelines.values()
 
-    def generate_molecular_dynamics_pipeline(self):
-        self.pipelines
+    def generate_molecular_dynamics_pipeline(self): ### tmp
+        self.pipelines[self.MOLECULAR_DYNAMICS_PIPELINE_NAME].add_stages(self.generate_molecular_dynamics_stage())
 
     def generate_molecular_dynamics_stage(self) -> Stage:
         stage = Stage()
         stage.name = self.MOLECULAR_DYNAMICS_STAGE_NAME
         cfg = self.cfg.molecular_dynamics_stage
         stage_api = self.api.molecular_dynamics_stage
-
-
-        ### for debugging
-        print('='*20)
-        print(type(cfg))
-        print(dir(cfg))
-        print("="*3)
-        print(cfg)
-        print('='*20)
-        sys.stdout.flush()
-        ### 
-
-
-        ### for debugging
-        print('='*20)
-        print(type(self.api))
-        print(dir(self.api))
-        print("="*3)
-        print(self.api)
-        print('='*20)
-        sys.stdout.flush()
-        ### 
-
-        '''
-        if self.stage_idx == 0:
-            filenames = self.api.get_initial_pdbs(cfg.task_config.initial_pdb_dir)
-            filenames = itertools.cycle(filenames)
-        else:
-            filenames = None
-        '''
 
         init_file = glob.glob(str(cfg.task_config.initial_pdb_dir) +"/*.pdb")[0]
 
@@ -194,23 +138,24 @@ class PipelineManager:
         cfg = self.cfg.aggregation_stage
         stage_api = self.api.aggregation_stage
 
-        task_idx = 0
-        output_path = stage_api.task_dir(self.stage_idx, task_idx, mkdir=True)
-        assert output_path is not None
+        for task_idx in range(cfg.num_tasks):
+            task_idx = 0
+            output_path = stage_api.task_dir(self.stage_idx, task_idx, mkdir=True)
+            assert output_path is not None
 
-        # Update base parameters
-        cfg.task_config.experiment_directory = self.cfg.experiment_directory
-        cfg.task_config.stage_idx = self.stage_idx
-        cfg.task_config.task_idx = task_idx
-        cfg.task_config.node_local_path = self.cfg.node_local_path
-        cfg.task_config.output_path = output_path
+            # Update base parameters
+            cfg.task_config.experiment_directory = self.cfg.experiment_directory
+            cfg.task_config.stage_idx = self.stage_idx
+            cfg.task_config.task_idx = task_idx
+            cfg.task_config.node_local_path = self.cfg.node_local_path
+            cfg.task_config.output_path = output_path
 
-        # Write yaml configuration
-        cfg_path = stage_api.config_path(self.stage_idx, task_idx)
-        cfg.task_config.dump_yaml(cfg_path)
-        task = generate_task(cfg)
-        task.arguments += ["-c", cfg_path.as_posix()]
-        stage.add_tasks(task)
+            # Write yaml configuration
+            cfg_path = stage_api.config_path(self.stage_idx, task_idx)
+            cfg.task_config.dump_yaml(cfg_path)
+            task = generate_task(cfg)
+            task.arguments += ["-c", cfg_path.as_posix()]
+            stage.add_tasks(task)
 
         return stage
 
@@ -313,7 +258,7 @@ if __name__ == "__main__":
 
     pipeline_manager = PipelineManager(cfg)
 
-    pipeline_manager.generate_molecular_dynamics_stage()
+    pipeline_manager.generate_molecular_dynamics_pipeline()
 
 
     sys.exit(0)
