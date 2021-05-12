@@ -6,6 +6,8 @@ DeepDriveMD-F: Deep-Learning Driven Adaptive Molecular Simulations (file-based c
 
 Details can be found in the [ducumentation](https://deepdrivemd-pipeline.readthedocs.io/en/latest/).
 
+For more information, please see our [website](https://deepdrivemd.github.io/).
+
 ## How to run
 
 ### Setup
