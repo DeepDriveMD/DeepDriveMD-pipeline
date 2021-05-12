@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import argparse
 import itertools
@@ -27,6 +28,13 @@ class PipelineManager:
     
     def __init__(self, cfg: ExperimentConfig):
         self.cfg = cfg
+
+        print(type(cfg))
+        print(dir(cfg))
+        print(cfg)
+        sys.stdout.flush()
+
+
         self.stage_idx = 0 ###?
         
         self.api = DeepDriveMD_API(cfg.experiment_directory) ###?
@@ -39,7 +47,7 @@ class PipelineManager:
         self.pipelines.append(p_md)
         
         p_aggregate = []
-        for k in range(cfg.aggregation_stage.n_tasks): ### ?
+        for k in range(cfg.aggregation_stage.num_tasks): ### ?
             p_aggregate.append(Pipeline())
             p_aggregate[k].name = 'aggregate_pipeline_%d' % k
             self.pipelines.append(p_aggregate[k])
