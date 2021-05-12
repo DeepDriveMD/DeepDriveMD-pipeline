@@ -198,6 +198,7 @@ class ExperimentConfig(BaseSettings):
     queue: str
     schema_: str
     project: str
+    workflow_mode: str
     walltime_min: int
     max_iteration: int
     cpus_per_node: int
@@ -219,6 +220,13 @@ class ExperimentConfig(BaseSettings):
             raise ValueError(f"experiment_directory must be an absolute path! Not {v}")
         return v
 
+    @validator("workflow_mode")
+    def workflow_mode_valid(cls, v):
+        valid_modes = {"synchronous"}
+        if v not in valid_modes:
+            raise ValueError(f"workflow_mode must be one of {valid_modes}, not {v}")
+        return v
+
 
 def generate_sample_config():
     return ExperimentConfig(
@@ -227,6 +235,7 @@ def generate_sample_config():
         queue="batch",
         schema_="local",
         project="MED110",
+        workflow_mode="synchronous",
         walltime_min=360,
         cpus_per_node=42,
         hardware_threads_per_cpu=4,

@@ -3,6 +3,7 @@ resource: llnl.lassen
 queue: pbatch
 schema_: local
 project: cv19-a01
+workflow_mode: synchronous
 walltime_min: 240
 max_iteration: 4
 cpus_per_node: 40

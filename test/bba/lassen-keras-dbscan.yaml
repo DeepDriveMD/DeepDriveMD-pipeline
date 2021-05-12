@@ -3,6 +3,7 @@ resource: llnl.lassen
 queue: pdebug
 schema_: local
 project: cv19-a01
+workflow_mode: synchronous
 walltime_min: 30
 max_iteration: 4
 cpus_per_node: 40
