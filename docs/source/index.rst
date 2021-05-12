@@ -16,7 +16,7 @@ Tracker`_.
 
 .. _Issue Tracker: https://github.com/DeepDriveMD/DeepDriveMD-pipeline/issues
 
-Installing deepdrivemd
+Installing DeepDriveMD
 ======================
 
 To install the latest release, clone the code from the `main branch`_ and use pip to install the package.
