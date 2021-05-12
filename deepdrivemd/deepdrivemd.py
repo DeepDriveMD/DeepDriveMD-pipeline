@@ -4,7 +4,8 @@ import radical.utils as ru
 from radical.entk import AppManager
 from deepdrivemd.utils import parse_args
 from deepdrivemd.config import ExperimentConfig
-from deepdrivemd.workflow.sync import SyncPipelineManager
+from deepdrivemd.workflow.sync_workflow import SyncPipelineManager
+from deepdrivemd.workflow.async_workflow import AsyncPipelineManager
 
 
 if __name__ == "__main__":
@@ -48,6 +49,8 @@ if __name__ == "__main__":
 
     if cfg.workflow_mode == "synchronous":
         pipeline_manager = SyncPipelineManager(cfg)
+    elif cfg.workflow_mode == "asynchronous":
+        pipeline_manager = AsyncPipelineManager(cfg)
     else:
         raise ValueError(f"Invalid workflow_mode: {cfg.workflow_mode}")
 

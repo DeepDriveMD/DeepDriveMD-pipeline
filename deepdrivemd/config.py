@@ -222,7 +222,7 @@ class ExperimentConfig(BaseSettings):
 
     @validator("workflow_mode")
     def workflow_mode_valid(cls, v):
-        valid_modes = {"synchronous"}
+        valid_modes = {"synchronous", "asynchronous"}
         if v not in valid_modes:
             raise ValueError(f"workflow_mode must be one of {valid_modes}, not {v}")
         return v
