@@ -19,7 +19,7 @@ molecular_dynamics_stage:
     - module load adios2
     executable: '/usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python'
     arguments:
-    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm-stream/run_openmm.py
+    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py
     cpu_reqs:
         processes: 1
         process_type: null
@@ -47,7 +47,7 @@ molecular_dynamics_stage:
         temperature_kelvin: 310.0
         heat_bath_friction_coef: 1.0
         wrap: false
-        reference_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-folded.pdb
+        reference_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb
         openmm_selection:
         - CA
         mda_selection: protein and name CA

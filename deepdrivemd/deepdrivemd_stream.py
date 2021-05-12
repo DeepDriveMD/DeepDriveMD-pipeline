@@ -1,4 +1,5 @@
 import os
+import glob
 import sys
 import shutil
 import argparse
@@ -25,40 +26,72 @@ class PipelineManager:
     AGGREGATION_STAGE_NAME = "Aggregating"
     MACHINE_LEARNING_STAGE_NAME = "MachineLearning"
     AGENT_STAGE_NAME = "Agent"
+
+    MOLECULAR_DYNAMICS_PIPELINE_NAME = "MolecularDynamics_pipeline"
+    AGGREGATION_PIPELINE_NAME = "Aggregating_pipeline"
+    MACHINE_LEARNING_PIPELINE_NAME = "MachineLearning_pipeline"
+    AGENT_PIPELINE_NAME = "Agent_pipeline"
     
     def __init__(self, cfg: ExperimentConfig):
         self.cfg = cfg
 
+        '''
+        #### for debugging
+        print('='*20)
         print(type(cfg))
         print(dir(cfg))
+        print("="*3)
         print(cfg)
+        print('='*20)
         sys.stdout.flush()
-
+        ###
+        '''
 
         self.stage_idx = 0 ###?
         
         self.api = DeepDriveMD_API(cfg.experiment_directory) ###?
+
+        '''
+        ### for debugging
+        print('='*20)
+        print(type(self.api))
+        print(dir(self.api))
+        print("="*3)
+        print(self.api)
+        print('='*20)
+        sys.stdout.flush()
+        ### 
+        '''
         
-        self.pipelines = []
+        self.pipelines = {}
 
         p_md = Pipeline()
-        p_md.name = 'MD_pipeline'
+        p_md.name = self.MOLECULAR_DYNAMICS_PIPELINE_NAME
         
-        self.pipelines.append(p_md)
+        self.pipelines[p_md.name] = p_md
         
+        p_aggregate = Pipeline()
+        p_aggregate.name = self.AGGREGATION_PIPELINE_NAME
+
+        self.pipelines[p_aggregate.name] = p_aggregate
+
+
+        '''
         p_aggregate = []
-        for k in range(cfg.aggregation_stage.num_tasks): ### ?
+        for k in range(cfg.aggregation_stage.num_tasks): 
             p_aggregate.append(Pipeline())
             p_aggregate[k].name = 'aggregate_pipeline_%d' % k
-            self.pipelines.append(p_aggregate[k])
-            
+            self.pipelines[p_aggregate[k].name] = p_aggregate[k]
+           
+        '''
+
         p_ml = Pipeline()
-        p_ml.name = 'ML_pipeline'
-        self.pipelines.append(p_ml)
+        p_ml.name = self.MACHINE_LEARNING_PIPELINE_NAME
+        self.pipelines[p_ml.name] = p_ml
             
         p_outliers = Pipeline()
-        p_outliers.name = 'Outliers_pipeline'
-        self.pipelines.append(p_outliers)
+        p_outliers.name = self.AGENT_PIPELINE_NAME
+        self.pipelines[p_outliers.name] = p_outliers
             
         self._init_experiment_dir()
 
@@ -70,6 +103,7 @@ class PipelineManager:
         self.api.machine_learning_stage.runs_dir.mkdir()
         # self.api.model_selection_stage.runs_dir.mkdir()
         self.api.agent_stage.runs_dir.mkdir()
+
 
     def _generate_pipeline_iteration(self):
 
@@ -89,8 +123,11 @@ class PipelineManager:
         self.stage_idx += 1
 
     def generate_pipelines(self) -> List[Pipeline]:
-        self._generate_pipeline_iteration()
-        return [self.pipeline]
+        # self._generate_pipeline_iteration()
+        return self.pipelines
+
+    def generate_molecular_dynamics_pipeline(self):
+        self.pipelines
 
     def generate_molecular_dynamics_stage(self) -> Stage:
         stage = Stage()
@@ -98,11 +135,37 @@ class PipelineManager:
         cfg = self.cfg.molecular_dynamics_stage
         stage_api = self.api.molecular_dynamics_stage
 
+
+        ### for debugging
+        print('='*20)
+        print(type(cfg))
+        print(dir(cfg))
+        print("="*3)
+        print(cfg)
+        print('='*20)
+        sys.stdout.flush()
+        ### 
+
+
+        ### for debugging
+        print('='*20)
+        print(type(self.api))
+        print(dir(self.api))
+        print("="*3)
+        print(self.api)
+        print('='*20)
+        sys.stdout.flush()
+        ### 
+
+        '''
         if self.stage_idx == 0:
             filenames = self.api.get_initial_pdbs(cfg.task_config.initial_pdb_dir)
             filenames = itertools.cycle(filenames)
         else:
             filenames = None
+        '''
+
+        init_file = glob.glob(str(cfg.task_config.initial_pdb_dir) +"/*.pdb")[0]
 
         for task_idx in range(cfg.num_tasks):
 
@@ -115,11 +178,7 @@ class PipelineManager:
             cfg.task_config.task_idx = task_idx
             cfg.task_config.node_local_path = self.cfg.node_local_path
             cfg.task_config.output_path = output_path
-            if self.stage_idx == 0:
-                assert filenames is not None
-                cfg.task_config.pdb_file = next(filenames)
-            else:
-                cfg.task_config.pdb_file = None
+            cfg.task_config.pdb_file = init_file
 
             cfg_path = stage_api.config_path(self.stage_idx, task_idx)
             cfg.task_config.dump_yaml(cfg_path)
@@ -253,6 +312,9 @@ if __name__ == "__main__":
     cfg = ExperimentConfig.from_yaml(args.config)
 
     pipeline_manager = PipelineManager(cfg)
+
+    pipeline_manager.generate_molecular_dynamics_stage()
+
 
     sys.exit(0)
 
