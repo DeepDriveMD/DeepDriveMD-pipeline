@@ -20,38 +20,22 @@ def generate_task(cfg: BaseStageConfig) -> Task:
 
 
 class PipelineManager:
+
+    PIPELINE_NAME = "DeepDriveMD"
     MOLECULAR_DYNAMICS_STAGE_NAME = "MolecularDynamics"
     AGGREGATION_STAGE_NAME = "Aggregating"
     MACHINE_LEARNING_STAGE_NAME = "MachineLearning"
+    MODEL_SELECTION_STAGE_NAME = "ModelSelection"
     AGENT_STAGE_NAME = "Agent"
-    
+
     def __init__(self, cfg: ExperimentConfig):
         self.cfg = cfg
-        self.stage_idx = 0 ###?
-        
-        self.api = DeepDriveMD_API(cfg.experiment_directory) ###?
-        
-        self.pipelines = []
+        self.stage_idx = 0
 
-        p_md = Pipeline()
-        p_md.name = 'MD_pipeline'
-        
-        self.pipelines.append(p_md)
-        
-        p_aggregate = []
-        for k in range(cfg.aggregation_stage.n_tasks): ### ?
-            p_aggregate.append(Pipeline())
-            p_aggregate[k].name = 'aggregate_pipeline_%d' % k
-            self.pipelines.append(p_aggregate[k])
-            
-        p_ml = Pipeline()
-        p_ml.name = 'ML_pipeline'
-        self.pipelines.append(p_ml)
-            
-        p_outliers = Pipeline()
-        p_outliers.name = 'Outliers_pipeline'
-        self.pipelines.append(p_outliers)
-            
+        self.api = DeepDriveMD_API(cfg.experiment_directory)
+        self.pipeline = Pipeline()
+        self.pipeline.name = self.PIPELINE_NAME
+
         self._init_experiment_dir()
 
     def _init_experiment_dir(self):
@@ -60,8 +44,21 @@ class PipelineManager:
         self.api.molecular_dynamics_stage.runs_dir.mkdir()
         self.api.aggregation_stage.runs_dir.mkdir()
         self.api.machine_learning_stage.runs_dir.mkdir()
-        # self.api.model_selection_stage.runs_dir.mkdir()
+        self.api.model_selection_stage.runs_dir.mkdir()
         self.api.agent_stage.runs_dir.mkdir()
+
+    def func_condition(self):
+        if self.stage_idx < self.cfg.max_iteration:
+            self.func_on_true()
+        else:
+            self.func_on_false()
+
+    def func_on_true(self):
+        print(f"Finishing stage {self.stage_idx} of {self.cfg.max_iteration}")
+        self._generate_pipeline_iteration()
+
+    def func_on_false(self):
+        print("Done")
 
     def _generate_pipeline_iteration(self):
 
@@ -243,10 +240,6 @@ if __name__ == "__main__":
 
     args = parse_args()
     cfg = ExperimentConfig.from_yaml(args.config)
-
-    pipeline_manager = PipelineManager(cfg)
-
-    sys.exit(0)
 
     reporter = ru.Reporter(name="radical.entk")
     reporter.title(cfg.title)
