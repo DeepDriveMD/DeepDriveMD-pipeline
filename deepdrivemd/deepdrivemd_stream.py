@@ -82,17 +82,9 @@ class PipelineManager:
     def _generate_pipeline_iteration(self):
 
         self.pipelines[self.MOLECULAR_DYNAMICS_PIPELINE_NAME].add_stages(self.generate_molecular_dynamics_stage())
-
-        if not cfg.aggregation_stage.skip_aggregation:
-            self.pipeline.add_stages(self.generate_aggregating_stage())
-
-        if self.stage_idx % cfg.machine_learning_stage.retrain_freq == 0:
-            self.pipeline.add_stages(self.generate_machine_learning_stage())
-        self.pipeline.add_stages(self.generate_model_selection_stage())
-
-        agent_stage = self.generate_agent_stage()
-        agent_stage.post_exec = self.func_condition
-        self.pipeline.add_stages(agent_stage)
+        self.pipelines[self.AGGREGATION_PIPELINE_NAME].add_stages(self.generate_aggregating_stage())
+        self.pipelines[self.MACHINE_LEARNING_PIPELINE_NAME].add_stages(self.generate_machine_learning_stage())
+        self.pipelines[self.AGENT_PIPELINE_NAME].add_stages(self.generate_agent_stage())
 
         self.stage_idx += 1
 
@@ -139,7 +131,6 @@ class PipelineManager:
         stage_api = self.api.aggregation_stage
 
         for task_idx in range(cfg.num_tasks):
-            task_idx = 0
             output_path = stage_api.task_dir(self.stage_idx, task_idx, mkdir=True)
             assert output_path is not None
 
@@ -260,6 +251,7 @@ if __name__ == "__main__":
 
     pipeline_manager.generate_molecular_dynamics_pipeline()
 
+    pipeline_manager.generate_aggregating_stage()
 
     sys.exit(0)
 
