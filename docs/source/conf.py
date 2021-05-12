@@ -48,6 +48,9 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+html_context = {
+    "conf_py_path": "/docs/source/",  # Path in the checkout to the docs root
+}
 
 # -- Options for HTML output -------------------------------------------------
 
