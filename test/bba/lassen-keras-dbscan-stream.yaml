@@ -77,7 +77,7 @@ aggregation_stage:
         threads_per_process: 0
         thread_type: null
     skip_aggregation: false
-    num_tasks: 1
+    num_tasks: 2
     task_config:
         experiment_directory: set_by_deepdrivemd
         stage_idx: 0
