@@ -22,7 +22,7 @@ import deepdrivemd  # noqa
 # -- Project information -----------------------------------------------------
 
 project = "deepdrivemd"
-author = "Arvind Ramanathan, Shantenu Jha, Ian Foster, Tod Munson, Alexander Brace, Hyungro Lee, Heng Ma, Anda Trifan, Matteo Turilli, Igor Yakushin, Li Tan, Andre Merzky"
+author = "Alexander Brace, Hyungro Lee, Heng Ma, Anda Trifan, Matteo Turilli, Igor Yakushin, Li Tan, Andre Merzky, Tod Munson, Ian Foster, Shantenu Jha, Arvind Ramanathan"
 now = datetime.datetime.now()
 copyright = "2020-{}, ".format(now.year) + author
 
