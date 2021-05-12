@@ -2,6 +2,10 @@
 
 DeepDriveMD-F: Deep-Learning Driven Adaptive Molecular Simulations (file-based continual learning loop)
 
+[![Documentation Status](https://readthedocs.org/projects/deepdrivemd-pipeline/badge/?version=latest)](https://deepdrivemd-pipeline.readthedocs.io/en/latest/?badge=latest)
+
+Details can be found in the [ducumentation](https://deepdrivemd-pipeline.readthedocs.io/en/latest/).
+
 ## How to run
 
 ### Setup
@@ -21,6 +25,12 @@ Then, install pre-commit hooks: this will auto-format and auto-lint _on commit_ 
 pre-commit install
 pre-commit autoupdate
 ```
+
+In some places, DeepDriveMD relies on external libraries to configure MD simulations and import specific ML models.
+
+For MD, install the `mdtools` package found here: https://github.com/braceal/MD-tools
+
+For ML (specifically the AAE model), install the `molecules` package found here: https://github.com/braceal/molecules/tree/main
 
 ### Generating a YAML input spec:
 
