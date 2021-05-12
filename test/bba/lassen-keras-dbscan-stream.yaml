@@ -19,7 +19,7 @@ molecular_dynamics_stage:
     - module load adios2
     executable: '/usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python'
     arguments:
-    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm-s/run_openmm.py
+    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm-stream/run_openmm.py
     cpu_reqs:
         processes: 1
         process_type: null
@@ -65,12 +65,12 @@ aggregation_stage:
     - module load adios2
     executable: '/usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python'
     arguments: 
-    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/aggregation/basic/aggregate.py
+    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/aggregation/stream/aggregate.py
     cpu_reqs:
         processes: 1
         process_type: null
-        threads_per_process: 1
-        thread_type: null
+        threads_per_process: 4
+        thread_type: 'OpenMP'
     gpu_reqs:
         processes: 0
         process_type: null
@@ -86,20 +86,14 @@ aggregation_stage:
         node_local_path: set_by_deepdrivemd
 machine_learning_stage:
     pre_exec:
-    - . /etc/profile.d/conda.sh
     - module load gcc/7.3.1
-    - module load cuda/10.1.243
-    - export LANG=en_US.utf-8
-    - export LC_ALL=en_US.utf-8
-    - export HDF5_USE_FILE_LOCKING=FALSE
-    - export IBM_POWERAI_LICENSE_ACCEPT=yes
-    - unset PYTHONPATH
-    - conda activate /p/gpfs1/brace3/envs/conda-keras-powerai
-    - unset CUDA_VISIBLE_DEVICES
-    - export OMP_NUM_THREADS=4
-    executable: /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
+    - . /etc/profile.d/conda.sh
+    - conda activate /usr/workspace/cv_ddmd/conda1/powerai
+    - module use /usr/workspace/cv_ddmd/software1/modules
+    - module load adios2
+    executable: /usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python
     arguments:
-    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/keras_cvae/train.py
+    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/models/keras_cvae_stream/train.py
     cpu_reqs:
         processes: 1
         process_type: MPI
@@ -110,7 +104,6 @@ machine_learning_stage:
         process_type: null
         threads_per_process: 1
         thread_type: CUDA
-    retrain_freq: 1
     task_config:
         experiment_directory: set_by_deepdrivemd
         stage_idx: 0
@@ -119,8 +112,6 @@ machine_learning_stage:
         node_local_path: set_by_deepdrivemd
         model_tag: set_by_deepdrivemd
         init_weights_path: null
-        last_n_h5_files: 12
-        k_random_old_h5_files: 12
         dataset_name: contact_map
         initial_shape:
         - 28
@@ -164,47 +155,17 @@ machine_learning_stage:
         - 128
         dense_dropouts:
         - 0.25
-model_selection_stage:
-    pre_exec:
-    - . /etc/profile.d/conda.sh
-    - export IBM_POWERAI_LICENSE_ACCEPT=yes
-    - unset PYTHONPATH
-    - conda activate /p/gpfs1/brace3/envs/conda-keras-powerai
-    executable: /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
-    arguments:
-    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select_model.py
-    cpu_reqs:
-        processes: 1
-        process_type: null
-        threads_per_process: 4
-        thread_type: OpenMP
-    gpu_reqs:
-        processes: 0
-        process_type: null
-        threads_per_process: 0
-        thread_type: null
-    task_config:
-        experiment_directory: set_by_deepdrivemd
-        stage_idx: 0
-        task_idx: 0
-        output_path: set_by_deepdrivemd
-        node_local_path: set_by_deepdrivemd
-        retrain_freq: 1
-        checkpoint_dir: checkpoint
-        checkpoint_suffix: .h5
 agent_stage:
     pre_exec:
+    - module load gcc/7.3.1
     - . /etc/profile.d/conda.sh
-    - export IBM_POWERAI_LICENSE_ACCEPT=yes
-    - unset PYTHONPATH
-    - conda activate /p/gpfs1/brace3/envs/conda-keras-powerai
-    - export LANG=en_US.utf-8
-    - export LC_ALL=en_US.utf-8
-    - unset CUDA_VISIBLE_DEVICES
-    - export OMP_NUM_THREADS=4
-    executable: /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
+    - conda activate /usr/workspace/cv_ddmd/conda1/powerai
+    - module use /usr/workspace/cv_ddmd/software1/modules
+    - module load adios2
+    executable: /usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python
     arguments:
     - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/agents/lof/lof.py
+    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/agents/stream/outlier_search.py
     cpu_reqs:
         processes: 1
         process_type: null
