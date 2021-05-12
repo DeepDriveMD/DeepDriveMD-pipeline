@@ -1,3 +1,5 @@
+"""Data utility functions for handling HDF5 files."""
+
 import h5py
 import shutil
 import random
