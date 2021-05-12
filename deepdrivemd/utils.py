@@ -1,8 +1,18 @@
 import sys
 import time
+import argparse
 from inspect import currentframe, getframeinfo
 import numpy as np
 from typing import Tuple
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c", "--config", help="YAML config file", type=str, required=True
+    )
+    args = parser.parse_args()
+    return args
 
 
 def setup_mpi_comm(distributed: bool):

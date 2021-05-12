@@ -1,19 +1,10 @@
 import os
 import shutil
-import argparse
 import radical.utils as ru
 from radical.entk import AppManager
+from deepdrivemd.utils import parse_args
 from deepdrivemd.config import ExperimentConfig
 from deepdrivemd.workflow.sync import SyncPipelineManager
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
 
 
 if __name__ == "__main__":

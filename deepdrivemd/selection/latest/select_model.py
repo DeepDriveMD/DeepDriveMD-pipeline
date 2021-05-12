@@ -1,7 +1,6 @@
-import argparse
 from pathlib import Path
 from typing import Optional, Union, Tuple
-from deepdrivemd.utils import Timer
+from deepdrivemd.utils import Timer, parse_args
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.selection.latest.config import LatestCheckpointConfig
 
@@ -129,15 +128,6 @@ def latest_model_checkpoint(cfg: LatestCheckpointConfig):
     ]
     # Dump metadata to disk for MD stage
     api.model_selection_stage.write_task_json(data, cfg.stage_idx, cfg.task_idx)
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
 
 
 if __name__ == "__main__":
