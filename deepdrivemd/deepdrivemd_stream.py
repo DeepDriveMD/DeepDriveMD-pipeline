@@ -5,7 +5,7 @@ import itertools
 from typing import List
 import radical.utils as ru
 from radical.entk import AppManager, Pipeline, Stage, Task
-from deepdrivemd.config import ExperimentConfig, BaseStageConfig
+from deepdrivemd.config_stream import ExperimentConfig, BaseStageConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 
 
