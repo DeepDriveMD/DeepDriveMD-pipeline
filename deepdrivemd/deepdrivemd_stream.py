@@ -27,10 +27,10 @@ class PipelineManager:
     MACHINE_LEARNING_STAGE_NAME = "MachineLearning"
     AGENT_STAGE_NAME = "Agent"
 
-    MOLECULAR_DYNAMICS_PIPELINE_NAME = "MolecularDynamics_pipeline"
-    AGGREGATION_PIPELINE_NAME = "Aggregating_pipeline"
-    MACHINE_LEARNING_PIPELINE_NAME = "MachineLearning_pipeline"
-    AGENT_PIPELINE_NAME = "Agent_pipeline"
+    MOLECULAR_DYNAMICS_PIPELINE_NAME = "MolecularDynamicsPipeline"
+    AGGREGATION_PIPELINE_NAME = "AggregatingPipeline"
+    MACHINE_LEARNING_PIPELINE_NAME = "MachineLearningPipeline"
+    AGENT_PIPELINE_NAME = "AgentPipeline"
     
     def __init__(self, cfg: ExperimentConfig):
         self.cfg = cfg
@@ -49,16 +49,6 @@ class PipelineManager:
 
         self.pipelines[p_aggregate.name] = p_aggregate
 
-
-        '''
-        p_aggregate = []
-        for k in range(cfg.aggregation_stage.num_tasks): 
-            p_aggregate.append(Pipeline())
-            p_aggregate[k].name = 'aggregate_pipeline_%d' % k
-            self.pipelines[p_aggregate[k].name] = p_aggregate[k]
-           
-        '''
-
         p_ml = Pipeline()
         p_ml.name = self.MACHINE_LEARNING_PIPELINE_NAME
         self.pipelines[p_ml.name] = p_ml
@@ -75,7 +65,6 @@ class PipelineManager:
         self.api.molecular_dynamics_stage.runs_dir.mkdir()
         self.api.aggregation_stage.runs_dir.mkdir()
         self.api.machine_learning_stage.runs_dir.mkdir()
-        # self.api.model_selection_stage.runs_dir.mkdir()
         self.api.agent_stage.runs_dir.mkdir()
 
 
@@ -91,9 +80,6 @@ class PipelineManager:
     def generate_pipelines(self) -> List[Pipeline]:
         # self._generate_pipeline_iteration()
         return self.pipelines.values()
-
-    def generate_molecular_dynamics_pipeline(self): ### tmp
-        self.pipelines[self.MOLECULAR_DYNAMICS_PIPELINE_NAME].add_stages(self.generate_molecular_dynamics_stage())
 
     def generate_molecular_dynamics_stage(self) -> Stage:
         stage = Stage()
@@ -150,6 +136,7 @@ class PipelineManager:
 
         return stage
 
+
     def generate_machine_learning_stage(self) -> Stage:
         stage = Stage()
         stage.name = self.MACHINE_LEARNING_STAGE_NAME
@@ -179,32 +166,7 @@ class PipelineManager:
         stage.add_tasks(task)
 
         return stage
-
-    def generate_model_selection_stage(self) -> Stage:
-        stage = Stage()
-        stage.name = self.MODEL_SELECTION_STAGE_NAME
-        cfg = self.cfg.model_selection_stage
-        stage_api = self.api.model_selection_stage
-
-        task_idx = 0
-        output_path = stage_api.task_dir(self.stage_idx, task_idx, mkdir=True)
-        assert output_path is not None
-
-        # Update base parameters
-        cfg.task_config.experiment_directory = self.cfg.experiment_directory
-        cfg.task_config.stage_idx = self.stage_idx
-        cfg.task_config.task_idx = task_idx
-        cfg.task_config.node_local_path = self.cfg.node_local_path
-        cfg.task_config.output_path = output_path
-
-        # Write yaml configuration
-        cfg_path = stage_api.config_path(self.stage_idx, task_idx)
-        cfg.task_config.dump_yaml(cfg_path)
-        task = generate_task(cfg)
-        task.arguments += ["-c", cfg_path.as_posix()]
-        stage.add_tasks(task)
-
-        return stage
+    
 
     def generate_agent_stage(self) -> Stage:
         stage = Stage()
@@ -249,9 +211,7 @@ if __name__ == "__main__":
 
     pipeline_manager = PipelineManager(cfg)
 
-    pipeline_manager.generate_molecular_dynamics_pipeline()
-
-    pipeline_manager.generate_aggregating_stage()
+    pipeline_manager._generate_pipeline_iteration()
 
     sys.exit(0)
 
