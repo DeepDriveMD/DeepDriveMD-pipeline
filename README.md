@@ -21,7 +21,7 @@ keras-cvae (CVAE) & rapids-dbscan: Python 3.6.12
 
 #### Stage: molecular_dynamics
 
-Install `deepdrivemd` into a virtualenv with a Python virtual environment:
+1. Install `deepdrivemd` into a virtualenv with a Python virtual environment:
 
 ```
 python3 -m venv env
@@ -30,7 +30,7 @@ pip install --upgrade pip setuptools wheel
 pip install -e .
 ```
 
-Or a Conda virtual environment:
+Or with a Conda virtual environment:
 
 ```
 . ~/miniconda3/etc/profile.d/conda.sh
@@ -48,7 +48,7 @@ pre-commit install
 pre-commit autoupdate
 ```
 
-Install OpenMM:
+2. Install OpenMM:
 
 - by source code (for Linux ppc64le, e.g., Summit)
 https://gist.github.com/lee212/4bbfe520c8003fbb91929731b8ea8a1e
@@ -61,7 +61,7 @@ source /opt/packages/anaconda/anaconda3-5.2.0/etc/profile.d/conda.sh
 conda install -c omnia/label/cuda92 openmm
 ```
 
-In some places, DeepDriveMD relies on external libraries to configure MD simulations and import specific ML models.
+3. In some places, DeepDriveMD relies on external libraries to configure MD simulations and import specific ML models.
 
 For MD, install the `mdtools` package found here: https://github.com/braceal/MD-tools
 
@@ -79,15 +79,15 @@ pip install .
 
 #### Stage: machine_learning
 
-Install the `deepdrivemd` virtual environment as above (`deepdrivemd` is needed in all the virtual environments since each task uses the DDMD_API to communicate with the outputs of other tasks).
+1. Install the `deepdrivemd` virtual environment as above (`deepdrivemd` is needed in all the virtual environments since each task uses the DDMD_API to communicate with the outputs of other tasks).
 
-Install the `keras-CVAE` model with `rapidsai DBSCAN` package found here: https://www.ibm.com/docs/en/wmlce/1.6.2?topic=installing-mldl-frameworks
+2. Install the `keras-CVAE` model with `rapidsai DBSCAN` package found here: https://www.ibm.com/docs/en/wmlce/1.6.2?topic=installing-mldl-frameworks
 
 ```
 conda install powerai-rapids
 ```
 
-Install the `h5py` package version 2.10.0:
+3. Install the `h5py` package version 2.10.0:
 
 ```
 conda install h5py=2.10.0
