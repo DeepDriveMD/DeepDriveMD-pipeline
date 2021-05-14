@@ -8,7 +8,7 @@ Details can be found in the [ducumentation](https://deepdrivemd-pipeline.readthe
 
 ## How to run
 
-Running DeepDriveMD requires the use of virtual environment. At this point we distinguish different stage runs of DeepDriveMD using different virtual environments to alleviate the package compatibility issue across different stages.
+Running DeepDriveMD requires the use of virtual environment. At this point we distinguish different stage runs of DeepDriveMD using different virtual environments to alleviate package compatibility with associated dependencies across different stages.
 
 For instance, below is a list of Python versions used by different virtual environments:
 
