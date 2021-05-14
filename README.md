@@ -12,10 +12,10 @@ Running DeepDriveMD requires the use of virtual environment. At this point we di
 
 For instance, below is a list of Python versions used by different virtual environments:
 
-RCT env: Python 3.7.8
-OpenMM env: Python 3.7.9
-pytorch (AAE) env: Python 3.7.9
-keras-cvae (CVAE) & rapids-dbscan: Python 3.6.12
+- RCT env: Python 3.7.8
+- OpenMM env: Python 3.7.9
+- pytorch (AAE) env: Python 3.7.9
+- keras-cvae (CVAE) & rapids-dbscan: Python 3.6.12
 
 ### Setup
 
