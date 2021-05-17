@@ -6,6 +6,7 @@ clean:
 	rm -rf /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1
 	rm -f *~ */*~
 	rm -rf __pycache__ */__pycache__ *.log
+	rm -rf re.session.*
 edit1:
 	emacs -nw deepdrivemd/deepdrivemd_stream.py
 edit2:
