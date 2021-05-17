@@ -164,7 +164,6 @@ agent_stage:
     - module load adios2
     executable: /usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python
     arguments:
-    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/agents/lof/lof.py
     - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/agents/stream/outlier_search.py
     cpu_reqs:
         processes: 1

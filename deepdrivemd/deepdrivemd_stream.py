@@ -78,7 +78,7 @@ class PipelineManager:
         self.stage_idx += 1
 
     def generate_pipelines(self) -> List[Pipeline]:
-        # self._generate_pipeline_iteration()
+        self._generate_pipeline_iteration()
         return self.pipelines.values()
 
     def generate_molecular_dynamics_stage(self) -> Stage:
@@ -209,11 +209,7 @@ if __name__ == "__main__":
     args = parse_args()
     cfg = ExperimentConfig.from_yaml(args.config)
 
-    pipeline_manager = PipelineManager(cfg)
-
-    pipeline_manager._generate_pipeline_iteration()
-
-    sys.exit(0)
+    #pipeline_manager = PipelineManager(cfg)
 
     reporter = ru.Reporter(name="radical.entk")
     reporter.title(cfg.title)
@@ -245,8 +241,8 @@ if __name__ == "__main__":
         "schema": cfg.schema_,
         "walltime": cfg.walltime_min,
         "project": cfg.project,
-        "cpus": cfg.cpus_per_node * cfg.hardware_threads_per_cpu * num_nodes,
-        "gpus": cfg.gpus_per_node * num_nodes,
+        "cpus": cfg.cpus_per_node * cfg.hardware_threads_per_cpu * num_nodes + 8,
+        "gpus": cfg.gpus_per_node * num_nodes + 2,
     }
 
     pipeline_manager = PipelineManager(cfg)
