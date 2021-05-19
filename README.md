@@ -94,7 +94,7 @@ conda install powerai-rapids
 conda install h5py=2.10.0
 ```
 
-4. Install the `tensorflow-gpu` package (need to compile with CUDA 11.1.1, not compatible with CUDA 10.1.243):
+4. Install the `tensorflow-gpu` package (need to compile with CUDA 10.2.89, not compatible with CUDA 10.1.243 and CUDA 11.1.1 or higher versions):
 
 ```
 conda install tensorflow-gpu
