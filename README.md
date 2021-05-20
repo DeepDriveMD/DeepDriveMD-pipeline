@@ -88,10 +88,10 @@ conda config --prepend channels https://public.dhe.ibm.com/ibmdl/export/pub/soft
 conda install powerai-rapids
 ```
 
-3. Install the `h5py` package version 2.10.0:
+3. Install packages `scikit-learn` and `h5py` version 2.10.0:
 
 ```
-conda install h5py=2.10.0
+conda install scikit-learn h5py=2.10.0
 ```
 
 4. Install the `tensorflow-gpu` package (need to compile with CUDA 10.2.89, not compatible with CUDA 10.1.243 and CUDA 11.1.1 or higher versions):
