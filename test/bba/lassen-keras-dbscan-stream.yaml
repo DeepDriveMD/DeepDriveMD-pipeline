@@ -9,15 +9,18 @@ cpus_per_node: 40
 gpus_per_node: 4
 hardware_threads_per_cpu: 4
 experiment_directory: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1
-node_local_path: /tmp
+node_local_path: null
 molecular_dynamics_stage:
     pre_exec:
+    - unset PYTHONPATH
     - module load gcc/7.3.1
     - . /etc/profile.d/conda.sh
     - conda activate /usr/workspace/cv_ddmd/conda1/powerai
+    - export IBM_POWERAI_LICENSE_ACCEPT=yes
     - module use /usr/workspace/cv_ddmd/software1/modules
     - module load adios2
-    executable: '/usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python'
+    - export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/
+    executable: '/usr/workspace/cv_ddmd/conda1/powerai/bin/python'
     arguments:
     - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py
     cpu_reqs:
@@ -56,6 +59,12 @@ molecular_dynamics_stage:
         point_cloud: false
         fraction_of_contacts: false
         in_memory: false
+        bp_file: set_by_deepdrivemd
+        adios_cfg: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/adios.xml
+        outliers_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outlier_Search
+        copy_velocities_p: 0.5
+        next_outlier_policy: 1
+        lock: set_by_deepdrivemd
 aggregation_stage:
     pre_exec:
     - module load gcc/7.3.1

@@ -1,0 +1,3 @@
+#time,event,comp,thread,uid,state,msg
+1621833953.0583224,sync_abs,cmgr.0002,Thread-13,,,lassen708.coral.llnl.gov:192.168.66.200:1621833953.0213954:1621833953.0213954:sys
+1621833953.1004922,init2,cmgr.0002,Thread-13,cmgr.0002,,/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen708.yakushin.018771.0012

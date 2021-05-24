@@ -1,0 +1,17 @@
+{
+    "bulk_size": 0,
+    "channel": "state_pubsub",
+    "cmgr": "cmgr.0000",
+    "heartbeat": {
+        "addr_pub": "tcp://192.168.66.200:37573",
+        "addr_sub": "tcp://192.168.66.200:36905",
+        "interval": 1.0,
+        "timeout": 60.0
+    },
+    "kind": "pubsub",
+    "log_level": "error",
+    "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen708.yakushin.018771.0012",
+    "sid": "re.session.lassen708.yakushin.018771.0012",
+    "stall_hwm": 1,
+    "uid": "state_pubsub"
+}

@@ -16,9 +16,14 @@ from hashconvert import *
 class ContactMapReporter(object):
     def __init__(self, reportInterval, cfg):
         self._reportInterval = reportInterval
-        self._adios_stream = adios2.open(name=cfg.bp_file, mode="w", 
-                                         config_file=cfg.adios_cfg, 
-                                         io_in_config_file=os.path.basename(os.getcwd()))
+        print(cfg.bp_file)
+        print(type(cfg.bp_file))
+        print(cfg.adios_cfg)
+        print(type(cfg.adios_cfg))
+        # print(os.path.basename(os.getcwd()))
+        stream_name = "SimulationOutput"
+        sys.stdout.flush()
+        self._adios_stream = adios2.open(name=str(cfg.bp_file), mode="w", config_file=str(cfg.adios_cfg), io_in_config_file = stream_name)
         self.step = 0
     def __del__(self):
         self._adios_stream.close()

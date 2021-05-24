@@ -1,0 +1,16 @@
+#time,event,comp,thread,uid,state,msg
+1621833377.5416064,sync_abs,stager.0000,MainThread,,,lassen708.coral.llnl.gov:192.168.66.200:1621833377.5400152:1621833377.5400152:sys
+1621833377.5437896,comp_start,stager.0000,MainThread,stager.0000,,
+#time,event,comp,thread,uid,state,msg
+1621833379.8807487,sync_abs,stager.0000,MainThread,,,lassen708.coral.llnl.gov:192.168.66.200:1621833379.8796105:1621833379.8796105:sys
+1621833379.8808124,init1,stager.0000,MainThread,stager.0000,,/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen708.yakushin.018771.0012
+1621833380.9089525,component_init,stager.0000,Thread-1,,,
+1621833400.9510639,get,stager.0000,Thread-1,sd.0000,NEW,
+1621833400.9513822,get,stager.0000,Thread-1,sd.0001,NEW,
+1621833400.9517219,staging_start,stager.0000,Thread-1,,,sd.0000
+1621833401.7430832,staging_stop,stager.0000,Thread-1,,,sd.0000
+1621833401.7431209,staging_start,stager.0000,Thread-1,,,sd.0001
+1621833402.1587145,staging_stop,stager.0000,Thread-1,,,sd.0001
+1621833403.0554545,get,stager.0000,Thread-1,sd.0002,NEW,
+1621833403.0557003,staging_start,stager.0000,Thread-1,,,sd.0002
+1621833403.2706530,staging_stop,stager.0000,Thread-1,,,sd.0002

@@ -7,6 +7,8 @@ clean:
 	rm -f *~ */*~
 	rm -rf __pycache__ */__pycache__ *.log
 	rm -rf re.session.*
+	rm -rf ../Outlier_Search/lassen*
+	rm -rf ../Outlier_Search/*.lock 
 edit1:
 	emacs -nw deepdrivemd/deepdrivemd_stream.py
 edit2:
