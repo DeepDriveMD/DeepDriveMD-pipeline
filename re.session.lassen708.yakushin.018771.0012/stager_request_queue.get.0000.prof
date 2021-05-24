@@ -1,6 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1621833380.9072313,sync_abs,stager_request_queue.get.0000,Thread-1,,,lassen708.coral.llnl.gov:192.168.66.200:1621833380.9055157:1621833380.9055157:sys
-#time,event,comp,thread,uid,state,msg
-1621833380.9072313,sync_abs,stager_request_queue.get.0000,Thread-1,,,lassen708.coral.llnl.gov:192.168.66.200:1621833380.9055157:1621833380.9055157:sys
-#time,event,comp,thread,uid,state,msg
-1621833380.9072313,sync_abs,stager_request_queue.get.0000,Thread-1,,,lassen708.coral.llnl.gov:192.168.66.200:1621833380.9055157:1621833380.9055157:sys
