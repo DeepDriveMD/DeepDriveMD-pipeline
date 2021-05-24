@@ -1,3 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1621833933.7496095,sync_abs,funcs_res_queue,MainThread,,,lassen616.coral.llnl.gov:192.168.66.108:1621833933.7493708:1621833933.7493708:sys
-1621833933.7512763,bridge_start,funcs_res_queue,MainThread,funcs_res_queue,,
