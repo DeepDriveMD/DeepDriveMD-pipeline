@@ -1,0 +1,528 @@
+{
+    "config": {},
+    "entities": {
+        "appmanager": {
+            "event_model": {},
+            "state_model": null,
+            "state_values": null
+        },
+        "pipeline": {
+            "event_model": {},
+            "state_model": {
+                "CANCELED": 10,
+                "DESCRIBED": 1,
+                "DONE": 10,
+                "FAILED": 10,
+                "SCHEDULING": 2,
+                "SUSPENDED": 3
+            },
+            "state_values": {
+                "1": "DESCRIBED",
+                "2": "SCHEDULING",
+                "3": "SUSPENDED",
+                "10": [
+                    "DONE",
+                    "FAILED",
+                    "CANCELED"
+                ]
+            }
+        },
+        "stage": {
+            "event_model": {},
+            "state_model": {
+                "CANCELED": 10,
+                "DESCRIBED": 1,
+                "DONE": 10,
+                "FAILED": 10,
+                "SCHEDULED": 4,
+                "SCHEDULING": 2
+            },
+            "state_values": {
+                "1": "DESCRIBED",
+                "2": "SCHEDULING",
+                "4": "SCHEDULED",
+                "10": [
+                    "DONE",
+                    "FAILED",
+                    "CANCELED"
+                ]
+            }
+        },
+        "task": {
+            "event_model": {},
+            "state_model": {
+                "CANCELED": 10,
+                "DESCRIBED": 1,
+                "DONE": 10,
+                "EXECUTED": 7,
+                "FAILED": 10,
+                "SCHEDULED": 4,
+                "SCHEDULING": 2,
+                "SUBMITTING": 5
+            },
+            "state_values": {
+                "1": "DESCRIBED",
+                "2": "SCHEDULING",
+                "4": "SCHEDULED",
+                "5": "SUBMITTING",
+                "7": "EXECUTED",
+                "10": [
+                    "DONE",
+                    "FAILED",
+                    "CANCELED"
+                ]
+            }
+        }
+    },
+    "tree": {
+        "appmanager.0000": {
+            "cfg": {},
+            "children": [
+                "wfprocessor.0000",
+                "resource_manager.0000",
+                "task_manager.0000",
+                "pipeline.0000",
+                "pipeline.0001",
+                "pipeline.0002",
+                "pipeline.0003"
+            ],
+            "etype": "appmanager",
+            "has": [
+                "pipeline",
+                "wfprocessor",
+                "resource_manager",
+                "task_manager"
+            ],
+            "uid": "appmanager.0000"
+        },
+        "pipeline.0000": {
+            "cfg": {},
+            "children": [
+                "stage.0000"
+            ],
+            "etype": "pipeline",
+            "has": [
+                "stage"
+            ],
+            "name": "MolecularDynamicsPipeline",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "DONE"
+            ],
+            "uid": "pipeline.0000"
+        },
+        "pipeline.0001": {
+            "cfg": {},
+            "children": [
+                "stage.0001"
+            ],
+            "etype": "pipeline",
+            "has": [
+                "stage"
+            ],
+            "name": "AggregatingPipeline",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "DONE"
+            ],
+            "uid": "pipeline.0001"
+        },
+        "pipeline.0002": {
+            "cfg": {},
+            "children": [
+                "stage.0002"
+            ],
+            "etype": "pipeline",
+            "has": [
+                "stage"
+            ],
+            "name": "MachineLearningPipeline",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "DONE"
+            ],
+            "uid": "pipeline.0002"
+        },
+        "pipeline.0003": {
+            "cfg": {},
+            "children": [
+                "stage.0003"
+            ],
+            "etype": "pipeline",
+            "has": [
+                "stage"
+            ],
+            "name": "AgentPipeline",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "DONE"
+            ],
+            "uid": "pipeline.0003"
+        },
+        "resource_manager.0000": {
+            "cfg": {},
+            "children": [],
+            "etype": "resource_manager",
+            "has": [],
+            "uid": "resource_manager.0000"
+        },
+        "stage.0000": {
+            "cfg": {},
+            "children": [
+                "task.0004",
+                "task.0005",
+                "task.0010",
+                "task.0006",
+                "task.0008",
+                "task.0002",
+                "task.0007",
+                "task.0001",
+                "task.0000",
+                "task.0009",
+                "task.0011",
+                "task.0003"
+            ],
+            "etype": "stage",
+            "has": [
+                "task"
+            ],
+            "name": "MolecularDynamics",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "DONE"
+            ],
+            "uid": "stage.0000"
+        },
+        "stage.0001": {
+            "cfg": {},
+            "children": [
+                "task.0013",
+                "task.0012"
+            ],
+            "etype": "stage",
+            "has": [
+                "task"
+            ],
+            "name": "Aggregating",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "DONE"
+            ],
+            "uid": "stage.0001"
+        },
+        "stage.0002": {
+            "cfg": {},
+            "children": [
+                "task.0014"
+            ],
+            "etype": "stage",
+            "has": [
+                "task"
+            ],
+            "name": "MachineLearning",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "DONE"
+            ],
+            "uid": "stage.0002"
+        },
+        "stage.0003": {
+            "cfg": {},
+            "children": [
+                "task.0015"
+            ],
+            "etype": "stage",
+            "has": [
+                "task"
+            ],
+            "name": "Agent",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "DONE"
+            ],
+            "uid": "stage.0003"
+        },
+        "task.0000": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": "task.0000",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0000"
+        },
+        "task.0001": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": "task.0001",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0001"
+        },
+        "task.0002": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": "task.0002",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0002"
+        },
+        "task.0003": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": null,
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0003"
+        },
+        "task.0004": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": "task.0004",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0004"
+        },
+        "task.0005": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": "task.0005",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0005"
+        },
+        "task.0006": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": "task.0006",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0006"
+        },
+        "task.0007": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": "task.0007",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0007"
+        },
+        "task.0008": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": "task.0008",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0008"
+        },
+        "task.0009": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": null,
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0009"
+        },
+        "task.0010": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": "task.0010",
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0010"
+        },
+        "task.0011": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": null,
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0011"
+        },
+        "task.0012": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": null,
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0012"
+        },
+        "task.0013": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": null,
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0013"
+        },
+        "task.0014": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": null,
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0014"
+        },
+        "task.0015": {
+            "cfg": {},
+            "children": [],
+            "etype": "task",
+            "has": [],
+            "name": "",
+            "rts_uid": null,
+            "state_history": [
+                "DESCRIBED",
+                "SCHEDULING",
+                "SCHEDULED",
+                "SUBMITTING",
+                "FAILED"
+            ],
+            "uid": "task.0015"
+        },
+        "task_manager.0000": {
+            "cfg": {},
+            "children": [],
+            "etype": "task_manager",
+            "has": [],
+            "uid": "task_manager.0000"
+        },
+        "wfprocessor.0000": {
+            "cfg": {},
+            "children": [],
+            "etype": "wfprocessor",
+            "has": [],
+            "uid": "wfprocessor.0000"
+        }
+    }
+}

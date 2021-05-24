@@ -11,6 +11,8 @@ from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.sim.openmm.config import OpenMMConfig
 from openmm_reporter import ContactMapReporter
 import sys
+import os
+# from deepdrivemd.misc.OutlierDB import OutlierDB
 from OutlierDB import *
 from lockfile import LockFile
 import pickle
@@ -141,12 +143,7 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
         if(not os.path.exists(cfg.pickle_db)):
             return None
 
-        try:
-            cfg.lock == None
-        except:
-            cfg.lock = LockFile(cfg.pickle_db)
-            
-        if(cfg.lock == None):
+        if(cfg.lock == "set_by_deepdrivemd"):
             cfg.lock = LockFile(cfg.pickle_db)
 
         cfg.lock.acquire()
@@ -250,9 +247,29 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     return args
 
+def adios_configuration(cfg: OpenMMConfig ):
+    adios_cfg = cfg.output_path/"adios.xml"
+    shutil.copy(cfg.adios_cfg, adios_cfg)
+    cfg.adios_cfg = adios_cfg
+    taskdir = os.path.basename(cfg.output_path)
+    f = open(cfg.adios_cfg,'r')
+    textxml = f.read()
+    f.close()
+    textxml = textxml.replace("SimulationOutput", taskdir)
+    f = open(cfg.adios_cfg, 'w')
+    f.write(textxml)
+    f.close()
 
 if __name__ == "__main__":
+    print(os.environ['PATH'])
+    sys.stdout.flush()
+
     with Timer("molecular_dynamics_stage"):
         args = parse_args()
         cfg = OpenMMConfig.from_yaml(args.config)
+
+        adios_configuration(cfg)
+
+        cfg.bp_file = cfg.output_path/"md.bp"
+
         run_simulation(cfg)
