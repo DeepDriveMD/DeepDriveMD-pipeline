@@ -1,0 +1,11 @@
+#time,event,comp,thread,uid,state,msg
+1622337673.5152318,sync_abs,pmgr.0000,MainThread,,,lassen709.coral.llnl.gov:192.168.66.201:1622337673.5033896:1622337673.5033896:sys
+1622337673.5188105,init1,pmgr.0000,MainThread,pmgr.0000,,/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005
+1622337673.5225558,component_init,pmgr.0000,Thread-4,,,
+1622337689.1806448,setup_done,pmgr.0000,MainThread,pmgr.0000,,
+1622337689.5468910,advance,pmgr.0000,MainThread,pilot.0000,NEW,
+1622337689.5503094,advance,pmgr.0000,MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,
+1622337689.5514548,put,pmgr.0000,MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,pmgr_launching_queue.put.0000
+1622337689.5851874,advance,pmgr.0000,Thread-12,pilot.0000,PMGR_LAUNCHING,
+1622337696.8221965,advance,pmgr.0000,Thread-12,pilot.0000,PMGR_ACTIVE_PENDING,
+1622337744.3293321,advance,pmgr.0000,Thread-10,pilot.0000,PMGR_ACTIVE,

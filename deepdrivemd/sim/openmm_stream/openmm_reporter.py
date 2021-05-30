@@ -21,7 +21,7 @@ class ContactMapReporter(object):
         print(cfg.adios_cfg)
         print(type(cfg.adios_cfg))
         # print(os.path.basename(os.getcwd()))
-        stream_name = "SimulationOutput"
+        stream_name = os.path.basename(cfg.output_path)
         sys.stdout.flush()
         self._adios_stream = adios2.open(name=str(cfg.bp_file), mode="w", config_file=str(cfg.adios_cfg), io_in_config_file = stream_name)
         self.step = 0

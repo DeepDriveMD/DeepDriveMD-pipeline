@@ -72,9 +72,10 @@ aggregation_stage:
     - conda activate /usr/workspace/cv_ddmd/conda1/powerai
     - module use /usr/workspace/cv_ddmd/software1/modules
     - module load adios2
-    executable: '/usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python'
+    - export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/
+    executable: '/usr/workspace/cv_ddmd/conda1/powerai/bin/python'
     arguments: 
-    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/aggregation/stream/aggregate.py
+    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/aggregation/stream/aggregator.py
     cpu_reqs:
         processes: 1
         process_type: null
@@ -93,6 +94,9 @@ aggregation_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
+        num_tasks: 2
+        n_sim: 12
+        sleeptime_bpfiles: 30
 machine_learning_stage:
     pre_exec:
     - module load gcc/7.3.1
@@ -100,7 +104,7 @@ machine_learning_stage:
     - conda activate /usr/workspace/cv_ddmd/conda1/powerai
     - module use /usr/workspace/cv_ddmd/software1/modules
     - module load adios2
-    executable: /usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python
+    executable: '/usr/workspace/cv_ddmd/conda1/powerai/bin/python'
     arguments:
     - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/models/keras_cvae_stream/train.py
     cpu_reqs:
@@ -171,7 +175,7 @@ agent_stage:
     - conda activate /usr/workspace/cv_ddmd/conda1/powerai
     - module use /usr/workspace/cv_ddmd/software1/modules
     - module load adios2
-    executable: /usr/workspace/cv_ddmd/software1/conda/envs/radical1/bin/python
+    executable: '/usr/workspace/cv_ddmd/conda1/powerai/bin/python'
     arguments:
     - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/agents/stream/outlier_search.py
     cpu_reqs:

@@ -1,0 +1,17 @@
+{
+    "bulk_size": 0,
+    "channel": "tmgr_unschedule_pubsub",
+    "cmgr": "cmgr.0002",
+    "heartbeat": {
+        "addr_pub": "tcp://192.168.66.201:45267",
+        "addr_sub": "tcp://192.168.66.201:40135",
+        "interval": 1.0,
+        "timeout": 60.0
+    },
+    "kind": "pubsub",
+    "log_level": "error",
+    "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+    "sid": "re.session.lassen709.yakushin.018777.0005",
+    "stall_hwm": 0,
+    "uid": "tmgr_unschedule_pubsub"
+}

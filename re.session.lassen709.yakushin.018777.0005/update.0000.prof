@@ -1,0 +1,15 @@
+#time,event,comp,thread,uid,state,msg
+1622337667.4366992,sync_abs,update.0000,MainThread,,,lassen709.coral.llnl.gov:192.168.66.201:1622337667.4346294:1622337667.4346294:sys
+1622337667.4404027,comp_start,update.0000,MainThread,update.0000,,
+#time,event,comp,thread,uid,state,msg
+1622337669.7042737,sync_abs,update.0000,MainThread,,,lassen709.coral.llnl.gov:192.168.66.201:1622337669.7028713:1622337669.7028713:sys
+1622337669.7043362,init1,update.0000,MainThread,update.0000,,/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005
+1622337669.7390072,component_init,update.0000,Thread-1,,,
+1622337689.5530760,update_pushed,update.0000,Thread-3,,,bulk size: 1
+1622337690.7654679,update_pushed,update.0000,Thread-4,,,bulk size: 1
+1622337696.8232646,update_pushed,update.0000,Thread-3,,,bulk size: 1
+1622337744.3322465,update_pushed,update.0000,Thread-3,,,bulk size: 1
+1622337767.2360771,update_pushed,update.0000,Thread-3,,,bulk size: 16
+1622337768.8639009,update_pushed,update.0000,Thread-4,,,bulk size: 48
+1622337770.7298541,update_pushed,update.0000,Thread-3,,,bulk size: 16
+1622338766.7457988,update_pushed,update.0000,Thread-3,,,bulk size: 1

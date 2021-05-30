@@ -1,0 +1,15 @@
+from typing import Optional
+from deepdrivemd.config import AggregationTaskConfig
+
+
+class StreamAggregation(AggregationTaskConfig):
+    rmsd: bool = True
+    contact_map: bool = False
+    verbose: bool = True
+    sim_dir: str = '/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs'
+    n_sim: int = 12
+    sleeptime_bpfiles: int = 30
+    num_tasks: int = 2
+
+if __name__ == "__main__":
+    StreamAggregation().dump_yaml("stream_aggregation_template.yaml")
