@@ -1,0 +1,7 @@
+#time,event,comp,thread,uid,state,msg
+1622337736.1629179,sync_abs,agent_staging_output.0000,MainThread,,,lassen827.coral.llnl.gov:192.168.67.65:1622337736.16265:1622337736.16265:sys
+1622337736.1646943,comp_start,agent_staging_output.0000,MainThread,agent_staging_output.0000,,
+#time,event,comp,thread,uid,state,msg
+1622337738.2858021,sync_abs,agent_staging_output.0000,MainThread,,,lassen827.coral.llnl.gov:192.168.67.65:1622337738.285689:1622337738.285689:sys
+1622337738.2858546,init1,agent_staging_output.0000,MainThread,agent_staging_output.0000,,/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000
+1622337739.3030434,component_init,agent_staging_output.0000,Thread-1,,,

@@ -1,0 +1,2192 @@
+{
+    "pilot": [
+        {
+            "_id": "pilot.0000",
+            "cfg": {
+                "agent_launch_method": "JSRUN",
+                "app_comm": [],
+                "bridges": {
+                    "agent_executing_queue": {
+                        "bulk_size": 0,
+                        "kind": "queue",
+                        "log_level": "error",
+                        "stall_hwm": 0
+                    },
+                    "agent_schedule_pubsub": {
+                        "kind": "pubsub",
+                        "log_level": "error"
+                    },
+                    "agent_scheduling_queue": {
+                        "bulk_size": 0,
+                        "kind": "queue",
+                        "log_level": "error",
+                        "stall_hwm": 0
+                    },
+                    "agent_staging_input_queue": {
+                        "bulk_size": 0,
+                        "kind": "queue",
+                        "log_level": "error",
+                        "stall_hwm": 0
+                    },
+                    "agent_staging_output_queue": {
+                        "bulk_size": 0,
+                        "kind": "queue",
+                        "log_level": "error",
+                        "stall_hwm": 0
+                    },
+                    "agent_unschedule_pubsub": {
+                        "kind": "pubsub",
+                        "log_level": "error"
+                    },
+                    "control_pubsub": {
+                        "kind": "pubsub",
+                        "log_level": "error"
+                    },
+                    "funcs_req_queue": {
+                        "bulk_size": 1,
+                        "kind": "queue",
+                        "log_level": "error",
+                        "stall_hwm": 0
+                    },
+                    "funcs_res_queue": {
+                        "bulk_size": 1,
+                        "kind": "queue",
+                        "log_level": "error",
+                        "stall_hwm": 0
+                    },
+                    "state_pubsub": {
+                        "kind": "pubsub",
+                        "log_level": "error"
+                    }
+                },
+                "bulk_collection_size": 1024,
+                "bulk_collection_time": 1.0,
+                "bulk_size": 1024,
+                "bulk_time": 1.0,
+                "components": {
+                    "agent_executing": {
+                        "count": 1
+                    },
+                    "agent_scheduling": {
+                        "count": 1
+                    },
+                    "agent_staging_input": {
+                        "count": 1
+                    },
+                    "agent_staging_output": {
+                        "count": 1
+                    },
+                    "update": {
+                        "count": 1
+                    }
+                },
+                "cores": 520,
+                "cores_per_node": 40,
+                "db_poll_sleeptime": 2.0,
+                "dburl": "mongodb+ssl://deepdrive:G9eHTINgrFOU6IgP0gPzCMDi9vlGslows91qzbXwvPOgqmv674VjDTCjn3%2FxXAo2@cz-deepdrivemd.apps.czapps.llnl.gov:31945/deepdriveDB?tlsAllowInvalidCertificates=True",
+                "debug": 10,
+                "export_to_task": null,
+                "gpus": 16,
+                "gpus_per_node": 4,
+                "heartbeat": {
+                    "interval": 1.0,
+                    "timeout": 60.0
+                },
+                "lfs_path_per_node": null,
+                "lfs_size_per_node": 0,
+                "logdir": ".",
+                "mode": "shared",
+                "mpi_launch_method": "JSRUN",
+                "owner": "agent.0",
+                "pid": "pilot.0000",
+                "pilot_sandbox": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+                "pmgr": "pmgr.0000",
+                "resource": "llnl.lassen",
+                "resource_cfg": {
+                    "agent_launch_method": "JSRUN",
+                    "agent_scheduler": "CONTINUOUS",
+                    "agent_spawner": "POPEN",
+                    "cores_per_node": 40,
+                    "default_queue": "pbatch",
+                    "default_remote_workdir": "/p/gpfs1/$USER",
+                    "description": "Unclassified Sierra system (arch: IBM Power9, NVIDIA TeslaV100)",
+                    "filesystem_endpoint": "file://localhost/",
+                    "gpus_per_node": 4,
+                    "job_manager_endpoint": "lsf://localhost/",
+                    "job_manager_hop": "fork://localhost/",
+                    "label": "llnl.lassen",
+                    "local": {
+                        "filesystem_endpoint": "file://localhost/",
+                        "job_manager_endpoint": "lsf://localhost/",
+                        "job_manager_hop": "fork://localhost/"
+                    },
+                    "mpi_launch_method": "JSRUN",
+                    "notes": "A dedicated local instance of MongoDB should be used",
+                    "pre_bootstrap_0": [
+                        "module load jsrun"
+                    ],
+                    "python_dist": "default",
+                    "resource_manager": "LSF_SUMMIT",
+                    "rp_version": "local",
+                    "schemas": [
+                        "local"
+                    ],
+                    "sockets_per_node": 2,
+                    "system_architecture": {
+                        "smt": 4
+                    },
+                    "task_launch_method": "JSRUN",
+                    "valid_roots": [
+                        "/p/gpfs1/$USER",
+                        "$HOME"
+                    ],
+                    "virtenv_dist": "default",
+                    "virtenv_mode": "create"
+                },
+                "resource_manager": "LSF_SUMMIT",
+                "resource_sandbox": "/p/gpfs1/yakushin/radical.pilot.sandbox",
+                "runtime": 30,
+                "scheduler": "CONTINUOUS",
+                "session_sandbox": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005",
+                "sid": "re.session.lassen709.yakushin.018777.0005",
+                "spawner": "POPEN",
+                "target": "local",
+                "task_launch_method": "JSRUN",
+                "task_post_exec": null,
+                "task_pre_exec": null,
+                "task_tmp": null
+            },
+            "client_sandbox": "None",
+            "cmds": [
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": {
+                        "pmgr": "pmgr.0000"
+                    },
+                    "cmd": "heartbeat"
+                },
+                {
+                    "arg": [],
+                    "cmd": "cancel_pilot"
+                },
+                {
+                    "arg": [],
+                    "cmd": "cancel_pilot"
+                }
+            ],
+            "control": "pmgr",
+            "description": {
+                "access_schema": null,
+                "app_comm": [],
+                "candidate_hosts": [],
+                "cleanup": false,
+                "cores": 488,
+                "exit_on_error": true,
+                "gpus": 14,
+                "input_staging": [],
+                "job_name": null,
+                "layout": "default",
+                "memory": 0,
+                "output_staging": [],
+                "prepare_env": {},
+                "project": "cv19-a01",
+                "queue": "pbatch",
+                "resource": "llnl.lassen",
+                "runtime": 30,
+                "sandbox": null,
+                "uid": null
+            },
+            "js_hop": "fork://localhost/",
+            "js_url": "lsf://localhost/",
+            "log": null,
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "pmgr": "pmgr.0000",
+            "resource": "llnl.lassen",
+            "resource_details": {
+                "lm_detail": null,
+                "lm_info": null,
+                "rm_info": {
+                    "agent_nodes": {},
+                    "cores_per_node": 160,
+                    "cores_per_socket": 160,
+                    "gpus_per_node": 4,
+                    "gpus_per_socket": 4,
+                    "lfs_per_node": {
+                        "path": null,
+                        "size": 0
+                    },
+                    "lm_info": {
+                        "cvd_id_mode": "physical"
+                    },
+                    "mem_per_node": 0,
+                    "name": "LSF_SUMMIT",
+                    "node_list": [
+                        [
+                            "lassen190",
+                            "1"
+                        ],
+                        [
+                            "lassen191",
+                            "2"
+                        ],
+                        [
+                            "lassen192",
+                            "3"
+                        ],
+                        [
+                            "lassen827",
+                            "4"
+                        ]
+                    ],
+                    "partitions": {},
+                    "smt": 4,
+                    "sockets_per_node": 1
+                }
+            },
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "resources": {
+                "cpu": 520,
+                "gpu": 16
+            },
+            "rpc_req": null,
+            "session": "re.session.lassen709.yakushin.018777.0005",
+            "session_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005",
+            "state": "FAILED",
+            "states": [
+                "NEW",
+                "PMGR_LAUNCHING_PENDING",
+                "PMGR_LAUNCHING",
+                "PMGR_ACTIVE_PENDING",
+                "PMGR_ACTIVE",
+                "PMGR_ACTIVE",
+                "FAILED"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_ids": [
+                "task.0004",
+                "task.0005",
+                "task.0010",
+                "task.0011",
+                "task.0006",
+                "task.0008",
+                "task.0002",
+                "task.0007",
+                "task.0001",
+                "task.0000",
+                "task.0009",
+                "task.0003",
+                "task.0012",
+                "task.0013",
+                "task.0014",
+                "task.0015"
+            ],
+            "type": "pilot",
+            "uid": "pilot.0000"
+        }
+    ],
+    "pmgr": [
+        {
+            "_id": "pmgr.0000",
+            "cfg": {
+                "base": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline",
+                "bridges": {
+                    "pmgr_launching_queue": {
+                        "bulk_size": 0,
+                        "channel": "pmgr_launching_queue",
+                        "cmgr": "cmgr.0001",
+                        "heartbeat": {
+                            "addr_pub": "tcp://192.168.66.201:38601",
+                            "addr_sub": "tcp://192.168.66.201:35165",
+                            "interval": 1.0,
+                            "timeout": 60.0
+                        },
+                        "kind": "queue",
+                        "log_level": "error",
+                        "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                        "sid": "re.session.lassen709.yakushin.018777.0005",
+                        "stall_hwm": 0,
+                        "uid": "pmgr_launching_queue"
+                    }
+                },
+                "components": {
+                    "pmgr_launching": {
+                        "base": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline",
+                        "cmgr": "cmgr.0001",
+                        "count": 1,
+                        "db_poll_sleeptime": 1.0,
+                        "dburl": "mongodb+ssl://deepdrive:G9eHTINgrFOU6IgP0gPzCMDi9vlGslows91qzbXwvPOgqmv674VjDTCjn3%2FxXAo2@cz-deepdrivemd.apps.czapps.llnl.gov:31945/deepdriveDB?tlsAllowInvalidCertificates=True",
+                        "heartbeat": {
+                            "addr_pub": "tcp://192.168.66.201:38601",
+                            "addr_sub": "tcp://192.168.66.201:35165",
+                            "interval": 1.0,
+                            "timeout": 60.0
+                        },
+                        "kind": "pmgr_launching",
+                        "owner": "pmgr.0000",
+                        "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                        "sid": "re.session.lassen709.yakushin.018777.0005",
+                        "uid": "pmgr_launching.0000"
+                    }
+                },
+                "db_poll_sleeptime": 1.0,
+                "dburl": "mongodb+ssl://deepdrive:G9eHTINgrFOU6IgP0gPzCMDi9vlGslows91qzbXwvPOgqmv674VjDTCjn3%2FxXAo2@cz-deepdrivemd.apps.czapps.llnl.gov:31945/deepdriveDB?tlsAllowInvalidCertificates=True",
+                "heartbeat": {
+                    "addr_pub": "tcp://192.168.66.201:38601",
+                    "addr_sub": "tcp://192.168.66.201:35165",
+                    "interval": 1.0,
+                    "timeout": 60.0
+                },
+                "owner": "pmgr.0000",
+                "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                "sid": "re.session.lassen709.yakushin.018777.0005",
+                "uid": "pmgr.0000"
+            },
+            "type": "pmgr",
+            "uid": "pmgr.0000"
+        }
+    ],
+    "session": {
+        "_id": "re.session.lassen709.yakushin.018777.0005",
+        "cfg": {
+            "base": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline",
+            "bridges": {
+                "control_pubsub": {
+                    "bulk_size": 0,
+                    "kind": "pubsub",
+                    "log_level": "error",
+                    "stall_hwm": 1
+                },
+                "log_pubsub": {
+                    "bulk_size": 0,
+                    "kind": "pubsub",
+                    "log_level": "error",
+                    "stall_hwm": 1
+                },
+                "stager_request_queue": {
+                    "bulk_size": 0,
+                    "kind": "queue",
+                    "log_level": "error",
+                    "stall_hwm": 1
+                },
+                "stager_response_pubsub": {
+                    "bulk_size": 0,
+                    "kind": "pubsub",
+                    "log_level": "debug",
+                    "stall_hwm": 1
+                },
+                "state_pubsub": {
+                    "bulk_size": 0,
+                    "kind": "pubsub",
+                    "log_level": "error",
+                    "stall_hwm": 1
+                }
+            },
+            "bulk_size": 1024,
+            "bulk_time": 1.0,
+            "client_sandbox": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline",
+            "components": {
+                "stager": {
+                    "count": 1
+                },
+                "update": {
+                    "count": 1
+                }
+            },
+            "dburl": "mongodb+ssl://deepdrive:G9eHTINgrFOU6IgP0gPzCMDi9vlGslows91qzbXwvPOgqmv674VjDTCjn3%2FxXAo2@cz-deepdrivemd.apps.czapps.llnl.gov:31945/deepdriveDB?tlsAllowInvalidCertificates=True",
+            "default_dburl": "mongodb://rct:rct_test@two.radical-project.org/rct_test",
+            "heartbeat": {
+                "interval": 1.0,
+                "timeout": 60.0
+            },
+            "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+            "record": null,
+            "session_base": "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline",
+            "sid": "re.session.lassen709.yakushin.018777.0005"
+        },
+        "connected": 1622337658.8152704,
+        "created": 1622337658.7904804,
+        "metadata": [
+            {
+                "radical_stack": {
+                    "py": "3.9.4 (default, Apr  9 2021, 16:41:57)  [GCC 7.3.0]",
+                    "rp": "1.6.5",
+                    "rs": "1.6.5",
+                    "ru": "1.6.5-v1.6.5-6-gdd63e52@fix-issue_268"
+                }
+            }
+        ],
+        "type": "session",
+        "uid": "re.session.lassen709.yakushin.018777.0005"
+    },
+    "task": [
+        {
+            "_id": "task.0004",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0004/stage0000_task0004.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0004,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0004"
+                },
+                "uid": "task.0004"
+            },
+            "exit_code": null,
+            "name": "task.0004,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0004/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0004/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0004"
+        },
+        {
+            "_id": "task.0005",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0005/stage0000_task0005.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0005,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0005"
+                },
+                "uid": "task.0005"
+            },
+            "exit_code": null,
+            "name": "task.0005,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0005/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0005/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0005"
+        },
+        {
+            "_id": "task.0010",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0010/stage0000_task0010.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0010,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0010"
+                },
+                "uid": "task.0010"
+            },
+            "exit_code": null,
+            "name": "task.0010,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0010/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0010/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0010"
+        },
+        {
+            "_id": "task.0011",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0011/stage0000_task0011.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0011,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0011"
+                },
+                "uid": "task.0011"
+            },
+            "exit_code": null,
+            "name": "task.0011,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0011/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0011/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0011"
+        },
+        {
+            "_id": "task.0006",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0006/stage0000_task0006.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0006,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0006"
+                },
+                "uid": "task.0006"
+            },
+            "exit_code": null,
+            "name": "task.0006,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0006/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0006/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0006"
+        },
+        {
+            "_id": "task.0008",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0008/stage0000_task0008.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0008,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0008"
+                },
+                "uid": "task.0008"
+            },
+            "exit_code": null,
+            "name": "task.0008,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0008/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0008/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0008"
+        },
+        {
+            "_id": "task.0002",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0002/stage0000_task0002.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0002,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0002"
+                },
+                "uid": "task.0002"
+            },
+            "exit_code": null,
+            "name": "task.0002,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0002/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0002/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0002"
+        },
+        {
+            "_id": "task.0007",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0007/stage0000_task0007.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0007,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0007"
+                },
+                "uid": "task.0007"
+            },
+            "exit_code": null,
+            "name": "task.0007,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0007/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0007/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0007"
+        },
+        {
+            "_id": "task.0001",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0001/stage0000_task0001.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0001,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0001"
+                },
+                "uid": "task.0001"
+            },
+            "exit_code": null,
+            "name": "task.0001,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0001/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0001/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0001"
+        },
+        {
+            "_id": "task.0000",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0000/stage0000_task0000.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0000,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0000"
+                },
+                "uid": "task.0000"
+            },
+            "exit_code": null,
+            "name": "task.0000,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0000/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0000/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0000"
+        },
+        {
+            "_id": "task.0009",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0009/stage0000_task0009.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0009,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0009"
+                },
+                "uid": "task.0009"
+            },
+            "exit_code": null,
+            "name": "task.0009,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0009/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0009/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0009"
+        },
+        {
+            "_id": "task.0003",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/molecular_dynamics_runs/stage0000/task0003/stage0000_task0003.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0003,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "unset PYTHONPATH",
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "export IBM_POWERAI_LICENSE_ACCEPT=yes",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0003"
+                },
+                "uid": "task.0003"
+            },
+            "exit_code": null,
+            "name": "task.0003,,stage.0000,MolecularDynamics,pipeline.0000,MolecularDynamicsPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0003/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0003/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0003"
+        },
+        {
+            "_id": "task.0012",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/aggregation/stream/aggregator.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs/stage0000/task0000/stage0000_task0000.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 0,
+                "gpu_thread_type": "GPU_OpenMP",
+                "gpu_threads": 0,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0012,,stage.0001,Aggregating,pipeline.0001,AggregatingPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0012"
+                },
+                "uid": "task.0012"
+            },
+            "exit_code": null,
+            "name": "task.0012,,stage.0001,Aggregating,pipeline.0001,AggregatingPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0012/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0012/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0012"
+        },
+        {
+            "_id": "task.0013",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/aggregation/stream/aggregator.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs/stage0000/task0001/stage0000_task0001.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 0,
+                "gpu_thread_type": "GPU_OpenMP",
+                "gpu_threads": 0,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0013,,stage.0001,Aggregating,pipeline.0001,AggregatingPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2",
+                    "export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0013"
+                },
+                "uid": "task.0013"
+            },
+            "exit_code": null,
+            "name": "task.0013,,stage.0001,Aggregating,pipeline.0001,AggregatingPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0013/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0013/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0013"
+        },
+        {
+            "_id": "task.0014",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/models/keras_cvae_stream/train.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/machine_learning_runs/stage0000/task0000/stage0000_task0000.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "MPI",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 4,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0014,,stage.0002,MachineLearning,pipeline.0002,MachineLearningPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0014"
+                },
+                "uid": "task.0014"
+            },
+            "exit_code": null,
+            "name": "task.0014,,stage.0002,MachineLearning,pipeline.0002,MachineLearningPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0014/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0014/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0014"
+        },
+        {
+            "_id": "task.0015",
+            "client_sandbox": "None",
+            "cmd": [],
+            "control": "agent",
+            "description": {
+                "arguments": [
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/agents/stream/outlier_search.py",
+                    "-c",
+                    "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/agent_runs/stage0000/task0000/stage0000_task0000.yaml"
+                ],
+                "cleanup": false,
+                "cpu_process_type": "POSIX",
+                "cpu_processes": 1,
+                "cpu_thread_type": "OpenMP",
+                "cpu_threads": 12,
+                "environment": {},
+                "executable": "/usr/workspace/cv_ddmd/conda1/powerai/bin/python",
+                "gpu_process_type": "POSIX",
+                "gpu_processes": 1,
+                "gpu_thread_type": "CUDA",
+                "gpu_threads": 1,
+                "input_staging": [],
+                "kernel": "",
+                "lfs_per_process": 0,
+                "mem_per_process": 0,
+                "metadata": null,
+                "name": "task.0015,,stage.0003,Agent,pipeline.0003,AgentPipeline",
+                "named_env": "",
+                "output_staging": [],
+                "pilot": "",
+                "post_exec": [],
+                "pre_exec": [
+                    "module load gcc/7.3.1",
+                    ". /etc/profile.d/conda.sh",
+                    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+                    "module use /usr/workspace/cv_ddmd/software1/modules",
+                    "module load adios2"
+                ],
+                "restartable": false,
+                "sandbox": "",
+                "stage_on_error": false,
+                "stderr": "",
+                "stdout": "",
+                "tags": {
+                    "colocate": "task.0015"
+                },
+                "uid": "task.0015"
+            },
+            "exit_code": null,
+            "name": "task.0015,,stage.0003,Agent,pipeline.0003,AgentPipeline",
+            "pilot": "pilot.0000",
+            "pilot_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/",
+            "resource_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox",
+            "state": "AGENT_EXECUTING",
+            "states": [
+                "NEW",
+                "TMGR_SCHEDULING_PENDING",
+                "TMGR_SCHEDULING",
+                "TMGR_STAGING_INPUT_PENDING",
+                "TMGR_STAGING_INPUT",
+                "AGENT_STAGING_INPUT_PENDING",
+                "AGENT_STAGING_INPUT",
+                "AGENT_SCHEDULING_PENDING",
+                "AGENT_SCHEDULING",
+                "AGENT_EXECUTING"
+            ],
+            "stderr": null,
+            "stdout": null,
+            "task_sandbox": "file://localhost/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0015/",
+            "task_sandbox_path": "/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018777.0005/pilot.0000/task.0015/",
+            "tmgr": "tmgr.0000",
+            "type": "task",
+            "uid": "task.0015"
+        }
+    ],
+    "tmgr": [
+        {
+            "_id": "tmgr.0000",
+            "cfg": {
+                "base": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline",
+                "bridges": {
+                    "tmgr_reschedule_pubsub": {
+                        "bulk_size": 0,
+                        "channel": "tmgr_reschedule_pubsub",
+                        "cmgr": "cmgr.0002",
+                        "heartbeat": {
+                            "addr_pub": "tcp://192.168.66.201:45267",
+                            "addr_sub": "tcp://192.168.66.201:40135",
+                            "interval": 1.0,
+                            "timeout": 60.0
+                        },
+                        "kind": "pubsub",
+                        "log_level": "error",
+                        "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                        "sid": "re.session.lassen709.yakushin.018777.0005",
+                        "stall_hwm": 0,
+                        "uid": "tmgr_reschedule_pubsub"
+                    },
+                    "tmgr_scheduling_queue": {
+                        "bulk_size": 0,
+                        "channel": "tmgr_scheduling_queue",
+                        "cmgr": "cmgr.0002",
+                        "heartbeat": {
+                            "addr_pub": "tcp://192.168.66.201:45267",
+                            "addr_sub": "tcp://192.168.66.201:40135",
+                            "interval": 1.0,
+                            "timeout": 60.0
+                        },
+                        "kind": "queue",
+                        "log_level": "error",
+                        "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                        "sid": "re.session.lassen709.yakushin.018777.0005",
+                        "stall_hwm": 0,
+                        "uid": "tmgr_scheduling_queue"
+                    },
+                    "tmgr_staging_input_queue": {
+                        "bulk_size": 0,
+                        "channel": "tmgr_staging_input_queue",
+                        "cmgr": "cmgr.0002",
+                        "heartbeat": {
+                            "addr_pub": "tcp://192.168.66.201:45267",
+                            "addr_sub": "tcp://192.168.66.201:40135",
+                            "interval": 1.0,
+                            "timeout": 60.0
+                        },
+                        "kind": "queue",
+                        "log_level": "error",
+                        "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                        "sid": "re.session.lassen709.yakushin.018777.0005",
+                        "stall_hwm": 0,
+                        "uid": "tmgr_staging_input_queue"
+                    },
+                    "tmgr_staging_output_queue": {
+                        "bulk_size": 0,
+                        "channel": "tmgr_staging_output_queue",
+                        "cmgr": "cmgr.0002",
+                        "heartbeat": {
+                            "addr_pub": "tcp://192.168.66.201:45267",
+                            "addr_sub": "tcp://192.168.66.201:40135",
+                            "interval": 1.0,
+                            "timeout": 60.0
+                        },
+                        "kind": "queue",
+                        "log_level": "error",
+                        "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                        "sid": "re.session.lassen709.yakushin.018777.0005",
+                        "stall_hwm": 0,
+                        "uid": "tmgr_staging_output_queue"
+                    },
+                    "tmgr_unschedule_pubsub": {
+                        "bulk_size": 0,
+                        "channel": "tmgr_unschedule_pubsub",
+                        "cmgr": "cmgr.0002",
+                        "heartbeat": {
+                            "addr_pub": "tcp://192.168.66.201:45267",
+                            "addr_sub": "tcp://192.168.66.201:40135",
+                            "interval": 1.0,
+                            "timeout": 60.0
+                        },
+                        "kind": "pubsub",
+                        "log_level": "error",
+                        "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                        "sid": "re.session.lassen709.yakushin.018777.0005",
+                        "stall_hwm": 0,
+                        "uid": "tmgr_unschedule_pubsub"
+                    }
+                },
+                "bulk_collection_size": 100,
+                "bulk_collection_time": 1.0,
+                "components": {
+                    "tmgr_scheduling": {
+                        "base": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline",
+                        "bulk_collection_size": 100,
+                        "bulk_collection_time": 1.0,
+                        "cmgr": "cmgr.0002",
+                        "count": 1,
+                        "db_poll_sleeptime": 1.0,
+                        "dburl": "mongodb+ssl://deepdrive:G9eHTINgrFOU6IgP0gPzCMDi9vlGslows91qzbXwvPOgqmv674VjDTCjn3%2FxXAo2@cz-deepdrivemd.apps.czapps.llnl.gov:31945/deepdriveDB?tlsAllowInvalidCertificates=True",
+                        "heartbeat": {
+                            "addr_pub": "tcp://192.168.66.201:45267",
+                            "addr_sub": "tcp://192.168.66.201:40135",
+                            "interval": 1.0,
+                            "timeout": 60.0
+                        },
+                        "kind": "tmgr_scheduling",
+                        "owner": "tmgr.0000",
+                        "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                        "scheduler": "round_robin",
+                        "sid": "re.session.lassen709.yakushin.018777.0005",
+                        "uid": "tmgr_scheduling.0000"
+                    },
+                    "tmgr_staging_input": {
+                        "base": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline",
+                        "bulk_collection_size": 100,
+                        "bulk_collection_time": 1.0,
+                        "cmgr": "cmgr.0002",
+                        "count": 1,
+                        "db_poll_sleeptime": 1.0,
+                        "dburl": "mongodb+ssl://deepdrive:G9eHTINgrFOU6IgP0gPzCMDi9vlGslows91qzbXwvPOgqmv674VjDTCjn3%2FxXAo2@cz-deepdrivemd.apps.czapps.llnl.gov:31945/deepdriveDB?tlsAllowInvalidCertificates=True",
+                        "heartbeat": {
+                            "addr_pub": "tcp://192.168.66.201:45267",
+                            "addr_sub": "tcp://192.168.66.201:40135",
+                            "interval": 1.0,
+                            "timeout": 60.0
+                        },
+                        "kind": "tmgr_staging_input",
+                        "owner": "tmgr.0000",
+                        "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                        "scheduler": "round_robin",
+                        "sid": "re.session.lassen709.yakushin.018777.0005",
+                        "uid": "tmgr_staging_input.0000"
+                    },
+                    "tmgr_staging_output": {
+                        "base": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline",
+                        "bulk_collection_size": 100,
+                        "bulk_collection_time": 1.0,
+                        "cmgr": "cmgr.0002",
+                        "count": 1,
+                        "db_poll_sleeptime": 1.0,
+                        "dburl": "mongodb+ssl://deepdrive:G9eHTINgrFOU6IgP0gPzCMDi9vlGslows91qzbXwvPOgqmv674VjDTCjn3%2FxXAo2@cz-deepdrivemd.apps.czapps.llnl.gov:31945/deepdriveDB?tlsAllowInvalidCertificates=True",
+                        "heartbeat": {
+                            "addr_pub": "tcp://192.168.66.201:45267",
+                            "addr_sub": "tcp://192.168.66.201:40135",
+                            "interval": 1.0,
+                            "timeout": 60.0
+                        },
+                        "kind": "tmgr_staging_output",
+                        "owner": "tmgr.0000",
+                        "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                        "scheduler": "round_robin",
+                        "sid": "re.session.lassen709.yakushin.018777.0005",
+                        "uid": "tmgr_staging_output.0000"
+                    }
+                },
+                "db_poll_sleeptime": 1.0,
+                "dburl": "mongodb+ssl://deepdrive:G9eHTINgrFOU6IgP0gPzCMDi9vlGslows91qzbXwvPOgqmv674VjDTCjn3%2FxXAo2@cz-deepdrivemd.apps.czapps.llnl.gov:31945/deepdriveDB?tlsAllowInvalidCertificates=True",
+                "heartbeat": {
+                    "addr_pub": "tcp://192.168.66.201:45267",
+                    "addr_sub": "tcp://192.168.66.201:40135",
+                    "interval": 1.0,
+                    "timeout": 60.0
+                },
+                "owner": "tmgr.0000",
+                "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018777.0005",
+                "scheduler": "round_robin",
+                "sid": "re.session.lassen709.yakushin.018777.0005",
+                "uid": "tmgr.0000"
+            },
+            "type": "tmgr",
+            "uid": "tmgr.0000"
+        }
+    ]
+}
