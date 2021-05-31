@@ -1,3 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1622337729.4249632,sync_abs,agent_scheduling_queue,MainThread,,,lassen827.coral.llnl.gov:192.168.67.65:1622337729.4247046:1622337729.4247046:sys
-1622337729.4268329,bridge_start,agent_scheduling_queue,MainThread,agent_scheduling_queue,,
