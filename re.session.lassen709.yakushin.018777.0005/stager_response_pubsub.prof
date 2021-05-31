@@ -1,3 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1622337664.1368003,sync_abs,stager_response_pubsub,MainThread,,,lassen709.coral.llnl.gov:192.168.66.201:1622337664.134018:1622337664.134018:sys
-1622337664.1400096,bridge_start,stager_response_pubsub,MainThread,stager_response_pubsub,,
