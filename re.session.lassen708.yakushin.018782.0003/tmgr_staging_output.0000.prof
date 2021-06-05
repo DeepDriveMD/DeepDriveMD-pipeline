@@ -1,0 +1,7 @@
+#time,event,comp,thread,uid,state,msg
+1622819409.4251244,sync_abs,tmgr_staging_output.0000,MainThread,,,lassen708.coral.llnl.gov:192.168.66.200:1622819409.423185:1622819409.423185:sys
+1622819409.4273543,comp_start,tmgr_staging_output.0000,MainThread,tmgr_staging_output.0000,,
+#time,event,comp,thread,uid,state,msg
+1622819411.6771097,sync_abs,tmgr_staging_output.0000,MainThread,,,lassen708.coral.llnl.gov:192.168.66.200:1622819411.6759787:1622819411.6759787:sys
+1622819411.6771810,init1,tmgr_staging_output.0000,MainThread,tmgr_staging_output.0000,,/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen708.yakushin.018782.0003
+1622819412.7063994,component_init,tmgr_staging_output.0000,Thread-1,,,
