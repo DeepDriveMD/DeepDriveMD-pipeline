@@ -188,7 +188,7 @@ agent_stage:
     - module load adios2
     executable: '/usr/workspace/cv_ddmd/conda1/powerai/bin/python'
     arguments:
-    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/agents/stream/outlier_search.py
+    - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/agents/stream/dbscan.py
     cpu_reqs:
         processes: 1
         process_type: null
