@@ -259,9 +259,13 @@ if __name__ == "__main__":
 
     # Calculate total number of nodes required. Assumes 1 MD job per GPU
     # TODO: fix this assumption for NAMD
-    num_full_nodes, extra_gpus = divmod(
-        cfg.molecular_dynamics_stage.num_tasks, cfg.gpus_per_node
-    )
+    try:
+        num_full_nodes, extra_gpus = divmod(
+            cfg.molecular_dynamics_stage.num_tasks, cfg.gpus_per_node
+        )
+    except:
+        num_full_nodes = cfg.molecular_dynamics_stage.num_tasks
+        extra_gpus = 0
     extra_node = int(extra_gpus > 0)
     num_nodes = max(1, num_full_nodes + extra_node)
 

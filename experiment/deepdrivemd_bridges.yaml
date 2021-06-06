@@ -1,0 +1,142 @@
+title: COVID-19 - Workflow2
+resource: xsede.bridges2
+queue: RM
+schema_: local
+project: mcb110096p
+walltime_min: 360
+max_iteration: 4
+cpus_per_node: 32
+gpus_per_node: 0
+hardware_threads_per_cpu: 4
+experiment_directory: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/1st_run
+node_local_path: null
+molecular_dynamics_stage:
+    pre_exec: 
+      - module load anaconda3/2020.07
+      - module load cuda/10.2.0
+      - module load hdf5
+      - source activate /ocean/projects/mcb110096p/hrlee/conda/1.6.6
+      - export HDF5_DISABLE_VERSION_CHECK=1
+    executable: '/ocean/projects/mcb110096p/hrlee/conda/1.6.6/bin/python'
+    arguments: ['/ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/deepdrivemd/sim/openmm/run_openmm.py']
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 3
+        thread_type: OpenMP
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    num_tasks: 1
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        pdb_file: set_by_deepdrivemd
+        initial_pdb_dir: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/bba
+aggregation_stage:
+    pre_exec: []
+    executable: ''
+    arguments: []
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    skip_aggregation: true
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+machine_learning_stage:
+    pre_exec: 
+      - module load anaconda3/2020.07
+      - module load cuda/10.2.0
+      - module load hdf5
+      - export LANG=en_US.utf-8
+      - export LC_ALL=en_US.utf-8
+      - export HDF5_USE_FILE_LOCKING=FALSE
+      - source activate /ocean/projects/mcb110096p/hrlee/conda/pytorch
+    executable: '/ocean/projects/mcb110096p/hrlee/conda/pytorch/bin/python'
+    arguments: ['/ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/deepdrivemd/models/aae/train.py']
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    retrain_freq: 1
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        model_tag: set_by_deepdrivemd
+        init_weights_path: null
+model_selection_stage:
+    pre_exec:
+      - module load anaconda3/2020.07
+      - module load cuda/10.2.0
+      - module load hdf5
+      - source activate /ocean/projects/mcb110096p/hrlee/conda/pytorch
+    executable: '/ocean/projects/mcb110096p/hrlee/conda/pytorch/bin/python'
+    arguments: ['/ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select_model.py']
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 4
+        thread_type: OpenMP
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+agent_stage:
+    pre_exec: 
+      - module load anaconda3/2020.07
+      - module load cuda/10.2.0
+      - module load hdf5
+      - export LANG=en_US.utf-8
+      - export LC_ALL=en_US.utf-8
+      - source activate /ocean/projects/mcb110096p/hrlee/conda/pytorch
+
+    executable: '/ocean/projects/mcb110096p/hrlee/conda/pytorch/bin/python'
+    arguments: ['/ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/deepdrivemd/agents/lof/lof.py']
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 12
+        thread_type: OpenMP
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
