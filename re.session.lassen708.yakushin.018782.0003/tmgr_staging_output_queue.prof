@@ -1,3 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1622819403.6074333,sync_abs,tmgr_staging_output_queue,MainThread,,,lassen708.coral.llnl.gov:192.168.66.200:1622819403.605443:1622819403.605443:sys
-1622819403.6096213,bridge_start,tmgr_staging_output_queue,MainThread,tmgr_staging_output_queue,,
