@@ -1,0 +1,21 @@
+{
+    "base": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline",
+    "bulk_collection_size": 100,
+    "bulk_collection_time": 1.0,
+    "cmgr": "cmgr.0002",
+    "count": 1,
+    "db_poll_sleeptime": 1.0,
+    "dburl": "mongodb+ssl://deepdrive:G9eHTINgrFOU6IgP0gPzCMDi9vlGslows91qzbXwvPOgqmv674VjDTCjn3%2FxXAo2@cz-deepdrivemd.apps.czapps.llnl.gov:31945/deepdriveDB?tlsAllowInvalidCertificates=True",
+    "heartbeat": {
+        "addr_pub": "tcp://192.168.66.201:36569",
+        "addr_sub": "tcp://192.168.66.201:44155",
+        "interval": 1.0,
+        "timeout": 60.0
+    },
+    "kind": "tmgr_scheduling",
+    "owner": "tmgr.0000",
+    "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018784.0003",
+    "scheduler": "round_robin",
+    "sid": "re.session.lassen709.yakushin.018784.0003",
+    "uid": "tmgr_scheduling.0000"
+}

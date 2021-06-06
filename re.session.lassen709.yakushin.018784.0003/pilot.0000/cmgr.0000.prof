@@ -1,0 +1,3 @@
+#time,event,comp,thread,uid,state,msg
+1622993129.5540340,sync_abs,cmgr.0000,MainThread,,,lassen406.coral.llnl.gov:192.168.65.152:1622993129.553822:1622993129.553822:sys
+1622993129.5543687,init2,cmgr.0000,MainThread,cmgr.0000,,/p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.018784.0003/pilot.0000
