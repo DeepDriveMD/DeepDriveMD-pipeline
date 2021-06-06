@@ -10,7 +10,7 @@ import time
 import sys
 import os
 
-from deepdrivemd.utils import Timer, timer
+from deepdrivemd.utils import Timer, timer, cm_1Dto2D_format
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 import tensorflow.keras.backend as K
@@ -110,7 +110,7 @@ def dirs(cfg):
 
 def predict(cfg, model_path, cvae_input):
     cvae = build_model(cfg, model_path)
-    cm_predict = cvae.return_embeddings(cvae_input[0])
+    cm_predict = cvae.return_embeddings(cm_1Dto2D_format(cvae_input[0]))
     del cvae 
     K.clear_session()
     return cm_predict
@@ -258,7 +258,7 @@ def main(cfg: OutlierDetectionConfig):
             eps = cluster(cfg, cm_predict, outlier_list, eps)
 
         with Timer("outlier_write"):
-            restart_pdbs = write_outliers(outlier_list, client)
+            restart_pdbs = write_outliers(cfg, outlier_list, client, tmp_dir, cvae_input)
 
         if(len(restart_pdbs) == 0):
             print("No outliers found")
