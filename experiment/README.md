@@ -58,6 +58,75 @@ location:
 experiment_directory: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/1st_run
 ```
 
+# Test Run
+
+```
+$ python -m deepdrivemd.deepdrivemd -c deepdrivemd_bridges.yaml
+```
+
+The example output looks like:
+
+```
+================================================================================
+ COVID-19 - Workflow2
+================================================================================
+
+EnTK session: re.session.br013.ib.bridges2.psc.edu.hrlee.018784.0008
+Creating AppManagerSetting up RabbitMQ system                                 ok
+                                                                              ok
+Validating and assigning resource manager                                     ok
+Setting up RabbitMQ system                                                   n/a
+new session: [re.session.br013.ib.bridges2.psc.edu.hrlee.018784.0008]          \
+database   : [mongodb://singharoy:****@129.114.17.185:27017/mdffentk]         ok
+create pilot manager                                                          ok
+submit 1 pilot(s)
+        pilot.0000   xsede.bridges2          128 cores       0 gpus           ok
+
+```
+
+There will be waiting first (looks like the screen is frozen but actually the
+HPC job is in the queue and trying to get it scheduled on available compute
+nodes in the cluster) and the progress will be visible once HPC job is active,
+like:
+
+```
+...
+Update: DeepDriveMD.MolecularDynamics state: SCHEDULING
+Update: DeepDriveMD.MolecularDynamics.task.0031 state: SCHEDULING
+Update: DeepDriveMD.MolecularDynamics.task.0031 state: SCHEDULED
+submit: ########################################################################
+Update: DeepDriveMD.MolecularDynamics state: SCHEDULED
+Update: DeepDriveMD.MolecularDynamics.task.0031 state: SUBMITTING
+Update: DeepDriveMD.MolecularDynamics.task.0031 state: EXECUTED
+Update: DeepDriveMD.MolecularDynamics state: DONE
+Update: DeepDriveMD.MachineLearning state: SCHEDULING
+Update: DeepDriveMD.MachineLearning.task.0032 state: SCHEDULING
+Update: DeepDriveMD.MachineLearning.task.0032 state: SCHEDULED
+Update: DeepDriveMD.MachineLearning state: SCHEDULED
+submit: ########################################################################
+Update: DeepDriveMD.MachineLearning.task.0032 state: SUBMITTING
+Update: DeepDriveMD.MachineLearning.task.0032 state: EXECUTED
+Update: DeepDriveMD.MachineLearning state: DONE
+Update: DeepDriveMD.ModelSelection state: SCHEDULING
+Update: DeepDriveMD.ModelSelection.task.0033 state: SCHEDULING
+Update: DeepDriveMD.ModelSelection.task.0033 state: SCHEDULED
+Update: DeepDriveMD.ModelSelection state: SCHEDULED
+submit: ########################################################################
+Update: DeepDriveMD.ModelSelection.task.0033 state: SUBMITTING
+Update: DeepDriveMD.ModelSelection.task.0033 state: EXECUTED
+Update: DeepDriveMD.ModelSelection state: DONE
+Update: DeepDriveMD.Agent state: SCHEDULING
+Update: DeepDriveMD.Agent.task.0034 state: SCHEDULING
+Update: DeepDriveMD.Agent.task.0034 state: SCHEDULED
+Update: DeepDriveMD.Agent state: SCHEDULED
+submit: ########################################################################
+Update: DeepDriveMD.Agent.task.0034 state: SUBMITTING
+Update: DeepDriveMD.Agent.task.0034 state: EXECUTED
+Update: DeepDriveMD.Agent state: DONE
+Finishing stage 3 of 4
+...
+```
+
 # bridges2 job commands
 
 * Running jobs to check:
