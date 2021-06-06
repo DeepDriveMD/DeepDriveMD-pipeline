@@ -1,3 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1622991590.2907069,sync_abs,state_pubsub,MainThread,,,lassen709.coral.llnl.gov:192.168.66.201:1622991590.2879188:1622991590.2879188:sys
-1622991590.2927904,bridge_start,state_pubsub,MainThread,state_pubsub,,

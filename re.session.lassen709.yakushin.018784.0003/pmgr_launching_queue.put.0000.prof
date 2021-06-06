@@ -1,8 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1622991616.1278574,sync_abs,pmgr_launching_queue.put.0000,MainThread,,,lassen709.coral.llnl.gov:192.168.66.201:1622991616.125198:1622991616.125198:sys
-#time,event,comp,thread,uid,state,msg
-1622991616.1278574,sync_abs,pmgr_launching_queue.put.0000,MainThread,,,lassen709.coral.llnl.gov:192.168.66.201:1622991616.125198:1622991616.125198:sys
-#time,event,comp,thread,uid,state,msg
-1622991616.1278574,sync_abs,pmgr_launching_queue.put.0000,MainThread,,,lassen709.coral.llnl.gov:192.168.66.201:1622991616.125198:1622991616.125198:sys
-#time,event,comp,thread,uid,state,msg
-1622991616.1278574,sync_abs,pmgr_launching_queue.put.0000,MainThread,,,lassen709.coral.llnl.gov:192.168.66.201:1622991616.125198:1622991616.125198:sys

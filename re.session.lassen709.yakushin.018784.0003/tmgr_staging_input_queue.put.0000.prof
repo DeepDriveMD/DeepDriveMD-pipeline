@@ -1,4 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1622993166.2070639,sync_abs,tmgr_staging_input_queue.put.0000,Thread-1,,,lassen709.coral.llnl.gov:192.168.66.201:1622993166.2050998:1622993166.2050998:sys
-#time,event,comp,thread,uid,state,msg
-1622993166.2070639,sync_abs,tmgr_staging_input_queue.put.0000,Thread-1,,,lassen709.coral.llnl.gov:192.168.66.201:1622993166.2050998:1622993166.2050998:sys
