@@ -1,0 +1,17 @@
+{
+    "bulk_size": 0,
+    "channel": "stager_response_pubsub",
+    "cmgr": "cmgr.0000",
+    "heartbeat": {
+        "addr_pub": "tcp://192.168.66.201:40435",
+        "addr_sub": "tcp://192.168.66.201:45167",
+        "interval": 1.0,
+        "timeout": 60.0
+    },
+    "kind": "pubsub",
+    "log_level": "debug",
+    "path": "/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018784.0003",
+    "sid": "re.session.lassen709.yakushin.018784.0003",
+    "stall_hwm": 1,
+    "uid": "stager_response_pubsub"
+}

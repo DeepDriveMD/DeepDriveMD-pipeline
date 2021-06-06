@@ -75,7 +75,7 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
             status = stream.BeginStep(adios2.StepMode.Read, 0.0)
 
             if(status == adios2.StepStatus.NotReady):
-                print(f"NotReady in simulation {sim_task_id}")
+                # print(f"NotReady in simulation {sim_task_id}")
                 q.put(sim_task_id)
                 continue
             if(status == adios2.StepStatus.EndOfStream):
