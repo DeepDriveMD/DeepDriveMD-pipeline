@@ -1,3 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1622993157.1709051,sync_abs,tmgr_unschedule_pubsub,MainThread,,,lassen709.coral.llnl.gov:192.168.66.201:1622993157.1682632:1622993157.1682632:sys
-1622993157.1729639,bridge_start,tmgr_unschedule_pubsub,MainThread,tmgr_unschedule_pubsub,,
