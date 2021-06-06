@@ -119,7 +119,9 @@ def outliers_from_latent(cm_predict, eps=0.35):
     cm_predict = cp.asarray(cm_predict)
     db = DBSCAN(eps=eps, min_samples=10, max_mbytes_per_batch=500).fit(cm_predict)
     db_label = db.labels_.to_array()
+    print("unique labels = ", np.unique(db_label))
     outlier_list = np.where(db_label == -1)
+    K.clear_session()
     return outlier_list
 
 def cluster(cfg, cm_predict, outlier_list, eps):
@@ -258,7 +260,13 @@ def main(cfg: OutlierDetectionConfig):
             eps = cluster(cfg, cm_predict, outlier_list, eps)
 
         with Timer("outlier_write"):
-            restart_pdbs = write_outliers(cfg, outlier_list, client, tmp_dir, cvae_input)
+            try:
+                restart_pdbs = write_outliers(cfg, outlier_list, client, tmp_dir, cvae_input)
+            except Exception as e:
+                print(e)
+                j += 1
+                print("No outliers found")
+                continue
 
         if(len(restart_pdbs) == 0):
             print("No outliers found")

@@ -1,3 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1622819312.1240797,sync_abs,stager_request_queue,MainThread,,,lassen708.coral.llnl.gov:192.168.66.200:1622819312.121682:1622819312.121682:sys
-1622819312.1273050,bridge_start,stager_request_queue,MainThread,stager_request_queue,,

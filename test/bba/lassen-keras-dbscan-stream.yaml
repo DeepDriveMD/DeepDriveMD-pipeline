@@ -61,7 +61,7 @@ molecular_dynamics_stage:
         in_memory: false
         bp_file: set_by_deepdrivemd
         adios_cfg: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/adios.xml
-        outliers_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outlier_Search
+        outliers_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/agent_runs/stage0000/task0000/published_outliers
         copy_velocities_p: 0.5
         next_outlier_policy: 1
         lock: set_by_deepdrivemd
@@ -186,6 +186,7 @@ agent_stage:
     - conda activate /usr/workspace/cv_ddmd/conda1/powerai
     - module use /usr/workspace/cv_ddmd/software1/modules
     - module load adios2
+    - export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages/
     executable: '/usr/workspace/cv_ddmd/conda1/powerai/bin/python'
     arguments:
     - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/agents/stream/dbscan.py
