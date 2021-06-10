@@ -19,16 +19,28 @@ conda activate pytorch
 conda install pytorch
 ```
 
-On PSC Bridges2, there is a sample conda env for openMM 7.5.1,:
+On PSC Bridges2, there is a sample conda env for RCT/EnTK and OpenMM 7.5.1,:
 
 ```
 conda activate /ocean/projects/mcb110096p/hrlee/conda/1.6.6
 ```
 
+or clone (copy of the environment):
+
+```
+conda create --name rct --clone /ocean/projects/mcb110096p/hrlee/conda/1.6.6
+```
+
+
 and for pytorch:
 
 ```
 conda activate /ocean/projects/mcb110096p/hrlee/conda/pytorch
+```
+
+or clone:
+```
+conda create --name pytorch --clone /ocean/projects/mcb110096p/hrlee/conda/pytorch
 ```
 
 # Example template

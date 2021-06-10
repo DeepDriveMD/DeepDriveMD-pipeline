@@ -15,9 +15,9 @@ molecular_dynamics_stage:
       - module load anaconda3/2020.07
       - module load cuda/10.2.0
       - module load hdf5
-      - source activate /ocean/projects/mcb110096p/hrlee/conda/1.6.6
+      - source activate /ocean/projects/mcb110096p/hrlee/conda/openmm
       - export HDF5_DISABLE_VERSION_CHECK=1
-    executable: '/ocean/projects/mcb110096p/hrlee/conda/1.6.6/bin/python'
+    executable: '/ocean/projects/mcb110096p/hrlee/conda/openmm/bin/python'
     arguments: ['/ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/deepdrivemd/sim/openmm/run_openmm.py']
     cpu_reqs:
         processes: 1
@@ -38,6 +38,7 @@ molecular_dynamics_stage:
         node_local_path: set_by_deepdrivemd
         pdb_file: set_by_deepdrivemd
         initial_pdb_dir: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/bba
+        reference_pdb_file: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/bba/system/1FME-unfolded.pdb
 aggregation_stage:
     pre_exec: []
     executable: ''
