@@ -1,3 +1,5 @@
+project:
+	PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc:${PYTHONPATH} python dbscan.py -c stage0000_task0000.yaml -p
 run:
 	PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc:${PYTHONPATH} python dbscan.py -c stage0000_task0000.yaml
 clean:

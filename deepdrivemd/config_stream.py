@@ -195,6 +195,9 @@ class ExperimentConfig(BaseSettings):
     hardware_threads_per_cpu: int
     experiment_directory: Path
     node_local_path: Optional[Path]
+    software_directory: str
+    init_pdb_file: str
+    ref_pdb_file: str
     molecular_dynamics_stage: MolecularDynamicsStageConfig
     aggregation_stage: AggregationStageConfig
     machine_learning_stage: MachineLearningStageConfig
@@ -223,6 +226,9 @@ def generate_sample_config():
         max_iteration=4,
         experiment_directory="/path/to/experiment",
         node_local_path=None,
+        software_directory = '/path/to/deepdrivemd',
+        init_pdb_file = '/path/to/1FME-0.pdb',
+        ref_pdb_file = '/path/to/1FME.pdb',
         molecular_dynamics_stage=MolecularDynamicsStageConfig(),
         aggregation_stage=AggregationStageConfig(),
         machine_learning_stage=MachineLearningStageConfig(),

@@ -25,6 +25,7 @@ class ContactMapReporter(object):
         sys.stdout.flush()
         self._adios_stream = adios2.open(name=str(cfg.bp_file), mode="w", config_file=str(cfg.adios_cfg), io_in_config_file = stream_name)
         self.step = 0
+        self.cfg = cfg
     def __del__(self):
         self._adios_stream.close()
     def describeNextReport(self, simulation):
@@ -50,8 +51,15 @@ class ContactMapReporter(object):
 
         time = int(np.round(state.getTime().value_in_unit(u.picosecond)))
         positions_ca = positions[ca_indices].astype(np.float32)
-        distance_matrix = distances.self_distance_array(positions_ca)
-        contact_map = np.asarray((distance_matrix < 8.0), dtype=np.int32)
+        # distance_matrix = distances.self_distance_array(positions_ca)
+        # contact_map = np.asarray((distance_matrix < self.cfg.threshold), dtype=np.int32)
+
+        contact_map = distances.contact_matrix(positions_ca, cutoff=self.cfg.threshold, returntype='numpy', box=None).astype('int8')
+        #print(f'contact_map.dtype = {contact_map.dtype}')
+        #print(contact_map)
+        #sys.stdout.flush()
+
+
         stepA = np.array([step], dtype=np.int32)
 
         self._adios_stream.write("md5", md5, list(md5.shape), 

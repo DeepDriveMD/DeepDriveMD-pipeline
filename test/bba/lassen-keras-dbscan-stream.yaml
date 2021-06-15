@@ -45,9 +45,9 @@ molecular_dynamics_stage:
         solvent_type: implicit
         top_suffix: null
         simulation_length_ns: 10.0
-        report_interval_ps: 1.0
+        report_interval_ps: 50.0
         dt_ps: 0.002
-        temperature_kelvin: 310.0
+        temperature_kelvin: 300.0
         heat_bath_friction_coef: 1.0
         wrap: false
         reference_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb

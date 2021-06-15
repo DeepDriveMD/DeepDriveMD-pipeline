@@ -14,6 +14,7 @@ from deepdrivemd.utils import Timer, timer, cm_1Dto2D_format
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 import tensorflow.keras.backend as K
+from  MDAnalysis.analysis.rms import RMSD
 
 import hashlib
 import pickle
@@ -25,9 +26,14 @@ from aggregator_reader import *
 import cupy as cp
 from cuml import DBSCAN as DBSCAN
 
+#from cuml import TSNE
+from sklearn.manifold import TSNE
+
+
 from deepdrivemd.models.keras_cvae_stream.model import conv_variational_autoencoder
 
 from dask.distributed import Client, wait
+from multiprocessing import Pool
 
 from simtk.openmm.app import *
 from simtk.openmm import *
@@ -110,7 +116,10 @@ def dirs(cfg):
 
 def predict(cfg, model_path, cvae_input):
     cvae = build_model(cfg, model_path)
-    cm_predict = cvae.return_embeddings(cm_1Dto2D_format(cvae_input[0]))
+    # cm_predict = cvae.return_embeddings(cm_1Dto2D_format(cvae_input[0]))
+    input = np.expand_dims(cvae_input[0], axis = -1)
+
+    cm_predict = cvae.return_embeddings(input)
     del cvae 
     K.clear_session()
     return cm_predict
@@ -285,11 +294,73 @@ def main(cfg: OutlierDetectionConfig):
         timer("outlier_search_iteration", -1)
         j += 1
 
+def f(position):
+    outlier_traj = mda.Universe(init_pdb, position)
+    ref_traj = mda.Universe(ref_pdb)
+    R = RMSD(outlier_traj, ref_traj, select = 'protein and name CA')
+    R.run()
+    return R.rmsd[:,2][0]
+
+def project(cfg):
+    with Timer("wait_for_input"):
+        adios_files_list = wait_for_input(cfg)
+    with Timer("wait_for_model"):
+        model_path = wait_for_model(cfg)
+
+    mystreams = STREAMS(adios_files_list, lastN = cfg.lastN, config = cfg.adios_xml, stream_name = "AggregatorOutput", batch = cfg.batch)
+
+    # client = Client(processes=True, n_workers=4, local_directory='/tmp')
+
+    top_dir, tmp_dir, published_dir = dirs(cfg)
+
+    print(top_dir, tmp_dir, published_dir)
+
+    cvae_input = mystreams.next()
+    embeddings_cvae = predict(cfg, model_path, cvae_input)
+
+    positions = cvae_input[1]
+
+    global ref_pdb
+    global init_pdb
+
+    ref_pdb = cfg.ref_pdb_file
+    init_pdb = cfg.init_pdb_file
+
+
+    #with Pool(processes=10) as pool:
+    #    rmsds = np.array(pool.map(f, positions))
+
+    rmsds = list(map(f, positions))
+
+    tsne2 = TSNE(n_components=2)
+    tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
+
+    tsne3 = TSNE(n_components=3)
+    tsne_embeddings3 = tsne3.fit_transform(embeddings_cvae)
+
+    dir = cfg.output_path
+
+    with open(f'{dir}/tsne_embeddings_2.npy', 'wb') as ff:
+        np.save(ff, tsne_embeddings2)
+
+    with open(f'{dir}/tsne_embeddings_3.npy', 'wb') as ff:
+        np.save(ff, tsne_embeddings3)
+
+    with open(f'{dir}/rmsd.npy', 'wb') as ff:
+        np.save(ff, rmsds)
+
+    with open(f'{dir}/embeddings_cvae.npy', 'wb') as ff:
+        np.save(ff, embeddings_cvae)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-c", "--config", help="YAML config file", type=str, required=True
     )
+    parser.add_argument("-p", "--project", action="store_true",
+                    help="compute tsne")
+
     args = parser.parse_args()
     return args
 
@@ -297,4 +368,7 @@ def parse_args() -> argparse.Namespace:
 if __name__ == "__main__":
     args = parse_args()
     cfg = OutlierDetectionConfig.from_yaml(args.config)
-    main(cfg)
+    if(args.project):
+        project(cfg)
+    else:
+        main(cfg)
