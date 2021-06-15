@@ -16,13 +16,10 @@ from hashconvert import *
 class ContactMapReporter(object):
     def __init__(self, reportInterval, cfg):
         self._reportInterval = reportInterval
-        print(cfg.bp_file)
-        print(type(cfg.bp_file))
-        print(cfg.adios_cfg)
-        print(type(cfg.adios_cfg))
-        # print(os.path.basename(os.getcwd()))
-        stream_name = os.path.basename(cfg.output_path)
+        print(cfg)
+        print(f"report interval = {reportInterval}")
         sys.stdout.flush()
+        stream_name = os.path.basename(cfg.output_path)
         self._adios_stream = adios2.open(name=str(cfg.bp_file), mode="w", config_file=str(cfg.adios_cfg), io_in_config_file = stream_name)
         self.step = 0
         self.cfg = cfg
@@ -57,8 +54,8 @@ class ContactMapReporter(object):
         contact_map = distances.contact_matrix(positions_ca, cutoff=self.cfg.threshold, returntype='numpy', box=None).astype('int8')
         #print(f'contact_map.dtype = {contact_map.dtype}')
         #print(contact_map)
-        #sys.stdout.flush()
 
+        print(f"step = {step}, x0={positions[0,0]}, vx0={velocities[0,0]}")
 
         stepA = np.array([step], dtype=np.int32)
 

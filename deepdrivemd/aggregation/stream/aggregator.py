@@ -67,7 +67,7 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
         for s in connections.keys():
             q.put(s)
 
-        timer("aggregator_read", 1)
+
         while(not q.empty()):
             sim_task_id = q.get()
             adios,io,stream = connections[sim_task_id]
@@ -131,18 +131,14 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
             
             step = stepA[0]
             md5 = intarray2hash(md5)
-            # cm = format_cm(cm)
 
-        timer("aggregator_read", -1)
-        
-        timer("aggregator_write", 1)
-        aggregator_stream.write("md5", md5)
-        aggregator_stream.write("step", np.array([step]))
-        aggregator_stream.write("dir", str(sim_task_id))
-        aggregator_stream.write("positions", positions, list(positions.shape), [0]*len(positions.shape), list(positions.shape))
-        aggregator_stream.write("velocities", velocities, list(velocities.shape), [0]*len(velocities.shape), list(velocities.shape))
-        aggregator_stream.write("contact_map", cm, list(cm.shape), [0]*len(cm.shape), list(cm.shape), end_step=True)
-        timer("aggregator_write", -1)
+            aggregator_stream.write("md5", md5)
+            aggregator_stream.write("step", np.array([step]))
+            aggregator_stream.write("dir", str(sim_task_id))
+            aggregator_stream.write("positions", positions, list(positions.shape), [0]*len(positions.shape), list(positions.shape))
+            aggregator_stream.write("velocities", velocities, list(velocities.shape), [0]*len(velocities.shape), list(velocities.shape))
+            aggregator_stream.write("contact_map", cm, list(cm.shape), [0]*len(cm.shape), list(cm.shape), end_step=True)
+
         timer("aggregator_iteration", -1)
 
 
