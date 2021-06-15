@@ -97,7 +97,7 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
             start = [0]*ndimCM
             count = shapeCM
             varCM.SetSelection([start, count])
-            cm = np.zeros(shapeCM, dtype=np.int32)
+            cm = np.zeros(shapeCM, dtype=np.int8)
             stream.Get(varCM, cm)
 
             varPositions = io.InquireVariable("positions")
