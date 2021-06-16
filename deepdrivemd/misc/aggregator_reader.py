@@ -33,7 +33,7 @@ class ADIOS_READER:
             start = [0]*ndimCM
             count = shapeCM
             varCM.SetSelection([start, count])
-            cm = np.zeros(shapeCM, dtype=np.float64)
+            cm = np.zeros(shapeCM, dtype=np.int8)
             self.stream.Get(varCM, cm)
 
             varPositions = self.io.InquireVariable("positions")
@@ -87,7 +87,7 @@ class ADIOS_READER:
             start = [0]*ndimCM
             count = shapeCM
             varCM.SetSelection([start, count])
-            cm = np.zeros(shapeCM, dtype=np.float64)
+            cm = np.zeros(shapeCM, dtype=np.int8)
             self.stream.Get(varCM, cm)
 
             self.stream.EndStep()

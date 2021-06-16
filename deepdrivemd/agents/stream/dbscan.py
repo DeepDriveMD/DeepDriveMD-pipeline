@@ -216,7 +216,7 @@ def compute_rmsd(ref_pdb_file, restart_pdbs):
     restart_pdbs1 = [(rmsd, pdb) for rmsd, pdb in sorted(zip(R.rmsd[:,2], restart_pdbs))] 
     return restart_pdbs1
 
-def write_db(cfg, restart_pdb, restart_pdbs1, tmp_dir):
+def write_db(restart_pdb, restart_pdbs1, tmp_dir):
     outlier_db_fn = f'{tmp_dir}/OutlierDB.pickle'
     db = OutlierDB(tmp_dir, restart_pdbs1)
     with open(outlier_db_fn, 'wb') as f:
@@ -231,7 +231,7 @@ def publish(tmp_dir, published_dir):
 
     mylock.acquire()
     print(subprocess.getstatusoutput(f"rm -rf {published_dir}/*"))
-    print(subprocess.getstatusoutput("mv {tmp_dir}/* {published_dir}/"))
+    print(subprocess.getstatusoutput(f"mv {tmp_dir}/* {published_dir}/"))
     mylock.release()
 
     return
@@ -286,7 +286,7 @@ def main(cfg: OutlierDetectionConfig):
             restart_pdbs1 = compute_rmsd(cfg.ref_pdb_file, restart_pdbs)
 
         with Timer("outlier_db"):
-            db = write_db(restart_pdbs, restart_pdbs1)
+            db = write_db(restart_pdbs, restart_pdbs1, tmp_dir)
         
         with Timer("outlier_publish"):
             publish(tmp_dir, published_dir)
