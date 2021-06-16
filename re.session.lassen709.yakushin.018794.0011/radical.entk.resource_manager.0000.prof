@@ -1,0 +1,7 @@
+#time,event,comp,thread,uid,state,msg
+1623859856.9118512,sync_abs,radical.entk.resource_manager.0000,MainThread,,,lassen709.coral.llnl.gov:192.168.66.201:1623859856.9096599:1623859856.9096599:sys
+1623859856.9120500,rmgr obj created,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1623859856.9121304,rdesc_validate,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1623859856.9123018,rdesc_valid,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1623859856.9123232,populating rmgr,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
+1623859856.9124727,rmgr populated,radical.entk.resource_manager.0000,MainThread,resource_manager.0000,,
