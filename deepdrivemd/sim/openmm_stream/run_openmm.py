@@ -151,8 +151,8 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
             db = pickle.load(f)
         md5 = db.sorted_index[cfg.task_idx]
         rmsd = db.dictionary[md5][0]
-        positions_pdb = cfg.outliers_dir + f"/outlier_pdbs/{md5}.pdb"
-        velocities_npy = cfg.outliers_dir + f"/outlier_pdbs/{md5}.npy"
+        positions_pdb = cfg.outliers_dir + f"/{md5}.pdb"
+        velocities_npy = cfg.outliers_dir + f"/{md5}.npy"
         shutil.copy(positions_pdb, cfg.current_dir)
         shutil.copy(velocities_npy, cfg.current_dir)
         shutil.copy(cfg.pickle_db, cfg.current_dir)
