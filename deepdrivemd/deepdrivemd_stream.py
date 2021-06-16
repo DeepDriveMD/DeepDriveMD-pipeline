@@ -211,7 +211,7 @@ if __name__ == "__main__":
     cfg = ExperimentConfig.from_yaml(args.config)
 
     print(subprocess.getstatusoutput(f"cp {args.config} {cfg.experiment_directory}"))
-    pyconfig = os.dirname(args.config) + "/generate_" + os.basename(args.config).replace(".yaml",".py")
+    pyconfig = os.path.dirname(args.config) + "/generate_" + os.path.basename(args.config).replace(".yaml",".py")
     print(pyconfig)
     print(subprocess.getstatusoutput(f"cp {pyconfig} {cfg.experiment_directory}"))
 
