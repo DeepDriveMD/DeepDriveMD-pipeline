@@ -79,10 +79,13 @@ def next_input(cfg, streams):
     with Timer("ml_read"):
         cm_data_input = streams.next_cm()
     cm_data_input = np.expand_dims(cm_data_input, axis = -1)
+    print(f"in next_input: cm_data_input.shape = {cm_data_input.shape}")
     # with Timer("ml_format"):
     #    cm_data_input = cm_1Dto2D_format(cm_data_input)
     np.random.shuffle(cm_data_input)
     train_val_split = int(0.8 * len(cm_data_input))
+    print(f"train_val_split = {train_val_split}")
+    sys.stdout.flush()
     return cm_data_input[:train_val_split], cm_data_input[train_val_split:]
 
 def build_model(cfg):

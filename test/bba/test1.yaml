@@ -211,8 +211,8 @@ machine_learning_stage:
     - 28
     latent_dim: 10
     max_loss: 10000
-    max_steps: 8000
-    min_step_increment: 5000
+    max_steps: 2000
+    min_step_increment: 1000
     model_tag: set_by_deepdrivemd
     node_local_path: set_by_deepdrivemd
     num_agg: 2
