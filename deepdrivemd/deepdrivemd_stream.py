@@ -210,11 +210,6 @@ if __name__ == "__main__":
     args = parse_args()
     cfg = ExperimentConfig.from_yaml(args.config)
 
-    print(subprocess.getstatusoutput(f"cp {args.config} {cfg.experiment_directory}"))
-    pyconfig = os.path.dirname(args.config) + "/generate_" + os.path.basename(args.config).replace(".yaml",".py")
-    print(pyconfig)
-    print(subprocess.getstatusoutput(f"cp {pyconfig} {cfg.experiment_directory}"))
-
     #pipeline_manager = PipelineManager(cfg)
 
     reporter = ru.Reporter(name="radical.entk")
@@ -254,6 +249,9 @@ if __name__ == "__main__":
     pipeline_manager = PipelineManager(cfg)
     # Back up configuration file (PipelineManager must create cfg.experiment_dir)
     shutil.copy(args.config, cfg.experiment_directory)
+    pyconfig = os.path.dirname(args.config) + "/generate_" + os.path.basename(args.config).replace(".yaml",".py")    
+    print(pyconfig)
+    shutil.copy(pyconfig, cfg.experiment_directory)
 
     pipelines = pipeline_manager.generate_pipelines()
     # Assign the workflow as a list of Pipelines to the Application Manager.
