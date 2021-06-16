@@ -230,7 +230,7 @@ def publish(tmp_dir, published_dir):
     mylock = LockFile(dbfn)
 
     mylock.acquire()
-    print(subprocess.getstatusoutput(f"rm -rf {published_dir}/*"))
+    print(subprocess.getstatusoutput(f"rm -rf {published_dir}/*.pdb {published_dir}/*.npy"))
     print(subprocess.getstatusoutput(f"mv {tmp_dir}/* {published_dir}/"))
     mylock.release()
 
