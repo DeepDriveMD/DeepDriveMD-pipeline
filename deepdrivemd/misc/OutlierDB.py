@@ -43,7 +43,7 @@ class OutlierDB:
         print("OutlierDB: is_consistent")
         for md5 in self.sorted_index:
             stored_rmsd = self.dictionary[md5][0]
-            pdb_file = f"{self.dir}/outlier_pdbs/{md5}.pdb"
+            pdb_file = f"{self.dir}/{md5}.pdb"
             print(f"OutlierDB: {pdb_file}")
             if(not os.path.exists(pdb_file)):
                 print(f"OutlierDB: {pdb_file} does not exist")
@@ -88,10 +88,10 @@ class OutlierDB:
             if(self.dictionary[md5][1] == 0): #unused
                 print("Here?")
                 self.dictionary[md5][1] += 1
-                return f"{self.dir}/outlier_pdbs/{md5}.pdb"
+                return f"{self.dir}/{md5}.pdb"
         md5 = self.sorted_index[0]
         self.dictionary[md5][1] += 1
-        return f"{self.dir}/outlier_pdbs/{md5}.pdb"
+        return f"{self.dir}/{md5}.pdb"
 
     def next_random(self, m = None):
         if(len(self.sorted_index) == 0):
@@ -110,7 +110,7 @@ class OutlierDB:
         max_rmsd = max(rmsds)
         print(f"In next_random: selected_rmsd = {selected_rmsd}, min_rmsd = {min_rmsd}, max_rmsd = {max_rmsd}, md5 = {md5}, index = {i}, len = {len(self.sorted_index)}") 
 
-        return f"{self.dir}/outlier_pdbs/{md5}.pdb"
+        return f"{self.dir}/{md5}.pdb"
 
     def next_best(self):
         md5 = self.sorted_index[0]
@@ -119,7 +119,7 @@ class OutlierDB:
         min_rmsd = min(rmsds)
         max_rmsd = max(rmsds)
         print(f"In next_best: selected_rmsd = {selected_rmsd}, min_rmsd = {min_rmsd}, max_rmsd = {max_rmsd}, md5 = {md5}, len = {len(self.sorted_index)}")
-        return f"{self.dir}/outlier_pdbs/{md5}.pdb"
+        return f"{self.dir}/{md5}.pdb"
 
     def next_10best(self):
         n = 20
@@ -132,7 +132,7 @@ class OutlierDB:
         min_rmsd = min(rmsds)
         max_rmsd = max(rmsds)
         print(f"In next_best: selected_rmsd = {selected_rmsd}, min_rmsd = {min_rmsd}, max_rmsd = {max_rmsd}, md5 = {md5}, index = {i}, len = {len(self.sorted_index)}")
-        return f"{self.dir}/outlier_pdbs/{md5}.pdb"
+        return f"{self.dir}/{md5}.pdb"
 
 
 def my_lock(fn, sleeptime=3):
