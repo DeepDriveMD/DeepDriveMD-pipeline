@@ -9,6 +9,7 @@ import radical.utils as ru
 from radical.entk import AppManager, Pipeline, Stage, Task
 from deepdrivemd.config_stream import ExperimentConfig, BaseStageConfig
 from deepdrivemd.data.api import DeepDriveMD_API
+import subprocess
 
 
 def generate_task(cfg: BaseStageConfig) -> Task:
@@ -208,6 +209,11 @@ if __name__ == "__main__":
 
     args = parse_args()
     cfg = ExperimentConfig.from_yaml(args.config)
+
+    print(subprocess.getstatusoutput(f"cp {args.config} {cfg.experiment_directory}"))
+    pyconfig = os.dirname(args.config) + "/generate_" + os.basename(args.config).replace(".yaml",".py")
+    print(pyconfig)
+    print(subprocess.getstatusoutput(f"cp {pyconfig} {cfg.experiment_directory}"))
 
     #pipeline_manager = PipelineManager(cfg)
 
