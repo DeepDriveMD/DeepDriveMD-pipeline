@@ -307,7 +307,8 @@ def project(cfg):
     with Timer("wait_for_model"):
         model_path = wait_for_model(cfg)
 
-    mystreams = STREAMS(adios_files_list, lastN = cfg.lastN, config = cfg.adios_xml, stream_name = "AggregatorOutput", batch = cfg.batch)
+    # mystreams = STREAMS(adios_files_list, lastN = cfg.lastN, config = cfg.adios_xml, stream_name = "AggregatorOutput", batch = cfg.batch)
+    mystreams = STREAMS(adios_files_list, lastN = 100000, config = cfg.adios_xml, stream_name = "AggregatorOutput", batch = 100000)
 
     # client = Client(processes=True, n_workers=4, local_directory='/tmp')
 
@@ -327,15 +328,15 @@ def project(cfg):
     init_pdb = cfg.init_pdb_file
 
 
-    #with Pool(processes=10) as pool:
-    #    rmsds = np.array(pool.map(f, positions))
+    with Pool(processes=39) as pool:
+        rmsds = np.array(pool.map(f, positions))
 
-    rmsds = list(map(f, positions))
+    # rmsds = list(map(f, positions))
 
-    tsne2 = TSNE(n_components=2)
+    tsne2 = TSNE(n_components=2, n_jobs=-1)
     tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
 
-    tsne3 = TSNE(n_components=3)
+    tsne3 = TSNE(n_components=3, n_jobs=-1)
     tsne_embeddings3 = tsne3.fit_transform(embeddings_cvae)
 
     dir = cfg.output_path

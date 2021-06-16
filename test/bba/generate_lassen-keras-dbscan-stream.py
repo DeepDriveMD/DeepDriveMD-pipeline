@@ -11,12 +11,12 @@ class HEADER(BaseModel):
     queue =  'pbatch'
     schema_ = 'local'
     project = 'cv19-a01'
-    walltime_min = 300
+    walltime_min = 60*12
     max_iteration = 4
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1'
+    experiment_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/2'
     software_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd'
     node_local_path:Path = None
     init_pdb_file = '/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb'
@@ -95,7 +95,7 @@ class MD(BaseModel):
     arguments = [f'{header.software_directory}/sim/openmm_stream/run_openmm.py']
     cpu_reqs = cpu_req_md.dict()
     gpu_reqs = gpu_req_md.dict()
-    num_tasks = 24
+    num_tasks = 120
     task_config = task_config_md.dict()
 
 md = MD()
@@ -114,7 +114,7 @@ class TASK_CONFIG_AGG(BaseModel):
     task_idx = 0
     output_path = 'set_by_deepdrivemd'
     node_local_path = 'set_by_deepdrivemd'
-    num_tasks = 2
+    num_tasks = 10
     n_sim = md.num_tasks
     sleeptime_bpfiles = 30
 
@@ -156,7 +156,7 @@ class TASK_CONFIG_ML(CVAE):
     init_weights_path: str = None
     dataset_name = 'contact_map'
     initial_epochs = 5
-    epochs = 50
+    epochs = 30
     batch_size = 32
     min_step_increment = 1000
     max_steps = 2000
@@ -206,8 +206,8 @@ class TASK_CONFIG_AGENT(CVAE):
     best_model = f'{header.experiment_directory}/machine_learning_runs/stage0000/task0000/published_model/best.h5'
     lastN = 2000
     outlier_count = 120
-    outlier_max = 500
-    outlier_min = 100
+    outlier_max = 1000
+    outlier_min = 500
     init_pdb_file = f'{header.init_pdb_file}'
     ref_pdb_file = f'{header.ref_pdb_file}'
     n_workers = 39
