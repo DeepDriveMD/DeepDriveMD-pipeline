@@ -21,19 +21,22 @@ import pickle
 from OutlierDB import *
 from lockfile import LockFile
 from aggregator_reader import *
-# from utils import predict_from_cvae, outliers_from_latent
 
 import cupy as cp
 from cuml import DBSCAN as DBSCAN
 
-#from cuml import TSNE
-from sklearn.manifold import TSNE
+from cuml import TSNE
+# from sklearn.manifold import TSNE
 
 
 from deepdrivemd.models.keras_cvae_stream.model import conv_variational_autoencoder
 
 from dask.distributed import Client, wait
 from multiprocessing import Pool
+import multiprocessing
+from functools import partial
+
+
 
 from simtk.openmm.app import *
 from simtk.openmm import *
@@ -294,58 +297,79 @@ def main(cfg: OutlierDetectionConfig):
         timer("outlier_search_iteration", -1)
         j += 1
 
-def f(position):
+
+
+def f(position, init_pdb, ref_pdb):
     outlier_traj = mda.Universe(init_pdb, position)
     ref_traj = mda.Universe(ref_pdb)
     R = RMSD(outlier_traj, ref_traj, select = 'protein and name CA')
     R.run()
     return R.rmsd[:,2][0]
 
+def read_lastN(adios_files_list, lastN):
+    variable_lists = {}
+    for bp in adios_files_list:
+        with adios2.open(bp,  "r") as fh:
+            steps = fh.steps()
+            start_step = steps - lastN - 2
+            if(start_step < 0):
+                start_step = 0
+                lastN = steps
+            for v in ['contact_map', 'positions']:
+                shape = list(map(int, fh.available_variables()[v]['Shape'].split(",")))
+                start = [0]*len(shape)
+                var = fh.read(v, start = start, count = shape, step_start = start_step, step_count = lastN)
+                try:
+                    variable_lists[v].append(var)
+                except:
+                    variable_lists[v] = [var]
+
+    for vl in variable_lists:
+        variable_lists[vl] = np.vstack(variable_lists[vl])
+    return variable_lists['contact_map'], variable_lists['positions']
+
 def project(cfg):
+    multiprocessing.set_start_method('spawn', force=True)
     with Timer("wait_for_input"):
         adios_files_list = wait_for_input(cfg)
     with Timer("wait_for_model"):
         model_path = wait_for_model(cfg)
 
-    # mystreams = STREAMS(adios_files_list, lastN = cfg.lastN, config = cfg.adios_xml, stream_name = "AggregatorOutput", batch = cfg.batch)
-    mystreams = STREAMS(adios_files_list, lastN = 100000, config = cfg.adios_xml, stream_name = "AggregatorOutput", batch = 100000)
-
-    # client = Client(processes=True, n_workers=4, local_directory='/tmp')
+    lastN = 3000
 
     top_dir, tmp_dir, published_dir = dirs(cfg)
 
     print(top_dir, tmp_dir, published_dir)
 
-    cvae_input = mystreams.next()
-    embeddings_cvae = predict(cfg, model_path, cvae_input)
+    with Timer("project_next"):
+        cvae_input = read_lastN(adios_files_list, lastN)
+
+    with Timer("project_predict"):
+        embeddings_cvae = predict(cfg, model_path, cvae_input)
 
     positions = cvae_input[1]
-
-    global ref_pdb
-    global init_pdb
 
     ref_pdb = cfg.ref_pdb_file
     init_pdb = cfg.init_pdb_file
 
+    with Timer("project_rmsd"):
+        with Pool(processes=39) as pool:
+            rmsds = np.array(pool.map(partial(f, init_pdb = init_pdb, ref_pdb = ref_pdb), positions))
 
-    with Pool(processes=39) as pool:
-        rmsds = np.array(pool.map(f, positions))
+    with Timer("project_TSNE_2D"):
+        tsne2 = TSNE(n_components=2)
+        tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
 
-    # rmsds = list(map(f, positions))
-
-    tsne2 = TSNE(n_components=2, n_jobs=-1)
-    tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
-
-    tsne3 = TSNE(n_components=3, n_jobs=-1)
-    tsne_embeddings3 = tsne3.fit_transform(embeddings_cvae)
+    # tsne3 = TSNE(n_components=3, n_jobs=-1)
+    # tsne_embeddings3 = tsne3.fit_transform(embeddings_cvae)
 
     dir = cfg.output_path
 
     with open(f'{dir}/tsne_embeddings_2.npy', 'wb') as ff:
         np.save(ff, tsne_embeddings2)
 
-    with open(f'{dir}/tsne_embeddings_3.npy', 'wb') as ff:
-        np.save(ff, tsne_embeddings3)
+    # with open(f'{dir}/tsne_embeddings_3.npy', 'wb') as ff:
+    #     np.save(ff, tsne_embeddings3)
 
     with open(f'{dir}/rmsd.npy', 'wb') as ff:
         np.save(ff, rmsds)
