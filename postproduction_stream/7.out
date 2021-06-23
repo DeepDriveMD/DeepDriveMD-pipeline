@@ -1,0 +1,6 @@
+{'contact_map': {'AvailableStepsCount': '172800', 'Max': '1', 'Min': '0', 'Shape': '28, 28', 'SingleValue': 'false', 'Type': 'int8_t'}, 'dir': {'AvailableStepsCount': '172800', 'Max': '""', 'Min': '""', 'Shape': '', 'SingleValue': 'true', 'Type': 'string'}, 'md5': {'AvailableStepsCount': '172800', 'Max': '""', 'Min': '""', 'Shape': '', 'SingleValue': 'true', 'Type': 'string'}, 'positions': {'AvailableStepsCount': '172800', 'Max': '49.2517', 'Min': '-42.3857', 'Shape': '504, 3', 'SingleValue': 'false', 'Type': 'double'}, 'step': {'AvailableStepsCount': '172800', 'Max': '14399', 'Min': '0', 'Shape': '', 'SingleValue': 'true', 'Type': 'int32_t'}, 'velocities': {'AvailableStepsCount': '172800', 'Max': '8.55752', 'Min': '-9.32669', 'Shape': '504, 3', 'SingleValue': 'false', 'Type': 'double'}}
+<class 'numpy.ndarray'>
+(172800, 504, 3)
+<class 'numpy.ndarray'>
+(172800,)
+[    0     0     0 ... 14399 14399 14399]
