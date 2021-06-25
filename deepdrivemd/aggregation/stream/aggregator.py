@@ -106,7 +106,7 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
             start = [0]*ndimPositions
             count = shapePositions
             varPositions.SetSelection([start, count])
-            positions = np.zeros(shapePositions, dtype=np.float64)
+            positions = np.zeros(shapePositions, dtype=np.float32)
             stream.Get(varPositions, positions)
 
             varVelocities = io.InquireVariable("velocities")
@@ -115,7 +115,7 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
             start = [0]*ndimVelocities
             count = shapeVelocities
             varVelocities.SetSelection([start, count])
-            velocities = np.zeros(shapeVelocities, dtype=np.float64)
+            velocities = np.zeros(shapeVelocities, dtype=np.float32)
             stream.Get(varVelocities, velocities)
 
             varMD5 = io.InquireVariable("md5")
