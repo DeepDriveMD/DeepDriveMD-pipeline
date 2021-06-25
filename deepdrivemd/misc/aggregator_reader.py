@@ -42,7 +42,7 @@ class ADIOS_READER:
             start = [0]*ndimPositions
             count = shapePositions
             varPositions.SetSelection([start, count])
-            positions = np.zeros(shapePositions, dtype=np.float64)
+            positions = np.zeros(shapePositions, dtype=np.float32)
             self.stream.Get(varPositions, positions)
 
 
@@ -52,7 +52,7 @@ class ADIOS_READER:
             start = [0]*ndimVelocities
             count = shapeVelocities
             varVelocities.SetSelection([start, count])
-            velocities = np.zeros(shapeVelocities, dtype=np.float64)
+            velocities = np.zeros(shapeVelocities, dtype=np.float32)
             self.stream.Get(varVelocities, velocities)
 
             varMD5 = self.io.InquireVariable("md5")

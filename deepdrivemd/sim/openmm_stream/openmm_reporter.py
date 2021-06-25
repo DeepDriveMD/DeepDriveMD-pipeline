@@ -36,10 +36,10 @@ class ContactMapReporter(object):
         for atom in simulation.topology.atoms():
             if atom.name == 'CA':
                 ca_indices.append(atom.index)
-        positions = np.array(state.getPositions().value_in_unit(u.angstrom))
+        positions = np.array(state.getPositions().value_in_unit(u.angstrom)).astype(np.float32)
         velocities = stateA.getVelocities(asNumpy=True)
 
-        velocities = np.array([ [ x[0]._value, x[1]._value, x[2]._value ] for x in velocities ])
+        velocities = np.array([ [ x[0]._value, x[1]._value, x[2]._value ] for x in velocities ]).astype(np.float32)
 
         m = hashlib.md5()
         m.update(positions.tostring())
