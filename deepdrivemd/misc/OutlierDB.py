@@ -23,6 +23,7 @@ class OutlierDB:
     def print(self, n=100):
         print("="*30)
         print("In OutlierDB")
+        n = min(n, len(self.sorted_index))
         for i in range(n):
             md5 = self.sorted_index[i]
             print(f"{md5}: {self.dictionary[md5]}")

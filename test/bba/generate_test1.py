@@ -214,6 +214,7 @@ class TASK_CONFIG_AGENT(CVAE):
     init_eps = 1.3
     adios_xml = f'{header.software_directory}/aggregation/stream/adios.xml'
     batch = 10000
+    num_sim = md.num_tasks
 
 task_config_agent = TASK_CONFIG_AGENT()
 

@@ -94,6 +94,7 @@ agent_stage:
     num_agg: 1
     num_extrinsic_outliers: 12
     num_intrinsic_outliers: 100
+    num_sim: 12
     outlier_count: 120
     outlier_max: 1000
     outlier_min: 500

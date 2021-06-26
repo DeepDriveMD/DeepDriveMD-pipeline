@@ -313,7 +313,9 @@ def main(cfg: OutlierDetectionConfig):
         with Timer("outlier_cluster"):
             eps = cluster(cfg, cm_predict, outlier_list, eps)
 
-        if(len(outlier_list[0]) < cfg.num_sim):
+
+
+            if(len(outlier_list) < cfg.num_sim):
             j += 1
             print("No outliers found")
             continue
@@ -360,7 +362,6 @@ def main(cfg: OutlierDetectionConfig):
 
         timer("outlier_search_iteration", -1)
         j += 1
-
 
 
 def f(position, init_pdb, ref_pdb):
