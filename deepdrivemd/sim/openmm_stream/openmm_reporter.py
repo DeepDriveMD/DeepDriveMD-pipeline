@@ -2,7 +2,8 @@ import simtk.openmm.app as app
 import simtk.openmm as omm
 import simtk.unit as u 
 import os
-
+from MDAnalysis.analysis import distances, rms
+import MDAnalysis
 import numpy as np 
 import h5py 
 import sys
@@ -10,7 +11,6 @@ import sys
 import adios2
 import hashlib
 
-from MDAnalysis.analysis import distances
 from hashconvert import *
 
 class ContactMapReporter(object):
@@ -33,9 +33,11 @@ class ContactMapReporter(object):
         step = self.step
         stateA = simulation.context.getState(getPositions=True, getVelocities=True)
         ca_indices = []
+        pca_indices = []
         for atom in simulation.topology.atoms():
             if atom.name == 'CA':
                 ca_indices.append(atom.index)
+
         positions = np.array(state.getPositions().value_in_unit(u.angstrom)).astype(np.float32)
         velocities = stateA.getVelocities(asNumpy=True)
 
@@ -55,14 +57,26 @@ class ContactMapReporter(object):
         #print(f'contact_map.dtype = {contact_map.dtype}')
         #print(contact_map)
 
-        print(f"step = {step}, x0={positions[0,0]}, vx0={velocities[0,0]}")
+        
+        mda_u = MDAnalysis.Universe(str(self.cfg.reference_pdb_file))
+        reference_positions = mda_u.select_atoms(self.cfg.mda_selection).positions.copy()
+        rmsd = rms.rmsd(positions_ca, reference_positions, superposition=True)
+
+        # print("rmsd = ", rmsd)
+
+        # print(f"step = {step}, x0={positions[0,0]}, vx0={velocities[0,0]}")
 
         stepA = np.array([step], dtype=np.int32)
+
+        rmsdA = np.array([rmsd], dtype=np.float32)
+
 
         self._adios_stream.write("md5", md5, list(md5.shape), 
                                  [0]*len(md5.shape), list(md5.shape))
         self._adios_stream.write("step", stepA, list(stepA.shape), 
                                  [0]*len(stepA.shape), list(stepA.shape))
+        self._adios_stream.write("rmsd", rmsdA, list(rmsdA.shape), 
+                                 [0]*len(rmsdA.shape), list(rmsdA.shape))
         self._adios_stream.write("positions", positions, list(positions.shape), 
                                  [0]*len(positions.shape), list(positions.shape))
         self._adios_stream.write("velocities", velocities, list(velocities.shape), 

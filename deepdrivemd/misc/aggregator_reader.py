@@ -17,7 +17,9 @@ class ADIOS_READER:
         POSITIONs = []
         MD5s = []
         STEPs = []
+        RMSDs = []
         VELOCITYs = []
+        MD5s = []
         for i in range(N):
             status = self.stream.BeginStep(adios2.StepMode.Read, 0.0)
             if(status != adios2.StepStatus.OK):
@@ -26,6 +28,10 @@ class ADIOS_READER:
             stepA = np.zeros(1, dtype=np.int32)
             varStep = self.io.InquireVariable("step")
             self.stream.Get(varStep, stepA)
+
+            rmsdA = np.zeros(1, dtype=np.float32)
+            varRMSD = self.io.InquireVariable("rmsd")
+            self.stream.Get(varRMSD, rmsdA)
 
             varCM = self.io.InquireVariable("contact_map")
             shapeCM = varCM.Shape()
@@ -65,14 +71,16 @@ class ADIOS_READER:
             self.stream.EndStep()
 
             step = stepA[0]
+            rmsd = rmsdA[0]
 
             MD5s.append(md5)
             CMs.append(cm)
             STEPs.append(step)
+            RMSDs.append(rmsd)
             POSITIONs.append(positions)
             VELOCITYs.append(velocities)
 
-        return i, STEPs, MD5s, CMs, POSITIONs, VELOCITYs
+        return i, STEPs, MD5s, CMs, POSITIONs, VELOCITYs, RMSDs
 
     def next_cm(self,N):
         CMs = []
@@ -132,6 +140,7 @@ class STREAMS:
         self.positions = {}
         self.md5 = {}
         self.steps = {}
+        self.rmsds = {}
         self.cm = {}
         self.velocities = {}
         self.lastN = lastN
@@ -141,6 +150,7 @@ class STREAMS:
             self.positions[fn] = []
             self.md5[fn] = []
             self.steps[fn] = []
+            self.rmsds[fn] = []
             self.cm[fn] = []
             self.velocities[fn] = []
     def next(self):
@@ -148,15 +158,17 @@ class STREAMS:
         positions = []
         md5 = []
         steps = []
+        rmsds = []
         velocities = []
         lastN = self.lastN
         batch = self.batch
         for fn in self.readers:
-            i, STEPs, MD5s, CMs, POSITIONs, VELOCITYs = self.readers[fn].next_all(batch)
+            i, STEPs, MD5s, CMs, POSITIONs, VELOCITYs, RMSDs = self.readers[fn].next_all(batch)
             if(i >= lastN):
                 self.positions[fn] = POSITIONs[-lastN:]
                 self.cm[fn] = CMs[-lastN:]
                 self.steps[fn] = STEPs[-lastN:]
+                self.rmsds[fn] = RMSDs[-lastN:]
                 self.md5[fn] = MD5s[-lastN:]
                 self.velocities[fn] = VELOCITYs[-lastN:]
             else:
@@ -164,6 +176,7 @@ class STREAMS:
                 self.positions[fn] = self.positions[fn][-remain:] + POSITIONs
                 self.cm[fn] = self.cm[fn][-remain:] + CMs
                 self.steps[fn] = self.steps[fn][-remain:] + STEPs
+                self.rmsds[fn] = self.rmsds[fn][-remain:] + RMSDs
                 self.md5[fn] = self.md5[fn][-remain:] + MD5s
                 self.velocities[fn] = self.velocities[fn][-remain:] + VELOCITYs
             cm.append(self.cm[fn])
@@ -171,8 +184,9 @@ class STREAMS:
             velocities.append(self.velocities[fn])
             md5.append(self.md5[fn])
             steps.append(self.steps[fn])
-        z = list(map(lambda x: np.concatenate(x), (cm, positions, md5, steps, velocities)))
-        return z[0], z[1], z[2], z[4]
+            rmsds.append(self.rmsds[fn])
+        z = list(map(lambda x: np.concatenate(x), (cm, positions, md5, steps, velocities, rmsds)))
+        return z[0], z[1], z[2], z[4], z[5]
 
     def next_cm(self):
         cm = []
