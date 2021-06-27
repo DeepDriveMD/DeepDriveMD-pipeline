@@ -106,3 +106,26 @@ def cm_1Dto2D_format(cm_data_input):
 
     z = np.array(list(map(lambda x:  _1Dto2D(x, n), cm_data_input)))
     return np.expand_dims(z, axis = -1)
+
+def t2Dto1D(A):
+    n,m = A.shape
+    B = np.zeros(int(n*(n-1)/2), dtype=np.uint8)
+    k = 0
+    for i in range(n):
+        for j in range(i+1, n):
+            B[k] = A[i, j]
+            k += 1
+    return B
+
+def t1Dto2D(B):
+    m = B.shape[0]
+    n = int((1 + math.sqrt(1 + 8*m))/2)
+    A = np.ones((n,n), dtype=np.uint8)
+    k = 0
+    for i in range(n):
+        for j in range(i+1, n):
+            A[i,j] = B[k]
+            A[j,i] = B[k]
+            k += 1
+    return A
+
