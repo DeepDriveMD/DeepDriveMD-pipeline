@@ -7,6 +7,7 @@ import MDAnalysis
 import numpy as np 
 import h5py 
 import sys
+from deepdrivemd.utils import t1Dto2D, t2Dto1D
 
 import adios2
 import hashlib
@@ -50,26 +51,15 @@ class ContactMapReporter(object):
 
         time = int(np.round(state.getTime().value_in_unit(u.picosecond)))
         positions_ca = positions[ca_indices].astype(np.float32)
-        # distance_matrix = distances.self_distance_array(positions_ca)
-        # contact_map = np.asarray((distance_matrix < self.cfg.threshold), dtype=np.int32)
-
-        contact_map = distances.contact_matrix(positions_ca, cutoff=self.cfg.threshold, returntype='numpy', box=None).astype('int8')
-        #print(f'contact_map.dtype = {contact_map.dtype}')
-        #print(contact_map)
-
+        contact_map = distances.contact_matrix(positions_ca, cutoff=self.cfg.threshold, returntype='numpy', box=None).astype('uint8')
+        contact_map = t2Dto1D(contact_map)
+        contact_map = np.packbits(contact_map)
         
         mda_u = MDAnalysis.Universe(str(self.cfg.reference_pdb_file))
         reference_positions = mda_u.select_atoms(self.cfg.mda_selection).positions.copy()
         rmsd = rms.rmsd(positions_ca, reference_positions, superposition=True)
-
-        # print("rmsd = ", rmsd)
-
-        # print(f"step = {step}, x0={positions[0,0]}, vx0={velocities[0,0]}")
-
         stepA = np.array([step], dtype=np.int32)
-
         rmsdA = np.array([rmsd], dtype=np.float32)
-
 
         self._adios_stream.write("md5", md5, list(md5.shape), 
                                  [0]*len(md5.shape), list(md5.shape))

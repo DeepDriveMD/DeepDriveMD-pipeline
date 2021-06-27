@@ -1,7 +1,7 @@
 import adios2
 import numpy as np
 import sys
-
+from deepdrivemd.utils import t1Dto2D, t2Dto1D
 
 class ADIOS_READER:
     def __init__(self, fn, config, stream_name):
@@ -39,7 +39,7 @@ class ADIOS_READER:
             start = [0]*ndimCM
             count = shapeCM
             varCM.SetSelection([start, count])
-            cm = np.zeros(shapeCM, dtype=np.int8)
+            cm = np.zeros(shapeCM, dtype=np.uint8)
             self.stream.Get(varCM, cm)
 
             varPositions = self.io.InquireVariable("positions")
@@ -73,6 +73,9 @@ class ADIOS_READER:
             step = stepA[0]
             rmsd = rmsdA[0]
 
+            cm = np.unpackbits(cm)
+            cm = t1Dto2D(cm)
+
             MD5s.append(md5)
             CMs.append(cm)
             STEPs.append(step)
@@ -95,11 +98,13 @@ class ADIOS_READER:
             start = [0]*ndimCM
             count = shapeCM
             varCM.SetSelection([start, count])
-            cm = np.zeros(shapeCM, dtype=np.int8)
+            cm = np.zeros(shapeCM, dtype=np.uint8)
             self.stream.Get(varCM, cm)
 
             self.stream.EndStep()
 
+            cm = np.unpackbits(cm)
+            cm = t1Dto2D(cm)
             CMs.append(cm)
 
         return i, CMs
