@@ -1,20 +1,21 @@
 title: COVID-19 - Workflow2
 resource: xsede.bridges2
-queue: RM
+queue: GPU
 schema_: local
 project: mcb110096p
-walltime_min: 360
+walltime_min: 30
 max_iteration: 4
-cpus_per_node: 32
-gpus_per_node: 0
-hardware_threads_per_cpu: 4
-experiment_directory: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/1st_run
+cpus_per_node: 20
+gpus_per_node: 8
+hardware_threads_per_cpu: 2
+experiment_directory: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/2nd_run
 node_local_path: null
 molecular_dynamics_stage:
     pre_exec: 
       - module load anaconda3/2020.07
       - module load cuda/10.2.0
       - module load hdf5
+      - module load openmpi/3.1.6-gcc8.3.1
       - source activate /ocean/projects/mcb110096p/hrlee/conda/openmm
       - export HDF5_DISABLE_VERSION_CHECK=1
     executable: '/ocean/projects/mcb110096p/hrlee/conda/openmm/bin/python'
@@ -39,6 +40,20 @@ molecular_dynamics_stage:
         pdb_file: set_by_deepdrivemd
         initial_pdb_dir: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/bba
         reference_pdb_file: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/bba/system/1FME-unfolded.pdb
+        simulation_length_ns: 1.0
+        report_interval_ps: 1.0
+        dt_ps: 0.002
+        temperature_kelvin: 310.0
+        heat_bath_friction_coef: 1.0
+        wrap: false
+        openmm_selection:
+                - CA
+        mda_selection: protein and name CA
+        threshold: 8.0
+        contact_map: true
+        point_cloud: true
+        fraction_of_contacts: true
+        in_memory: false
 aggregation_stage:
     pre_exec: []
     executable: ''
@@ -65,6 +80,7 @@ machine_learning_stage:
       - module load anaconda3/2020.07
       - module load cuda/10.2.0
       - module load hdf5
+      - module load openmpi/3.1.6-gcc8.3.1
       - export LANG=en_US.utf-8
       - export LC_ALL=en_US.utf-8
       - export HDF5_USE_FILE_LOCKING=FALSE
@@ -90,11 +106,61 @@ machine_learning_stage:
         node_local_path: set_by_deepdrivemd
         model_tag: set_by_deepdrivemd
         init_weights_path: null
+        dataset_name: point_cloud
+        rmsd_name: rmsd
+        fnc_name: fnc
+        num_points: 28
+        num_features: 0
+        initial_epochs: 10
+        epochs: 10
+        batch_size: 32
+        optimizer_name: Adam
+        optimizer_lr: 0.0001
+        latent_dim: 10
+        encoder_filters:
+                - 64
+                - 128
+                - 256
+                - 256
+                - 512
+        encoder_kernel_sizes:
+                - 5
+                - 3
+                - 3
+                - 1
+                - 1
+        generator_filters:
+                - 64
+                - 128
+                - 512
+                - 1024
+        discriminator_filters:
+                - 512
+                - 512
+                - 128
+                - 64
+        encoder_relu_slope: 0.0
+        generator_relu_slope: 0.0
+        discriminator_relu_slope: 0.0
+        use_encoder_bias: true
+        use_generator_bias: true
+        use_discriminator_bias: true
+        noise_mu: 0.0
+        noise_std: 1.0
+        lambda_rec: 0.5
+        lambda_gp: 10.0
+        embed_interval: 1
+        tsne_interval: 5
+        sample_interval: 20
+        num_data_workers: 0
+        dataset_location: storage
+        wandb_project_name: null
 model_selection_stage:
     pre_exec:
       - module load anaconda3/2020.07
       - module load cuda/10.2.0
       - module load hdf5
+      - module load openmpi/3.1.6-gcc8.3.1
       - source activate /ocean/projects/mcb110096p/hrlee/conda/pytorch
     executable: '/ocean/projects/mcb110096p/hrlee/conda/pytorch/bin/python'
     arguments: ['/ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select_model.py']
@@ -114,11 +180,14 @@ model_selection_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
+        retrain_freq: 1
+
 agent_stage:
     pre_exec: 
       - module load anaconda3/2020.07
       - module load cuda/10.2.0
       - module load hdf5
+      - module load openmpi/3.1.6-gcc8.3.1
       - export LANG=en_US.utf-8
       - export LC_ALL=en_US.utf-8
       - source activate /ocean/projects/mcb110096p/hrlee/conda/pytorch
@@ -141,3 +210,13 @@ agent_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
+        num_intrinsic_outliers: 100
+        num_extrinsic_outliers: 12
+        intrinsic_score: lof
+        extrinsic_score: rmsd
+        n_traj_frames: 1000
+        n_most_recent_h5_files: 12
+        k_random_old_h5_files: 12
+        sklearn_num_jobs: -1
+        model_type: "AAE3d"
+        inference_batch_size: 128
