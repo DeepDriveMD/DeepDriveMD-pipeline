@@ -30,7 +30,7 @@ molecular_dynamics_stage:
         process_type: null
         threads_per_process: 0
         thread_type: null
-    num_tasks: 1
+    num_tasks: 16
     task_config:
         experiment_directory: set_by_deepdrivemd
         stage_idx: 0
