@@ -8,14 +8,36 @@ Details can be found in the [ducumentation](https://deepdrivemd-pipeline.readthe
 
 ## How to run
 
+Running DeepDriveMD requires the use of virtual environment. At this point we distinguish different stage runs of DeepDriveMD using different virtual environments to alleviate package compatibility with associated dependencies across different stages.
+
+For instance, below is a list of Python versions used by different virtual environments:
+
+- RCT env: Python 3.7.8
+- OpenMM env: Python 3.7.9
+- pytorch (AAE) env: Python 3.7.9
+- keras-cvae (CVAE) & rapids-dbscan: Python 3.6.12
+
 ### Setup
 
-Install `deepdrivemd` into a virtualenv with:
+#### Stage: molecular_dynamics
+
+1. Install `deepdrivemd` into a virtualenv with a Python virtual environment:
 
 ```
 python3 -m venv env
 source env/bin/activate
 pip install --upgrade pip setuptools wheel
+pip install -e .
+```
+
+Or with a Conda virtual environment:
+
+```
+. ~/miniconda3/etc/profile.d/conda.sh
+conda create -n deepdrivemd python=3.7.9
+conda activate deepdrivemd
+pip install --upgrade pip setuptools wheel
+conda install scipy (this step is needed if a failure of installing scipy is observed)
 pip install -e .
 ```
 
@@ -26,11 +48,57 @@ pre-commit install
 pre-commit autoupdate
 ```
 
-In some places, DeepDriveMD relies on external libraries to configure MD simulations and import specific ML models.
+2. Install OpenMM:
+
+- by source code (for Linux ppc64le, e.g., Summit)
+https://gist.github.com/lee212/4bbfe520c8003fbb91929731b8ea8a1e
+
+- by conda (for Linux x86\_64, e.g., PSC Bridges)
+```
+module load anaconda3
+module load cuda/9.2
+source /opt/packages/anaconda/anaconda3-5.2.0/etc/profile.d/conda.sh
+conda install -c omnia/label/cuda92 openmm
+```
+
+3. In some places, DeepDriveMD relies on external libraries to configure MD simulations and import specific ML models.
 
 For MD, install the `mdtools` package found here: https://github.com/braceal/MD-tools
 
+```
+git clone https://github.com/braceal/MD-tools.git
+pip install .
+```
+
 For ML (specifically the AAE model), install the `molecules` package found here: https://github.com/braceal/molecules/tree/main
+
+```
+git clone https://github.com/braceal/molecules.git
+pip install .
+```
+
+#### Stage: machine_learning
+
+1. Install the `deepdrivemd` virtual environment as above (`deepdrivemd` is needed in all the virtual environments since each task uses the DDMD_API to communicate with the outputs of other tasks).
+
+2. Install the `keras-CVAE` model with `rapidsai DBSCAN` package found here: https://www.ibm.com/docs/en/wmlce/1.6.2?topic=installing-mldl-frameworks
+
+```
+conda config --prepend channels https://public.dhe.ibm.com/ibmdl/export/pub/software/server/ibm-ai/conda/
+conda install powerai-rapids
+```
+
+3. Install packages `scikit-learn` and `h5py` version 2.10.0:
+
+```
+conda install scikit-learn h5py=2.10.0
+```
+
+4. Install the `tensorflow-gpu` package (need to compile with CUDA 10.2.89, not compatible with CUDA 10.1.243 and CUDA 11.1.1 or higher versions):
+
+```
+conda install tensorflow-gpu
+```
 
 ### Generating a YAML input spec:
 
