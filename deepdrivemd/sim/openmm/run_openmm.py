@@ -109,6 +109,8 @@ class SimulationContext:
         if self.workdir != self.cfg.output_path:
             for p in self.workdir.iterdir():
                 shutil.move(str(p), str(self.cfg.output_path.joinpath(p.name)))
+            # Remove node-local path for asynchronous runs to keep node-local clean
+            self.workdir.rmdir()
 
 
 def configure_reporters(
@@ -118,6 +120,9 @@ def configure_reporters(
     report_steps: int,
     frames_per_h5: int,
 ):
+    # Clear reporters for asynchronous run continuation
+    sim.reporters = []
+
     # Configure DCD file reporter
     sim.reporters.append(app.DCDReporter(ctx.traj_file, report_steps))
 
@@ -153,7 +158,9 @@ def configure_reporters(
     )
 
 
-def run_simulation(cfg: OpenMMConfig):
+def run_simulation(
+    cfg: OpenMMConfig, sim: Optional[omm.app.Simulation] = None
+) -> omm.app.Simulation:
 
     # openmm typed variables
     dt_ps = cfg.dt_ps * u.picoseconds
@@ -167,15 +174,16 @@ def run_simulation(cfg: OpenMMConfig):
 
     # Create openmm simulation object
     with Timer("molecular_dynamics_configure_simulation"):
-        sim = configure_simulation(
-            pdb_file=ctx.pdb_file,
-            top_file=ctx.top_file,
-            solvent_type=cfg.solvent_type,
-            gpu_index=0,
-            dt_ps=dt_ps,
-            temperature_kelvin=temperature_kelvin,
-            heat_bath_friction_coef=cfg.heat_bath_friction_coef,
-        )
+        if sim is None:
+            sim = configure_simulation(
+                pdb_file=ctx.pdb_file,
+                top_file=ctx.top_file,
+                solvent_type=cfg.solvent_type,
+                gpu_index=0,
+                dt_ps=dt_ps,
+                temperature_kelvin=temperature_kelvin,
+                heat_bath_friction_coef=cfg.heat_bath_friction_coef,
+            )
 
     # Write all frames to a single HDF5 file
     frames_per_h5 = int(simulation_length_ns / report_interval_ps)
@@ -197,9 +205,35 @@ def run_simulation(cfg: OpenMMConfig):
         if cfg.node_local_path is not None:
             ctx.move_results()
 
+    return sim
+
+
+def main(cfg: OpenMMConfig):
+    # TODO: account for synchronous mode
+    sim = None
+    api = DeepDriveMD_API(cfg.experiment_directory)
+    while True:
+        sim = run_simulation(cfg, sim)
+
+        # Setup next run
+        cfg.stage_idx += 1
+        output_path = api.molecular_dynamics_stage.task_dir(
+            cfg.stage_idx, cfg.task_idx, mkdir=True
+        )
+        assert output_path is not None
+        cfg.output_path = output_path
+
+        # Check for new set of Agent updates
+        new_inputs = True
+        if new_inputs:
+            sim = None
+            cfg.pdb_file = None
+        else:
+            cfg.pdb_file = "TODO"
+
 
 if __name__ == "__main__":
     with Timer("molecular_dynamics_stage"):
         args = parse_args()
         cfg = OpenMMConfig.from_yaml(args.config)
-        run_simulation(cfg)
+        main(cfg)
