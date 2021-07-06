@@ -18,6 +18,7 @@ from lockfile import LockFile
 import pickle
 import parmed as pmd
 import numpy as np
+import subprocess
 
 class SimulationContext:
     def __init__(self, cfg: OpenMMConfig):
@@ -261,8 +262,7 @@ def adios_configuration(cfg: OpenMMConfig ):
     f.close()
 
 if __name__ == "__main__":
-    print(os.environ['PATH'])
-    sys.stdout.flush()
+    print(subprocess.getstatusoutput("hostname")[1]); sys.stdout.flush()
 
     with Timer("molecular_dynamics_stage"):
         args = parse_args()

@@ -5,11 +5,12 @@ from deepdrivemd.aggregation.stream.config import StreamAggregation
 from deepdrivemd.utils import Timer, timer
 import glob
 import time
-import os
+import os, sys
 import adios2
 import math
 import queue
 from hashconvert import *
+import subprocess
 
 def find_input(cfg: StreamAggregation):
     '''
@@ -157,6 +158,8 @@ def parse_args() -> argparse.Namespace:
     return args
 
 if __name__ == "__main__":
+    print(subprocess.getstatusoutput("hostname")[1]); sys.stdout.flush()
+
     args = parse_args()
     cfg = StreamAggregation.from_yaml(args.config)
 

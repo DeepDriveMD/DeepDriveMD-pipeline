@@ -1,2 +1,2 @@
 clean:
-	rm -f *~ *.out *.err *.csv
+	rm -f *~ *.out *.err *.csv *.npy
