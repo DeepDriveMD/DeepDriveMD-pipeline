@@ -28,6 +28,7 @@ copyright = "2020-{}, ".format(now.year) + author
 
 # The full version, including alpha/beta/rc tags
 release = deepdrivemd.__version__
+version = deepdrivemd.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -48,6 +49,9 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+html_context = {
+    "conf_py_path": "/docs/source/",  # Path in the checkout to the docs root
+}
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -60,4 +64,4 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+html_static_path = []
