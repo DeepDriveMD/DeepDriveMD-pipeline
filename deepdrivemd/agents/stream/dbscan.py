@@ -117,12 +117,12 @@ def dirs(cfg):
          os.mkdir(published_dir)
     return top_dir, tmp_dir, published_dir
 
-def predict(cfg, model_path, cvae_input):
+def predict(cfg, model_path, cvae_input, batch_size=32):
     cvae = build_model(cfg, model_path)
     # cm_predict = cvae.return_embeddings(cm_1Dto2D_format(cvae_input[0]))
     input = np.expand_dims(cvae_input[0], axis = -1)
 
-    cm_predict = cvae.return_embeddings(input)
+    cm_predict = cvae.return_embeddings(input, batch_size)
     del cvae 
     K.clear_session()
     return cm_predict
@@ -432,8 +432,8 @@ def read_lastN(adios_files_list, lastN):
     print(variable_lists['contact_map'].shape)
     print(variable_lists['rmsd'].shape)
     sys.stdout.flush()
-    sys.exit(0)
-    return variable_lists['contact_map'], np.concatentate(variable_lists['rmsd'])
+    #sys.exit(0)
+    return variable_lists['contact_map'], np.concatenate(variable_lists['rmsd'])
 
 def project(cfg):
     multiprocessing.set_start_method('spawn', force=True)
@@ -442,42 +442,48 @@ def project(cfg):
     with Timer("wait_for_model"):
         model_path = wait_for_model(cfg)
 
-    lastN = 20000
+    lastN = 169000
 
     top_dir, tmp_dir, published_dir = dirs(cfg)
+
+    dir = cfg.output_path
+    print("dir=",dir)
 
     print(top_dir, tmp_dir, published_dir)
 
     with Timer("project_next"):
         cvae_input = read_lastN(adios_files_list, lastN)
 
-    with Timer("project_predict"):
-        embeddings_cvae = predict(cfg, model_path, cvae_input)
+    print("cvae_input = ", cvae_input)
 
     rmsds = cvae_input[1]
+
+    print("rmsd = ", rmsds)
+
+    with open(f'{dir}/rmsd.npy', 'wb') as ff:
+        np.save(ff, rmsds)
+
+    with Timer("project_predict"):
+        embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=1024)
+
+    print("embeddings_cvae = ", embeddings_cvae)
+
+    with open(f'{dir}/embeddings_cvae.npy', 'wb') as ff:
+        np.save(ff, embeddings_cvae)
 
     with Timer("project_TSNE_2D"):
         tsne2 = TSNE(n_components=2)
         tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
 
+    with open(f'{dir}/tsne_embeddings_2.npy', 'wb') as ff:
+        np.save(ff, tsne_embeddings2)
+
     with Timer("project_TSNE_3D"):
         tsne3 = TSNE(n_components=3)
         tsne_embeddings3 = tsne3.fit_transform(embeddings_cvae)
 
-    dir = cfg.output_path
-
-    with open(f'{dir}/tsne_embeddings_2.npy', 'wb') as ff:
-        np.save(ff, tsne_embeddings2)
-
     with open(f'{dir}/tsne_embeddings_3.npy', 'wb') as ff:
         np.save(ff, tsne_embeddings3)
-    
-    with open(f'{dir}/rmsd.npy', 'wb') as ff:
-        np.save(ff, rmsds)
-
-    with open(f'{dir}/embeddings_cvae.npy', 'wb') as ff:
-        np.save(ff, embeddings_cvae)
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
