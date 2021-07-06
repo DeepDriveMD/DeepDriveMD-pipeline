@@ -212,6 +212,7 @@ class TASK_CONFIG_AGENT(CVAE):
     ref_pdb_file = f'{header.ref_pdb_file}'
     n_workers = 39
     init_eps = 1.3
+    init_min_samples = 10
     adios_xml = f'{header.software_directory}/aggregation/stream/adios.xml'
     batch = 10000
     num_sim = md.num_tasks

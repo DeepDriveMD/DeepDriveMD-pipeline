@@ -16,7 +16,7 @@ class HEADER(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/2'
+    experiment_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/7'
     software_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd'
     node_local_path:Path = None
     init_pdb_file = '/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb'
@@ -206,12 +206,13 @@ class TASK_CONFIG_AGENT(CVAE):
     best_model = f'{header.experiment_directory}/machine_learning_runs/stage0000/task0000/published_model/best.h5'
     lastN = 2000
     outlier_count = 120
-    outlier_max = 1000
-    outlier_min = 500
+    outlier_max = 5000
+    outlier_min = 1000
     init_pdb_file = f'{header.init_pdb_file}'
     ref_pdb_file = f'{header.ref_pdb_file}'
     n_workers = 39
     init_eps = 1.3
+    init_min_samples = 10
     adios_xml = f'{header.software_directory}/aggregation/stream/adios.xml'
     batch = 10000
     num_sim = md.num_tasks

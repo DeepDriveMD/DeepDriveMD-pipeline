@@ -13,7 +13,7 @@ from deepdrivemd.models.keras_cvae_stream.model import conv_variational_autoenco
 import subprocess
 import glob
 from aggregator_reader import *
-import os
+import os, sys
 
 def get_init_weights(cfg: KerasCVAEModelConfig) -> Optional[str]:
     if cfg.init_weights_path is None:
@@ -106,6 +106,8 @@ def build_model(cfg):
     return cvae
 
 def main(cfg):
+    print(subprocess.getstatusoutput("hostname")[1]); sys.stdout.flush()
+
     cfg.checkpoint_dir = cfg.output_path/"checkpoints"
     cfg.checkpoint_dir.mkdir(exist_ok=True)
 
@@ -121,6 +123,7 @@ def main(cfg):
 
     i = 0
     while(True):
+        timer("ml_iteration", 1)
         print(f"ML iteration {i}")
         cm_data_train, cm_data_val = next_input(cfg, streams)
 
@@ -144,6 +147,7 @@ def main(cfg):
 
         i += 1
         print("="*30)
+        timer("ml_iteration", -11)
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()

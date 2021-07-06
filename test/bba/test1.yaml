@@ -79,6 +79,7 @@ agent_stage:
     - 1
     inference_batch_size: 1024
     init_eps: 1.3
+    init_min_samples: 10
     init_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb
     initial_shape:
     - 28
