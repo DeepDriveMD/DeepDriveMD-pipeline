@@ -13,9 +13,6 @@ from tensorflow.keras.callbacks import Callback, ModelCheckpoint
 import tensorflow.keras.backend as K
 import tensorflow.keras.losses as objectives
 
-
-# tensorflow.config.experimental_run_functions_eagerly(False)
-
 # save history from log;
 class LossHistory(Callback):
     def on_train_begin(self, logs={}):
@@ -95,8 +92,6 @@ class conv_variational_autoencoder(object):
     ):
 
         self.history = LossHistory()
-
-        # tensorflow.config.experimental_run_functions_eagerly(False)
 
         # check that arguments are proper length;
         if len(filter_shapes) != conv_layers:
@@ -250,7 +245,7 @@ class conv_variational_autoencoder(object):
                 axis=None,
             )
         )
-        self.model.compile(optimizer=self.optimizer, loss=self._vae_loss1)
+        self.model.compile(optimizer=self.optimizer, loss=self._vae_loss)
         # self.model.compile(optimizer=self.optimizer)
         # self.model.compile(optimizer=self.optimizer, loss=objectives.MeanSquaredError());
         self.model.summary()
@@ -276,7 +271,7 @@ class conv_variational_autoencoder(object):
         )
         return z_mean + K.exp(z_log_var) * epsilon
 
-    def _vae_loss1(self, input, output):
+    def _vae_loss(self, input, output):
         input_flat = K.flatten(input)
         output_flat = K.flatten(output)
         xent_loss = (

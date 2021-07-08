@@ -80,8 +80,6 @@ def next_input(cfg, streams):
         cm_data_input = streams.next_cm()
     cm_data_input = np.expand_dims(cm_data_input, axis = -1)
     print(f"in next_input: cm_data_input.shape = {cm_data_input.shape}")
-    # with Timer("ml_format"):
-    #    cm_data_input = cm_1Dto2D_format(cm_data_input)
     np.random.shuffle(cm_data_input)
     train_val_split = int(0.8 * len(cm_data_input))
     print(f"train_val_split = {train_val_split}")
@@ -146,7 +144,7 @@ def main(cfg):
 
         i += 1
         print("="*30)
-        timer("ml_iteration", -11)
+        timer("ml_iteration", -1)
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -158,7 +156,6 @@ def parse_args() -> argparse.Namespace:
 
 
 if __name__ == "__main__":
-    with Timer("machine_learning_stage"):
-        args = parse_args()
-        cfg = KerasCVAEModelConfig.from_yaml(args.config)
-        main(cfg)
+    args = parse_args()
+    cfg = KerasCVAEModelConfig.from_yaml(args.config)
+    main(cfg)

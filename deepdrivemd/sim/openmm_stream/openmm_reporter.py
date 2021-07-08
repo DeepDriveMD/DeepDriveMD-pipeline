@@ -36,7 +36,7 @@ class ContactMapReporter(object):
         ca_indices = []
         pca_indices = []
         for atom in simulation.topology.atoms():
-            if atom.name == 'CA':
+            if atom.name == self.cfg.openmm_selection[0]:
                 ca_indices.append(atom.index)
 
         positions = np.array(state.getPositions().value_in_unit(u.angstrom)).astype(np.float32)

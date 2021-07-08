@@ -184,7 +184,7 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
             sim.context.setVelocities(velocities)
         else:
             print("Generating velocities randomly")
-            sim.context.setVelocitiesToTemperature(300*u.kelvin, random.randint(1, 10000))
+            sim.context.setVelocitiesToTemperature(cfg.temperature_kelvin*u.kelvin, random.randint(1, 10000))
         return True
     else:
         print("There are no outliers")
@@ -259,13 +259,8 @@ def adios_configuration(cfg: OpenMMConfig ):
 
 if __name__ == "__main__":
     print(subprocess.getstatusoutput("hostname")[1]); sys.stdout.flush()
-
-    with Timer("molecular_dynamics_stage"):
-        args = parse_args()
-        cfg = OpenMMConfig.from_yaml(args.config)
-
-        adios_configuration(cfg)
-
-        cfg.bp_file = cfg.output_path/"md.bp"
-
-        run_simulation(cfg)
+    args = parse_args()
+    cfg = OpenMMConfig.from_yaml(args.config)
+    adios_configuration(cfg)
+    cfg.bp_file = cfg.output_path/"md.bp"
+    run_simulation(cfg)

@@ -45,7 +45,6 @@ def connect_to_input(cfg: StreamAggregation, bpfiles):
         print(f"taskid_md = {taskid_md}, i = {i}, {i*bp_slice}, {(i+1)*bp_slice}")
 
         if(taskid_md // bp_slice == taskid_agg): 
-            print("In if")
             adios = adios2.ADIOS(adios_md, True)
             io = adios.DeclareIO(task_md)
             io.SetParameters({"ControlModule":"epoll"})
