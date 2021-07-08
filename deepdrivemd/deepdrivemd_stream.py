@@ -210,8 +210,6 @@ if __name__ == "__main__":
     args = parse_args()
     cfg = ExperimentConfig.from_yaml(args.config)
 
-    #pipeline_manager = PipelineManager(cfg)
-
     reporter = ru.Reporter(name="radical.entk")
     reporter.title(cfg.title)
 

@@ -58,16 +58,12 @@ def connect_to_input(cfg: StreamAggregation, bpfiles):
 
 
 def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
-    print("In  aggregate")
-    print(cfg)
-
     while(True):
         timer("aggregator_iteration", 1)
 
         q = queue.Queue()
         for s in connections.keys():
             q.put(s)
-
 
         while(not q.empty()):
             sim_task_id = q.get()
@@ -76,7 +72,7 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
             status = stream.BeginStep(adios2.StepMode.Read, 0.0)
 
             if(status == adios2.StepStatus.NotReady):
-                # print(f"NotReady in simulation {sim_task_id}")
+                print(f"NotReady in simulation {sim_task_id}")
                 q.put(sim_task_id)
                 continue
             if(status == adios2.StepStatus.EndOfStream):
@@ -135,7 +131,6 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
             stream.EndStep()
             
             step = stepA[0]
-            # rmsd = rmsdA[0]
             md5 = intarray2hash(md5)
 
             aggregator_stream.write("md5", md5)

@@ -91,22 +91,6 @@ def bestk(
     return best_values[sort_inds], best_inds[sort_inds]
 
 
-def _1Dto2D(frame, n):
-    dist = np.diag(np.ones(n))
-    k = 0
-    for i in range(n):
-        for j in range(i + 1, n):
-            dist[i, j] = frame[k]
-            k += 1
-    return dist
-            
-def cm_1Dto2D_format(cm_data_input):
-    y = cm_data_input.shape[1]
-    n = int(( 1 + math.sqrt(1 + 8*y))/2)
-
-    z = np.array(list(map(lambda x:  _1Dto2D(x, n), cm_data_input)))
-    return np.expand_dims(z, axis = -1)
-
 def t2Dto1D(A):
     n,m = A.shape
     B = np.zeros(int(n*(n-1)/2), dtype=np.uint8)
