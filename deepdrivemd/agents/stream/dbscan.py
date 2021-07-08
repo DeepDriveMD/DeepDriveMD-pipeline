@@ -10,7 +10,7 @@ import time
 import sys
 import os
 
-from deepdrivemd.utils import Timer, timer, cm_1Dto2D_format, t1Dto2D
+from deepdrivemd.utils import Timer, timer, t1Dto2D
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 import tensorflow.keras.backend as K
@@ -25,9 +25,10 @@ from aggregator_reader import *
 import cupy as cp
 from cuml import DBSCAN as DBSCAN
 
-#from cuml import TSNE
+# from cuml import TSNE
 from sklearn.manifold import TSNE
-
+import cupy as cp
+import cuml
 
 from deepdrivemd.models.keras_cvae_stream.model import conv_variational_autoencoder
 
@@ -74,7 +75,7 @@ def wait_for_input(cfg):
         bpfiles = glob.glob(cfg.agg_dir + "/*/*/agg.bp")
         if(len(bpfiles) == cfg.num_agg):
             break
-        print("Waiting for {cfg.num_agg} agg.bp files")
+        print(f"Waiting for {cfg.num_agg} agg.bp files")
         time.sleep(cfg.timeout1)
 
     print(f"bpfiles = {bpfiles}")
@@ -119,7 +120,6 @@ def dirs(cfg):
 
 def predict(cfg, model_path, cvae_input, batch_size=32):
     cvae = build_model(cfg, model_path)
-    # cm_predict = cvae.return_embeddings(cm_1Dto2D_format(cvae_input[0]))
     input = np.expand_dims(cvae_input[0], axis = -1)
 
     cm_predict = cvae.return_embeddings(input, batch_size)
@@ -216,9 +216,6 @@ def write_top_outliers(cfg, tmp_dir, top):
         np.save(outlier_v_file, v)
 
 def compute_rmsd(ref_pdb_file, restart_pdbs):
-    print("ref_pdf_file = ", ref_pdb_file)
-    print("restart_pdbs[0] = ", restart_pdbs[0])
-    print("len(restart_pdbs) = ", len(restart_pdbs))
     while(True):
         try:
             outlier_traj = mda.Universe(restart_pdbs[0], restart_pdbs) 
@@ -270,26 +267,21 @@ def top_outliers(cfg, cvae_input, outlier_list):
     md5s = cvae_input[2][outlier_list]
     rmsds = cvae_input[4][outlier_list]
     
-    # print("outlier_list = ", outlier_list)
-    # print("rmsds = ", rmsds)
-
     z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
     z.sort(key = lambda x: x[3])
-
-    # print("len(outlier_list) = ", len(outlier_list))
-    # print("N = ", N)
     z = z[:N]
     z = list(zip(*z))
 
     return z
 
 def clear_gpu_memory():
-    pass
+    tf.keras.backend.clear_session()
     '''
     import gc
     del model
     tf.keras.backend.clear_session()
     gc.collect()
+
     
     from numba import cuda
     cuda.select_device(0)
@@ -308,7 +300,7 @@ def main(cfg: OutlierDetectionConfig):
 
     mystreams = STREAMS(adios_files_list, lastN = cfg.lastN, config = cfg.adios_xml, stream_name = "AggregatorOutput", batch = cfg.batch)
 
-    client = Client(processes=True, n_workers=cfg.n_workers, local_directory='/tmp')
+    # client = Client(processes=True, n_workers=cfg.n_workers, local_directory='/tmp')
 
     top_dir, tmp_dir, published_dir = dirs(cfg)
     eps = cfg.init_eps
@@ -349,40 +341,11 @@ def main(cfg: OutlierDetectionConfig):
         with Timer("outlier_db"):
             db = write_db1(top, tmp_dir)
 
-        '''
-        with Timer("outlier_write"):
-            try:
-                restart_pdbs = write_outliers(cfg, outlier_list, client, tmp_dir, cvae_input)
-            except Exception as e:
-                print(e)
-                j += 1
-                print("No outliers found")
-                continue
-
-        #print("restart_pdbs = ", restart_pdbs)
-
-
-        if(len(restart_pdbs) == 0):
-            print("No outliers found")
-            j += 1
-            continue
-
-        with Timer("outlier_rmsd"):
-            restart_pdbs1 = compute_rmsd(cfg.ref_pdb_file, restart_pdbs)
-
-
-        print("restart_pdbs1 = ", restart_pdbs1)
-
-        with Timer("outlier_db"):
-            db = write_db(restart_pdbs, restart_pdbs1, tmp_dir)
-        '''
-
         with Timer("outlier_publish"):
             publish(tmp_dir, published_dir)
 
         timer("outlier_search_iteration", -1)
         j += 1
-
 
 def f(position, init_pdb, ref_pdb):
     outlier_traj = mda.Universe(init_pdb, position)
@@ -406,7 +369,6 @@ def read_lastN(adios_files_list, lastN):
                 elif(v == 'rmsd'):
                     print(fh.available_variables()[v]['Shape'])
                     sys.stdout.flush()
-                    #sys.exit(1)
                 if(v == 'contact_map'):
                     start = [0]*len(shape)
                     var = fh.read(v, start = start, count = shape, step_start = start_step, step_count = lastN)
@@ -417,7 +379,6 @@ def read_lastN(adios_files_list, lastN):
                     variable_lists[v].append(var)
                 except:
                     variable_lists[v] = [var]
-
 
     for vl in variable_lists:
         print(vl)
@@ -432,41 +393,31 @@ def read_lastN(adios_files_list, lastN):
     print(variable_lists['contact_map'].shape)
     print(variable_lists['rmsd'].shape)
     sys.stdout.flush()
-    #sys.exit(0)
     return variable_lists['contact_map'], np.concatenate(variable_lists['rmsd'])
 
 def project(cfg):
-    multiprocessing.set_start_method('spawn', force=True)
+    # multiprocessing.set_start_method('spawn', force=True)
     with Timer("wait_for_input"):
         adios_files_list = wait_for_input(cfg)
     with Timer("wait_for_model"):
         model_path = wait_for_model(cfg)
 
-    lastN = 169000
+    lastN = cfg.project_lastN
 
     top_dir, tmp_dir, published_dir = dirs(cfg)
 
     dir = cfg.output_path
-    print("dir=",dir)
-
-    print(top_dir, tmp_dir, published_dir)
 
     with Timer("project_next"):
         cvae_input = read_lastN(adios_files_list, lastN)
 
-    print("cvae_input = ", cvae_input)
-
     rmsds = cvae_input[1]
-
-    print("rmsd = ", rmsds)
 
     with open(f'{dir}/rmsd.npy', 'wb') as ff:
         np.save(ff, rmsds)
 
     with Timer("project_predict"):
         embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=1024)
-
-    print("embeddings_cvae = ", embeddings_cvae)
 
     with open(f'{dir}/embeddings_cvae.npy', 'wb') as ff:
         np.save(ff, embeddings_cvae)

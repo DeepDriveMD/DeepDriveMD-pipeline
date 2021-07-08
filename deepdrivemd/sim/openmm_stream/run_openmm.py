@@ -130,14 +130,6 @@ def configure_reporters(
 
 
 def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
-    '''
-    retuns:
-          if(OutlierDB.py) exists:
-             positions_pdb, velocities_npy, rmsd, md5
-          else
-             None
-    '''
-
     if(cfg.next_outlier_policy == 1):
         cfg.pickle_db = cfg.outliers_dir + "/OutlierDB.pickle"
 
@@ -177,8 +169,15 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
     if(outlier != None):
         print("There are outliers")
         positions_pdb, velocities_npy, rmsd, md5 = outlier
-        positions = pmd.load_file(positions_pdb).positions
-        velocities = np.load(velocities_npy)
+        while(True):
+            try:
+                positions = pmd.load_file(positions_pdb).positions
+                velocities = np.load(velocities_npy)
+                break
+            except:
+                print(f"Waiting for {positions_pdb} and {velocities_npy}") 
+                time.sleep(5)
+
         sim.context.setPositions(positions)
         if(random.random() < cfg.copy_velocities_p):
             print("Copying velocities from outliers")
@@ -190,9 +189,6 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
     else:
         print("There are no outliers")
         return False
-        
-    print("In prepare_simulation: ", cfg)
-    print(f"sim_dir = {sim_dir}")
 
 def run_simulation(cfg: OpenMMConfig):
 
