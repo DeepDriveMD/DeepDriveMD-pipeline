@@ -16,7 +16,7 @@ class HEADER(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/7'
+    experiment_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/8'
     software_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd'
     node_local_path:Path = None
     init_pdb_file = '/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb'
