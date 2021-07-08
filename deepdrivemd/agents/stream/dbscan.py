@@ -9,6 +9,8 @@ import subprocess
 import time
 import sys
 import os
+import gc
+from numba import cuda
 
 from deepdrivemd.utils import Timer, timer, t1Dto2D
 from deepdrivemd.data.api import DeepDriveMD_API
@@ -27,7 +29,6 @@ from cuml import DBSCAN as DBSCAN
 
 # from cuml import TSNE
 from sklearn.manifold import TSNE
-import cupy as cp
 import cuml
 
 from deepdrivemd.models.keras_cvae_stream.model import conv_variational_autoencoder
@@ -169,41 +170,6 @@ def write_pdb_frame(frame, original_pdb, output_pdb_fn):
     PDBFile.writeFile(pdb.getTopology(), frame, f)
     f.close()
 
-def write_pdb(myframe, hash, myframe_v, pdb_file, outliers_pdb_path):
-    outlier_pdb_file = f'{outliers_pdb_path}/{hash}.pdb'
-    outlier_v_file = f'{outliers_pdb_path}/{hash}.npy'
-    write_pdb_frame(myframe, pdb_file, outlier_pdb_file)
-    np.save(outlier_v_file, myframe_v)
-    return 0
-
-
-def write_outliers(cfg, outlier_list, client, tmp_dir, cvae_input):
-    outlier_list_uni, outlier_count = np.unique(np.hstack(outlier_list), return_counts=True) 
-    outliers_pdb_path = tmp_dir
-
-    new_outliers_list = [] 
-
-    futures = []
-    for outlier in outlier_list_uni:
-        futures.append(client.submit(write_pdb, cvae_input[1][outlier], 
-                                     cvae_input[2][outlier], 
-                                     cvae_input[3][outlier], cfg.init_pdb_file, outliers_pdb_path))
-    wait(futures)
-
-    while(len(futures) > 0):
-        del futures[0]
-
-    for outlier in outlier_list_uni:
-        # myframe = cvae_input[1][outlier]
-        # myframe_v = cvae_input[3][outlier]
-        hash = cvae_input[2][outlier]
-        outlier_pdb_file = f'{outliers_pdb_path}/{hash}.pdb'
-        # outlier_v_file = f'{outliers_pdb_path}/{hash}.npy'
-        new_outliers_list.append(outlier_pdb_file) 
-
-    return new_outliers_list
-
-
 def write_top_outliers(cfg, tmp_dir, top):
     positions = top[0]
     velocities = top[1]
@@ -215,29 +181,7 @@ def write_top_outliers(cfg, tmp_dir, top):
         write_pdb_frame(p, cfg.init_pdb_file, outlier_pdb_file)
         np.save(outlier_v_file, v)
 
-def compute_rmsd(ref_pdb_file, restart_pdbs):
-    while(True):
-        try:
-            outlier_traj = mda.Universe(restart_pdbs[0], restart_pdbs) 
-            break
-        except Exception as e:
-            print("Crashing while computing RMSD")
-            print(e)
-            time.sleep(3)
-    ref_traj = mda.Universe(ref_pdb_file) 
-    R = RMSD(outlier_traj, ref_traj, select='protein and name CA') 
-    R.run()    
-    restart_pdbs1 = [(rmsd, pdb) for rmsd, pdb in sorted(zip(R.rmsd[:,2], restart_pdbs))] 
-    return restart_pdbs1
-
-def write_db(restart_pdb, restart_pdbs1, tmp_dir):
-    outlier_db_fn = f'{tmp_dir}/OutlierDB.pickle'
-    db = OutlierDB(tmp_dir, restart_pdbs1)
-    with open(outlier_db_fn, 'wb') as f:
-        pickle.dump(db, f)    
-    return db
-
-def write_db1(top, tmp_dir):
+def write_db(top, tmp_dir):
     outlier_db_fn = f'{tmp_dir}/OutlierDB.pickle'
     outlier_files = list(map(lambda x: f'{tmp_dir}/{x}.pdb', top[2]))
     rmsds = top[3]
@@ -274,21 +218,6 @@ def top_outliers(cfg, cvae_input, outlier_list):
 
     return z
 
-def clear_gpu_memory():
-    tf.keras.backend.clear_session()
-    '''
-    import gc
-    del model
-    tf.keras.backend.clear_session()
-    gc.collect()
-
-    
-    from numba import cuda
-    cuda.select_device(0)
-    cuda.close()
-    print('CUDA memory released: GPU0')
-    '''
-
 def main(cfg: OutlierDetectionConfig):
     print(subprocess.getstatusoutput("hostname")[1]); sys.stdout.flush()
 
@@ -299,8 +228,6 @@ def main(cfg: OutlierDetectionConfig):
         model_path = wait_for_model(cfg)
 
     mystreams = STREAMS(adios_files_list, lastN = cfg.lastN, config = cfg.adios_xml, stream_name = "AggregatorOutput", batch = cfg.batch)
-
-    # client = Client(processes=True, n_workers=cfg.n_workers, local_directory='/tmp')
 
     top_dir, tmp_dir, published_dir = dirs(cfg)
     eps = cfg.init_eps
@@ -323,11 +250,9 @@ def main(cfg: OutlierDetectionConfig):
         with Timer("outlier_cluster"):
             eps, min_samples = cluster(cfg, cm_predict, outlier_list, eps, min_samples)
 
-
             if(len(outlier_list) == 0 or len(outlier_list[0]) < cfg.num_sim):
                 j += 1
                 print("No outliers found")
-                clear_gpu_memory()
                 time.sleep(30)
                 timer("outlier_search_iteration", -1)
                 continue
@@ -339,7 +264,7 @@ def main(cfg: OutlierDetectionConfig):
             write_top_outliers(cfg, tmp_dir, top)
 
         with Timer("outlier_db"):
-            db = write_db1(top, tmp_dir)
+            db = write_db(top, tmp_dir)
 
         with Timer("outlier_publish"):
             publish(tmp_dir, published_dir)
@@ -347,12 +272,6 @@ def main(cfg: OutlierDetectionConfig):
         timer("outlier_search_iteration", -1)
         j += 1
 
-def f(position, init_pdb, ref_pdb):
-    outlier_traj = mda.Universe(init_pdb, position)
-    ref_traj = mda.Universe(ref_pdb)
-    R = RMSD(outlier_traj, ref_traj, select = 'protein and name CA')
-    R.run()
-    return R.rmsd[:,2][0]
 
 def read_lastN(adios_files_list, lastN):
     variable_lists = {}
@@ -396,7 +315,6 @@ def read_lastN(adios_files_list, lastN):
     return variable_lists['contact_map'], np.concatenate(variable_lists['rmsd'])
 
 def project(cfg):
-    # multiprocessing.set_start_method('spawn', force=True)
     with Timer("wait_for_input"):
         adios_files_list = wait_for_input(cfg)
     with Timer("wait_for_model"):
