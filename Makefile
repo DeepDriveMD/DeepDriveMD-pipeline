@@ -1,5 +1,5 @@
 run:
-	./run.sh
+	bin/run.sh
 push:
 	bin/push.sh ${m}
 clean:
