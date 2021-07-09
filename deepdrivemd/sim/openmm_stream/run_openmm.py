@@ -246,7 +246,7 @@ def parse_args() -> argparse.Namespace:
 
 def adios_configuration(cfg: OpenMMConfig ):
     adios_cfg = cfg.output_path/"adios.xml"
-    shutil.copy(cfg.adios_cfg, adios_cfg)
+    shutil.copy(cfg.adios_xml_sim, adios_cfg)
     cfg.adios_cfg = adios_cfg
     taskdir = os.path.basename(cfg.output_path)
     f = open(cfg.adios_cfg,'r')

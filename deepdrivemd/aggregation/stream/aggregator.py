@@ -168,10 +168,9 @@ if __name__ == "__main__":
     print("len(connections) = ", len(connections))
 
     bpaggregator = str(cfg.output_path) + "/agg.bp"
-    adios_xml_agg =  os.path.dirname(os.path.abspath(__file__)) + "/adios.xml"
 
     aggregator_stream = adios2.open(name=bpaggregator,
-                                    mode="w", config_file=adios_xml_agg,
+                                    mode="w", config_file=cfg.adios_xml_agg,
                                     io_in_config_file="AggregatorOutput")
 
     aggregate(cfg, connections, aggregator_stream)

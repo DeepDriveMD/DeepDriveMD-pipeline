@@ -65,7 +65,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     ref_pdb_file: str = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb"
     n_workers: int = 39
     init_eps: float = 1.3
-    adios_xml: str = "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/aggregation/stream/adios.xml"
+    adios_xml_agg: str = ""
     batch: int = 10000
 
 

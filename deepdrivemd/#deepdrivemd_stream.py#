@@ -1,15 +1,4 @@
-import os
-import glob
-import sys
-import shutil
-import argparse
-import itertools
-from typing import List
-import radical.utils as ru
-from radical.entk import AppManager, Pipeline, Stage, Task
-from deepdrivemd.config_stream import ExperimentConfig, BaseStageConfig
-from deepdrivemd.data.api import DeepDriveMD_API
-import subprocess
+
 
 
 def generate_task(cfg: BaseStageConfig) -> Task:
@@ -247,8 +236,15 @@ if __name__ == "__main__":
     pipeline_manager = PipelineManager(cfg)
     # Back up configuration file (PipelineManager must create cfg.experiment_dir)
     shutil.copytree(cfg.config_directory, str(cfg.experiment_directory) + "/etc/")
+    '''
+    pyconfig = os.path.dirname(args.config) + "/generate_" + os.path.basename(args.config).replace(".yaml",".py")    
+    print(pyconfig)
+    shutil.copy(pyconfig, cfg.experiment_directory)
+    '''
 
     pipelines = pipeline_manager.generate_pipelines()
+    # Assign the workflow as a list of Pipelines to the Application Manager.
+    # All the pipelines in the list will execute concurrently.
     appman.workflow = pipelines
 
     # Run the Application Manager

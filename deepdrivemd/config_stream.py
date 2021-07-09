@@ -202,6 +202,9 @@ class ExperimentConfig(BaseSettings):
     aggregation_stage: AggregationStageConfig
     machine_learning_stage: MachineLearningStageConfig
     agent_stage: AgentStageConfig
+    adios_xml_sim: str
+    adios_xml_agg: str
+    config_directory: str
 
     @validator("experiment_directory")
     def experiment_directory_cannot_exist(cls, v):
