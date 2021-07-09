@@ -21,7 +21,9 @@ class HEADER(BaseModel):
     node_local_path:Path = None
     init_pdb_file = '/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb'
     ref_pdb_file = '/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb'
-
+    config_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/test/bba/test1_stream'
+    adios_xml_sim = f'{config_directory}/adios_sim.xml'
+    adios_xml_agg = f'{config_directory}/adios_agg.xml'
     
 header = HEADER()
 
@@ -71,11 +73,11 @@ class TASK_CONFIG_MD(BaseModel):
     fraction_of_contacts = False
     in_memory = False
     bp_file = 'set_by_deepdrivemd'
-    adios_cfg = f'{header.software_directory}/sim/openmm_stream/adios.xml'
     outliers_dir = f'{header.experiment_directory}/agent_runs/stage0000/task0000/published_outliers'
     copy_velocities_p = 0.5
     next_outlier_policy = 1
     lock = 'set_by_deepdrivemd'
+    adios_xml_sim = header.adios_xml_sim
 
 task_config_md = TASK_CONFIG_MD()
 
@@ -117,6 +119,8 @@ class TASK_CONFIG_AGG(BaseModel):
     num_tasks = 1
     n_sim = md.num_tasks
     sleeptime_bpfiles = 30
+    adios_xml_sim = header.adios_xml_sim
+    adios_xml_agg = header.adios_xml_agg
 
 task_config_agg = TASK_CONFIG_AGG()
 
@@ -167,8 +171,7 @@ class TASK_CONFIG_ML(CVAE):
     agg_dir =  f'{header.experiment_directory}/aggregation_runs/'
     published_model_dir = 'set_by_deepdrivemd'
     checkpoint_dir = 'set_by_deepdrivemd'
-    adios_xml = f'{header.software_directory}/aggregation/stream/adios.xml'
-    
+    adios_xml_agg = header.adios_xml_agg    
 task_config_ml = TASK_CONFIG_ML()
 
 class ML(BaseModel):
@@ -213,10 +216,10 @@ class TASK_CONFIG_AGENT(CVAE):
     n_workers = 39
     init_eps = 1.3
     init_min_samples = 10
-    adios_xml = f'{header.software_directory}/aggregation/stream/adios.xml'
     batch = 10000
     num_sim = md.num_tasks
     project_lastN = 50*1000
+    adios_xml_agg = header.adios_xml_agg
 
 task_config_agent = TASK_CONFIG_AGENT()
 

@@ -115,7 +115,7 @@ def main(cfg):
     with Timer("ml_wait_for_input"):
         cfg.bpfiles = wait_for_input(cfg)
 
-    streams = STREAMS(cfg.bpfiles, lastN=cfg.max_steps, config=cfg.adios_xml)
+    streams = STREAMS(cfg.bpfiles, lastN=cfg.max_steps, config=cfg.adios_xml_agg)
 
     cvae = build_model(cfg)
 

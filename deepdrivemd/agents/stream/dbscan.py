@@ -227,7 +227,7 @@ def main(cfg: OutlierDetectionConfig):
     with Timer("wait_for_model"):
         model_path = wait_for_model(cfg)
 
-    mystreams = STREAMS(adios_files_list, lastN = cfg.lastN, config = cfg.adios_xml, stream_name = "AggregatorOutput", batch = cfg.batch)
+    mystreams = STREAMS(adios_files_list, lastN = cfg.lastN, config = cfg.adios_xml_agg, stream_name = "AggregatorOutput", batch = cfg.batch)
 
     top_dir, tmp_dir, published_dir = dirs(cfg)
     eps = cfg.init_eps

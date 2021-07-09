@@ -51,7 +51,7 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     agg_dir: str = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs/stage0000/"
     published_model_dir: Path
     checkpoint_dir: Path
-    adios_xml: str
+    adios_xml_agg: str
 
 if __name__ == "__main__":
     KerasCVAEModelConfig().dump_yaml("keras_cvae_template.yaml")
