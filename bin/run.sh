@@ -23,8 +23,6 @@ which gcc
 which radical-stack
 
 radical-stack
-
-#python  -m deepdrivemd.deepdrivemd_stream -c test/bba/lassen-keras-dbscan_stream/config.yaml
  
-python  -m deepdrivemd.deepdrivemd_stream -c test/bba/test1_stream/config.yaml
+python  -m deepdrivemd.deepdrivemd_stream -c test/bba/$1/config.yaml
 
