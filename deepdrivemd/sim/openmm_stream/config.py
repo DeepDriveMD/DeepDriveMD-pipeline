@@ -40,6 +40,7 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     bp_file: Path = 'md.bp'
     adios_cfg: Path = 'adios.xml'
     adios_xml_sim: Path = 'adios.xml'
+    initial_pdb_dir: Path = '/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input'
 
     @root_validator()
     def explicit_solvent_requires_top_suffix(cls, values: dict):

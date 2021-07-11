@@ -19,6 +19,7 @@ import pickle
 import parmed as pmd
 import numpy as np
 import subprocess
+import glob
 
 class SimulationContext:
     def __init__(self, cfg: OpenMMConfig):
@@ -190,7 +191,16 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
         print("There are no outliers")
         return False
 
+def init_input(cfg):
+    pdb_files = glob.glob(str(cfg.initial_pdb_dir/"*.pdb"))
+    pdb_files.sort()
+    n = len(pdb_files)
+    i = int(cfg.task_idx) % n
+    cfg.pdb_file = pdb_files[i]
+    print(f"init_input: n = {n}, i = {i}, pdb_file = {cfg.pdb_file}")
+
 def run_simulation(cfg: OpenMMConfig):
+    init_input(cfg)
 
     # openmm typed variables
     dt_ps = cfg.dt_ps * u.picoseconds
