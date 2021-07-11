@@ -11,7 +11,7 @@ watch1:
 watch2:
 	watch ls -ltr ../Outputs/${d}/molecular_dynamics_runs/stage0000/task0000/
 watch3:
-	bash -c 'cd /p/gpfs1/yakushin/radical.pilot.sandbox && cd `ls -tr | tail -1` && cd pilot* && tail -f task.${d}/*.out'
+	cd /p/gpfs1/${USER}/radical.pilot.sandbox && cd `ls -tr | tail -1` && cd pilot* && tail -f task.${d}/*.out
 clean:
 	rm -f *~ */*~
 	rm -rf __pycache__ */__pycache__ *.log
