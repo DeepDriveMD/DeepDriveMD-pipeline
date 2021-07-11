@@ -73,7 +73,7 @@ def wait_for_model(cfg):
 def wait_for_input(cfg):
     # Wait until the expected number of agg.bp exist
     while(True):
-        bpfiles = glob.glob(cfg.agg_dir + "/*/*/agg.bp")
+        bpfiles = glob.glob(str(cfg.agg_dir/"*/*/agg.bp"))
         if(len(bpfiles) == cfg.num_agg):
             break
         print(f"Waiting for {cfg.num_agg} agg.bp files")
@@ -165,8 +165,8 @@ def cluster(cfg, cm_predict, outlier_list, eps, min_samples):
 
 
 def write_pdb_frame(frame, original_pdb, output_pdb_fn):
-    pdb = PDBFile(original_pdb)
-    f = open(output_pdb_fn, 'w')
+    pdb = PDBFile(str(original_pdb))
+    f = open(str(output_pdb_fn), 'w')
     PDBFile.writeFile(pdb.getTopology(), frame, f)
     f.close()
 
@@ -225,7 +225,7 @@ def main(cfg: OutlierDetectionConfig):
     with Timer("wait_for_input"):
         adios_files_list = wait_for_input(cfg)
     with Timer("wait_for_model"):
-        model_path = wait_for_model(cfg)
+        model_path = str(wait_for_model(cfg))
 
     mystreams = STREAMS(adios_files_list, lastN = cfg.lastN, config = cfg.adios_xml_agg, stream_name = "AggregatorOutput", batch = cfg.batch)
 

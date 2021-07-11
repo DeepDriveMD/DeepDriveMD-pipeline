@@ -5,7 +5,7 @@ from deepdrivemd.utils import t1Dto2D, t2Dto1D
 
 class ADIOS_READER:
     def __init__(self, fn, config, stream_name):
-        self.adios = adios2.ADIOS(config, True)
+        self.adios = adios2.ADIOS(str(config), True)
         self.io = self.adios.DeclareIO(stream_name)
         self.stream = self.io.Open(fn, adios2.Mode.Read)
     def __del__(self):

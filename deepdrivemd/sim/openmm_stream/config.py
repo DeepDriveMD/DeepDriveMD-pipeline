@@ -37,9 +37,9 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     # Read outlier trajectory into memory while writing PDB file
     in_memory: bool = True
     
-    bp_file: str = 'md.bp'
-    adios_cfg: str = 'adios.xml'
-    adios_xml_sim: str = 'adios.xml'
+    bp_file: Path = 'md.bp'
+    adios_cfg: Path = 'adios.xml'
+    adios_xml_sim: Path = 'adios.xml'
 
     @root_validator()
     def explicit_solvent_requires_top_suffix(cls, values: dict):

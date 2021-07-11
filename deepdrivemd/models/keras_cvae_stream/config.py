@@ -48,10 +48,10 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     num_agg: int = 12
     timeout1: int = 30
     timeout2: int = 10
-    agg_dir: str = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs/stage0000/"
+    agg_dir: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs/stage0000/"
     published_model_dir: Path
     checkpoint_dir: Path
-    adios_xml_agg: str
+    adios_xml_agg: Path
 
 if __name__ == "__main__":
     KerasCVAEModelConfig().dump_yaml("keras_cvae_template.yaml")
