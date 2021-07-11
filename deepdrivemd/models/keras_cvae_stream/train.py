@@ -41,7 +41,7 @@ def get_init_weights(cfg: KerasCVAEModelConfig) -> Optional[str]:
 def wait_for_input(cfg):
     # Wait until the expected number of agg.bp exist
     while(True):
-        bpfiles = glob.glob(cfg.agg_dir + "/*/*/agg.bp")
+        bpfiles = glob.glob(str(cfg.agg_dir/"*/*/agg.bp"))
         if(len(bpfiles) == cfg.num_agg):
             break
         print(f"Waiting for {cfg.num_agg} agg.bp files")

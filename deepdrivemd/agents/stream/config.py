@@ -1,7 +1,7 @@
 from typing import Optional, List, Tuple
 from pydantic import root_validator, validator
 from deepdrivemd.config import AgentTaskConfig
-
+from pathlib import Path
 
 class OutlierDetectionConfig(AgentTaskConfig):
     """Outlier detection algorithm configuration."""
@@ -29,13 +29,13 @@ class OutlierDetectionConfig(AgentTaskConfig):
     inference_batch_size: int = 128
 
 
-    agg_dir: str = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs"
+    agg_dir: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs"
     num_agg: int = 2
     min_step_increment: int = 500
     timeout1: int = 30
     timeout2: int = 10
 
-    best_model: str = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/machine_learning_runs/stage0000/task0000/published_model/best.h5"
+    best_model: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/machine_learning_runs/stage0000/task0000/published_model/best.h5"
     lastN: int = 8000
 
     # Model hyperparameters
@@ -57,15 +57,15 @@ class OutlierDetectionConfig(AgentTaskConfig):
     dense_dropouts: List[float] = [0.25]
 
 
-    best_model: str = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/machine_learning_runs/stage0000/task0000/published_model/best.h5"
+    best_model: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/machine_learning_runs/stage0000/task0000/published_model/best.h5"
     outlier_count: int = 120
     outlier_max: int = 4500
     outlier_min: int = 3000
-    init_pdb_file: str = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb"
-    ref_pdb_file: str = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb"
+    init_pdb_file: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb"
+    ref_pdb_file: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb"
     n_workers: int = 39
     init_eps: float = 1.3
-    adios_xml_agg: str = ""
+    adios_xml_agg: Path = ""
     batch: int = 10000
 
 

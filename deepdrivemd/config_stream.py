@@ -195,16 +195,16 @@ class ExperimentConfig(BaseSettings):
     hardware_threads_per_cpu: int
     experiment_directory: Path
     node_local_path: Optional[Path]
-    software_directory: str
-    init_pdb_file: str
-    ref_pdb_file: str
+    software_directory: Path
+    init_pdb_file: Path
+    ref_pdb_file: Path
     molecular_dynamics_stage: MolecularDynamicsStageConfig
     aggregation_stage: AggregationStageConfig
     machine_learning_stage: MachineLearningStageConfig
     agent_stage: AgentStageConfig
-    adios_xml_sim: str
-    adios_xml_agg: str
-    config_directory: str
+    adios_xml_sim: Path
+    adios_xml_agg: Path
+    config_directory: Path
 
     @validator("experiment_directory")
     def experiment_directory_cannot_exist(cls, v):
