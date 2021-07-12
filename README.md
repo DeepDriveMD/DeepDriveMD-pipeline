@@ -62,3 +62,22 @@ data/sys2:
 comp.pdb comp.top
 ```
 Where the topology files are optional and only used when `molecular_dynamics_stage.task_config.solvent_type` is "explicit". Only one system directory is needed but an arbitrary number are supported. Also note that the system directory names are arbitrary. The path to the `data` directory should be passed into the config via `molecular_dynamics_stage.initial_pdb_dir`.
+
+# DeepDriveMD-S
+
+The streaming version of DeepDriveMD uses two extra packages: adios2 and lockfile
+
+`lockfile` is trivially installed with conda:
+```
+conda install lockfile
+```
+
+`adios2` is installed with spack:
+```
+spack install adios2 +python -mpi
+```
+
+To use adios2 in python, one needs to set up `PYTHONPATH` to the corresponding subdirectory of the adios2 installation: 
+```
+export PYTHONPATH=<ADIOS2_dir>/lib/python<version>/site-packages/:$PYTHONPATH
+```
