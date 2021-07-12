@@ -1,10 +1,9 @@
 import time
 import json
-import argparse
 from pathlib import Path
 from typing import Tuple, List, Optional
 import numpy as np
-from deepdrivemd.utils import Timer, timer
+from deepdrivemd.utils import Timer, timer, parse_args
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
 from deepdrivemd.selection.latest.select_model import get_model_path
@@ -145,15 +144,6 @@ def main(cfg):
         i += 1
         print("="*30)
         timer("ml_iteration", -1)
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
-
 
 if __name__ == "__main__":
     args = parse_args()

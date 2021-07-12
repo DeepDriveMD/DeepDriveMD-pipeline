@@ -4,6 +4,7 @@ from inspect import currentframe, getframeinfo
 import numpy as np
 from typing import Tuple
 import math
+import argparse
 
 def setup_mpi_comm(distributed: bool):
     if distributed:
@@ -113,3 +114,13 @@ def t1Dto2D(B):
             k += 1
     return A
 
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c", "--config", help="YAML config file", type=str, required=True
+    )
+    parser.add_argument("-p", "--project", action="store_true",                                                                                                                                                                                                                           
+                    help="compute tsne")                                                                                                                                                                                                                                                  
+    args = parser.parse_args()
+    return args

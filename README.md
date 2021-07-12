@@ -77,7 +77,54 @@ conda install lockfile
 spack install adios2 +python -mpi
 ```
 
-To use adios2 in python, one needs to set up `PYTHONPATH` to the corresponding subdirectory of the adios2 installation: 
+To use adios2 in python, one needs to load the corresponding module, for example, with
+```
+module load adios2
+```
+or
+```
+spack load adios2
+```
+and to set up `PYTHONPATH` to the corresponding subdirectory of the adios2 installation: 
 ```
 export PYTHONPATH=<ADIOS2_dir>/lib/python<version>/site-packages/:$PYTHONPATH
 ```
+
+To make a small 30m, 12 simulation, 1 aggregator, test run of DeepDriveMD-S, do
+```
+make run1
+```
+To make a large 12h, 120 simulations, 10 aggregators run do
+```
+make run2
+```
+in DeepDriveMD-pipeline directory.
+
+To watch how one of the aggregation files grows, do, for example
+```
+make watch1 d=3	
+```
+assuming that the experiment directory is `../Outputs/3`.
+
+To watch what happens in one of the simulation task directory, do
+```
+make watch2 d=3
+```
+
+To watch the log for task 0014 (for run1 it corresponds to the outlier search log), do
+```
+make watch3 d=0014
+```
+
+To clean after the run, do
+```
+make clean d=3
+```
+
+To push the code to git:
+```
+make push m="comment"
+```
+At the moment, only a single word comment works.
+
+
