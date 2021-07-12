@@ -25,13 +25,13 @@ class ADIOS_READER:
             if(status != adios2.StepStatus.OK):
                 break
 
-            stepA = np.zeros(1, dtype=np.int32)
+            step = np.zeros(1, dtype=np.int32)
             varStep = self.io.InquireVariable("step")
-            self.stream.Get(varStep, stepA)
+            self.stream.Get(varStep, step)
 
-            rmsdA = np.zeros(1, dtype=np.float32)
+            rmsd = np.zeros(1, dtype=np.float32)
             varRMSD = self.io.InquireVariable("rmsd")
-            self.stream.Get(varRMSD, rmsdA)
+            self.stream.Get(varRMSD, rmsd)
 
             varCM = self.io.InquireVariable("contact_map")
             shapeCM = varCM.Shape()
@@ -70,16 +70,13 @@ class ADIOS_READER:
 
             self.stream.EndStep()
 
-            step = stepA[0]
-            rmsd = rmsdA[0]
-
             cm = np.unpackbits(cm)
             cm = t1Dto2D(cm)
 
             MD5s.append(md5)
             CMs.append(cm)
-            STEPs.append(step)
-            RMSDs.append(rmsd)
+            STEPs.append(step[0])
+            RMSDs.append(rmsd[0])
             POSITIONs.append(positions)
             VELOCITYs.append(velocities)
 
