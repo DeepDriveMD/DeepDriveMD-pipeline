@@ -83,13 +83,13 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
                 q.put(sim_task_id)
                 continue
     
-            stepA = np.zeros(1, dtype=np.int32)
+            step = np.zeros(1, dtype=np.int32)
             varStep = io.InquireVariable("step")
-            stream.Get(varStep, stepA)
+            stream.Get(varStep, step)
 
-            rmsdA = np.zeros(1, dtype=np.float32)
+            rmsd = np.zeros(1, dtype=np.float32)
             varRMSD = io.InquireVariable("rmsd")
-            stream.Get(varRMSD, rmsdA)
+            stream.Get(varRMSD, rmsd)
 
             varCM = io.InquireVariable("contact_map")
             shapeCM = varCM.Shape()
@@ -129,12 +129,11 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
 
             stream.EndStep()
             
-            step = stepA[0]
             md5 = intarray2hash(md5)
 
             aggregator_stream.write("md5", md5)
-            aggregator_stream.write("step", np.array([step]))
-            aggregator_stream.write("rmsd", rmsdA)
+            aggregator_stream.write("step", step)
+            aggregator_stream.write("rmsd", rmsd)
             aggregator_stream.write("dir", str(sim_task_id))
             aggregator_stream.write("positions", positions, list(positions.shape), [0]*len(positions.shape), list(positions.shape))
             aggregator_stream.write("velocities", velocities, list(velocities.shape), [0]*len(velocities.shape), list(velocities.shape))

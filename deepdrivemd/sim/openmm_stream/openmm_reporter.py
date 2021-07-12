@@ -58,19 +58,15 @@ class ContactMapReporter(object):
         mda_u = MDAnalysis.Universe(str(self.cfg.reference_pdb_file))
         reference_positions = mda_u.select_atoms(self.cfg.mda_selection).positions.copy()
         rmsd = rms.rmsd(positions_ca, reference_positions, superposition=True)
-        stepA = np.array([step], dtype=np.int32)
-        rmsdA = np.array([rmsd], dtype=np.float32)
+        step = np.array([step], dtype=np.int32)
+        rmsd = np.array([rmsd], dtype=np.float32)
 
-        self._adios_stream.write("md5", md5, list(md5.shape), 
-                                 [0]*len(md5.shape), list(md5.shape))
-        self._adios_stream.write("step", stepA, list(stepA.shape), 
-                                 [0]*len(stepA.shape), list(stepA.shape))
-        self._adios_stream.write("rmsd", rmsdA, list(rmsdA.shape), 
-                                 [0]*len(rmsdA.shape), list(rmsdA.shape))
-        self._adios_stream.write("positions", positions, list(positions.shape), 
-                                 [0]*len(positions.shape), list(positions.shape))
-        self._adios_stream.write("velocities", velocities, list(velocities.shape), 
-                                 [0]*len(velocities.shape), list(velocities.shape))
-        self._adios_stream.write("contact_map", contact_map, list(contact_map.shape), 
-                                 [0]*len(contact_map.shape), list(contact_map.shape), end_step=True)
+        output = {"md5" : md5, "step" : step, "rmsd" : rmsd, "positions" : positions, "velocities": velocities, "contact_map" : contact_map}
+        self.write_adios_step(output)
         self.step += 1
+
+    def write_adios_step(self, output):
+        for k in output:
+            v = output[k]
+            self._adios_stream.write(k, v, list(v.shape), [0]*len(v.shape), list(v.shape))
+        self._adios_stream.end_step()
