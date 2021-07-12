@@ -7,12 +7,10 @@ import MDAnalysis
 import numpy as np 
 import h5py 
 import sys
-from deepdrivemd.utils import t1Dto2D, t2Dto1D
+from deepdrivemd.utils import t1Dto2D, t2Dto1D, hash2intarray
 
 import adios2
 import hashlib
-
-from hashconvert import *
 
 class ContactMapReporter(object):
     def __init__(self, reportInterval, cfg):
