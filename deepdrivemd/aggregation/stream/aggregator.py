@@ -1,8 +1,7 @@
-import argparse
 import numpy as np
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.aggregation.stream.config import StreamAggregation
-from deepdrivemd.utils import Timer, timer
+from deepdrivemd.utils import Timer, timer, parse_args
 import glob
 import time
 import os, sys
@@ -140,15 +139,6 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
             aggregator_stream.write("contact_map", cm, list(cm.shape), [0]*len(cm.shape), list(cm.shape), end_step=True)
 
         timer("aggregator_iteration", -1)
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
 
 if __name__ == "__main__":
     print(subprocess.getstatusoutput("hostname")[1]); sys.stdout.flush()

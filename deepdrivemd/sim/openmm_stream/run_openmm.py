@@ -1,12 +1,11 @@
 import shutil
-import argparse
 from pathlib import Path
 from typing import Optional
 import simtk.unit as u
 import simtk.openmm as omm
 import simtk.openmm.app as app
 from mdtools.openmm.sim import configure_simulation
-from deepdrivemd.utils import Timer
+from deepdrivemd.utils import Timer, parse_args
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.sim.openmm.config import OpenMMConfig
 from openmm_reporter import ContactMapReporter
@@ -243,16 +242,6 @@ def run_simulation(cfg: OpenMMConfig):
             sim.step(nsteps)
         iteration += 1
         prepare_simulation(cfg, iteration, sim)
-
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
 
 def adios_configuration(cfg: OpenMMConfig ):
     adios_cfg = cfg.output_path/"adios.xml"
