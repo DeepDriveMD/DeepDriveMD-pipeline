@@ -13,5 +13,5 @@ df = pd.DataFrame(columns = ["train_loss", "val_loss"])
 df["train_loss"] = list(map(lambda x: x[0], losses))
 df["val_loss"] = list(map(lambda x: x[1], losses))
 
-df.to_csv("losses.csv")
+df.to_csv("/tmp/losses.csv")
 

@@ -317,7 +317,8 @@ def project(cfg):
     with Timer("wait_for_input"):
         adios_files_list = wait_for_input(cfg)
     with Timer("wait_for_model"):
-        model_path = wait_for_model(cfg)
+        model_path = str(wait_for_model(cfg))
+        print("model_path = ", model_path)
 
     lastN = cfg.project_lastN
 
