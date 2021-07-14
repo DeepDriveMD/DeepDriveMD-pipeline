@@ -16,7 +16,7 @@ class HEADER(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/8'
+    experiment_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/9'
     software_directory = '/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd'
     node_local_path:Path = None
     init_pdb_file = '/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb'
@@ -148,7 +148,7 @@ class CVAE(BaseModel):
     conv_strides = [[1,1], [2,2], [1,1], [1,1]]
     dense_layers = 1
     dense_neurons = [128]
-    dense_dropouts = [0.25]
+    dense_dropouts = [0.35]
     
 class TASK_CONFIG_ML(CVAE):
     experiment_directory = 'set_by_deepdrivemd'
@@ -160,11 +160,11 @@ class TASK_CONFIG_ML(CVAE):
     init_weights_path: str = None
     dataset_name = 'contact_map'
     initial_epochs = 5
-    epochs = 30
+    epochs = 50
     batch_size = 32
     min_step_increment = 1000
     max_steps = 2000
-    max_loss = 10000
+    max_loss = 100
     num_agg = agg.num_tasks
     timeout1 = 30
     timeout2 = 10
@@ -172,6 +172,7 @@ class TASK_CONFIG_ML(CVAE):
     published_model_dir = 'set_by_deepdrivemd'
     checkpoint_dir = 'set_by_deepdrivemd'
     adios_xml_agg = header.adios_xml_agg    
+    reinit = True
 
 task_config_ml = TASK_CONFIG_ML()
 

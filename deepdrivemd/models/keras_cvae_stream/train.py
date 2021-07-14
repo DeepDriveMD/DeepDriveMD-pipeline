@@ -134,12 +134,16 @@ def main(cfg):
             )
 
         loss = cvae.history.val_losses[-1]
+        print("loss = ", loss)
         best_model = f"{cfg.checkpoint_dir}/best.h5"
-        if(loss < cfg.max_loss and os.path.exists(best_model)):
-            cvae.load(f"{cfg.checkpoint_dir}/best.h5")
-            subprocess.getstatusoutput(f"mv {cfg.checkpoint_dir}/best.h5 {cfg.published_model_dir}/")
-        else:
+
+        if(cfg.reinit or loss > cfg.max_loss):
             cvae = build_model(cfg)
+        else:
+            cvae.load(best_model)
+
+        if(loss < cfg.max_loss and os.path.exists(best_model) ):
+           subprocess.getstatusoutput(f"mv {cfg.checkpoint_dir}/best.h5 {cfg.published_model_dir}/")
 
         i += 1
         print("="*30)

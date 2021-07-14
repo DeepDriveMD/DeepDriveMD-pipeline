@@ -206,7 +206,7 @@ machine_learning_stage:
     dense_layers: 1
     dense_neurons:
     - 128
-    epochs: 30
+    epochs: 100
     experiment_directory: set_by_deepdrivemd
     final_shape:
     - 28
@@ -218,7 +218,7 @@ machine_learning_stage:
     - 28
     - 28
     latent_dim: 10
-    max_loss: 10000
+    max_loss: 1000
     max_steps: 2000
     min_step_increment: 1000
     model_tag: set_by_deepdrivemd
@@ -226,6 +226,7 @@ machine_learning_stage:
     num_agg: 1
     output_pat: set_by_deepdrivemd
     published_model_dir: set_by_deepdrivemd
+    reinit: true
     shuffle: true
     split_pct: 0.8
     stage_idx: 0

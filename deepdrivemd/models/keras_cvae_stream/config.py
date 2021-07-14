@@ -52,6 +52,7 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     published_model_dir: Path
     checkpoint_dir: Path
     adios_xml_agg: Path
+    reinit: bool = True
 
 if __name__ == "__main__":
     KerasCVAEModelConfig().dump_yaml("keras_cvae_template.yaml")

@@ -160,18 +160,19 @@ class TASK_CONFIG_ML(CVAE):
     init_weights_path: str = None
     dataset_name = 'contact_map'
     initial_epochs = 5
-    epochs = 30
+    epochs = 100
     batch_size = 32
     min_step_increment = 1000
     max_steps = 2000
-    max_loss = 10000
+    max_loss = 1000
     num_agg = agg.num_tasks
     timeout1 = 30
     timeout2 = 10
     agg_dir =  f'{header.experiment_directory}/aggregation_runs/'
     published_model_dir = 'set_by_deepdrivemd'
     checkpoint_dir = 'set_by_deepdrivemd'
-    adios_xml_agg = header.adios_xml_agg    
+    adios_xml_agg = header.adios_xml_agg
+    reinit = True
 task_config_ml = TASK_CONFIG_ML()
 
 class ML(BaseModel):
