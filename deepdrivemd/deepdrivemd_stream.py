@@ -6,7 +6,7 @@ import itertools
 from typing import List
 import radical.utils as ru
 from radical.entk import AppManager, Pipeline, Stage, Task
-from deepdrivemd.config_stream import ExperimentConfig, BaseStageConfig
+from deepdrivemd.config import StreamingExperimentConfig, BaseStageConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.utils import parse_args
 import subprocess
@@ -33,7 +33,7 @@ class PipelineManager:
     MACHINE_LEARNING_PIPELINE_NAME = "MachineLearningPipeline"
     AGENT_PIPELINE_NAME = "AgentPipeline"
     
-    def __init__(self, cfg: ExperimentConfig):
+    def __init__(self, cfg: StreamingExperimentConfig):
         self.cfg = cfg
         self.stage_idx = 0
         self.api = DeepDriveMD_API(cfg.experiment_directory)
@@ -198,7 +198,7 @@ class PipelineManager:
 if __name__ == "__main__":
 
     args = parse_args()
-    cfg = ExperimentConfig.from_yaml(args.config)
+    cfg = StreamingExperimentConfig.from_yaml(args.config)
 
     reporter = ru.Reporter(name="radical.entk")
     reporter.title(cfg.title)

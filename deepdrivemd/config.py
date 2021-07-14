@@ -135,12 +135,13 @@ class AggregationStageConfig(BaseStageConfig):
     """
     Global aggregation configuration (written one per experiment)
     """
-
     # Whether or not to skip aggregation stage
     skip_aggregation: bool = False
     # Arbitrary task parameters
     task_config: AggregationTaskConfig = AggregationTaskConfig()
 
+class StreamingAggregationStageConfig(AggregationStageConfig):
+    num_tasks: int = 1
 
 class MachineLearningTaskConfig(BaseTaskConfig):
     """Base class for specific model configs to inherit."""
@@ -218,6 +219,16 @@ class ExperimentConfig(BaseSettings):
             raise ValueError(f"experiment_directory must be an absolute path! Not {v}")
         return v
 
+
+class StreamingExperimentConfig(ExperimentConfig):
+    adios_xml_sim: Path
+    adios_xml_agg: Path
+    config_directory: Path
+    software_directory: Path
+    init_pdb_file: Path
+    ref_pdb_file: Path
+    model_selection_stage: Optional[ModelSelectionStageConfig]
+    aggregation_stage: StreamingAggregationStageConfig
 
 def generate_sample_config():
     return ExperimentConfig(

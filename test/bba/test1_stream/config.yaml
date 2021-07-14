@@ -206,7 +206,7 @@ machine_learning_stage:
     dense_layers: 1
     dense_neurons:
     - 128
-    epochs: 100
+    epochs: 30
     experiment_directory: set_by_deepdrivemd
     final_shape:
     - 28

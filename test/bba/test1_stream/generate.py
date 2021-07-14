@@ -160,7 +160,7 @@ class TASK_CONFIG_ML(CVAE):
     init_weights_path: str = None
     dataset_name = 'contact_map'
     initial_epochs = 5
-    epochs = 100
+    epochs = 30
     batch_size = 32
     min_step_increment = 1000
     max_steps = 2000
