@@ -1,9 +1,9 @@
 SHELL=/bin/bash
 
 run1:
-	../bin/run.sh test1_stream
+	bin/run.sh test1_stream
 run2:
-	../bin/run.sh lassen-keras-dbscan_stream
+	bin/run.sh lassen-keras-dbscan_stream
 watch1:
 	watch bpls ../Outputs/${d}/aggregation_runs/stage0000/task0000/agg.bp
 watch2:
