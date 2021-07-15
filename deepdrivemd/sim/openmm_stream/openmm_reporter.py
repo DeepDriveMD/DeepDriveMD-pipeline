@@ -1,12 +1,12 @@
 import simtk.openmm.app as app
-import simtk.openmm as omm
+# import simtk.openmm as omm
 import simtk.unit as u 
 import os
 from MDAnalysis.analysis import distances, rms
 import MDAnalysis
 import numpy as np 
-import h5py 
-import sys
+# import h5py 
+# import sys
 from deepdrivemd.utils import t1Dto2D, t2Dto1D, hash2intarray
 
 import adios2
@@ -17,7 +17,6 @@ class ContactMapReporter(object):
         self._reportInterval = reportInterval
         print(cfg)
         print(f"report interval = {reportInterval}")
-        sys.stdout.flush()
         stream_name = os.path.basename(cfg.output_path)
         self._adios_stream = adios2.open(name=str(cfg.bp_file), mode="w", config_file=str(cfg.adios_cfg), io_in_config_file = stream_name)
         self.step = 0
@@ -32,7 +31,6 @@ class ContactMapReporter(object):
         step = self.step
         stateA = simulation.context.getState(getPositions=True, getVelocities=True)
         ca_indices = []
-        pca_indices = []
         for atom in simulation.topology.atoms():
             if atom.name == self.cfg.openmm_selection[0]:
                 ca_indices.append(atom.index)
@@ -47,7 +45,7 @@ class ContactMapReporter(object):
         md5 = m.hexdigest()
         md5 = hash2intarray(md5)
 
-        time = int(np.round(state.getTime().value_in_unit(u.picosecond)))
+        int(np.round(state.getTime().value_in_unit(u.picosecond)))
         positions_ca = positions[ca_indices].astype(np.float32)
         contact_map = distances.contact_matrix(positions_ca, cutoff=self.cfg.threshold, returntype='numpy', box=None).astype('uint8')
         contact_map = t2Dto1D(contact_map)
