@@ -67,7 +67,8 @@ class OutlierDetectionConfig(AgentTaskConfig):
     init_eps: float = 1.3
     adios_xml_agg: Path = ""
     batch: int = 10000
-
+    project_gpu: bool = False
+    project_lastN: int = 8000
 
     @root_validator()
     def num_outliers_check(cls, values: dict):

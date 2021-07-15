@@ -103,6 +103,7 @@ agent_stage:
     outlier_max: 1000
     outlier_min: 500
     output_path: set_by_deepdrivemd
+    project_gpu: false
     project_lastN: 50000
     ref_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb
     shuffle: true

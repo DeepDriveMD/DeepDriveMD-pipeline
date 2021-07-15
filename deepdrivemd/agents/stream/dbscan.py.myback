@@ -1,16 +1,23 @@
+import json
 import random
+from pathlib import Path
+from typing import List, Tuple, Dict, Union
 import numpy as np
 import glob
 import subprocess
 import time
 import sys
 import os
+import gc
+from numba import cuda
 
 from deepdrivemd.utils import Timer, timer, t1Dto2D, parse_args
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 import tensorflow.keras.backend as K
+from  MDAnalysis.analysis.rms import RMSD
 
+import hashlib
 import pickle
 from OutlierDB import *
 from lockfile import LockFile
@@ -19,8 +26,24 @@ from aggregator_reader import *
 import cupy as cp
 from cuml import DBSCAN as DBSCAN
 
+# from cuml import TSNE
+from sklearn.manifold import TSNE
+import cuml
+
 from deepdrivemd.models.keras_cvae_stream.model import conv_variational_autoencoder
-from simtk.openmm.app.pdbfile import PDBFile
+
+from dask.distributed import Client, wait
+from multiprocessing import Pool
+import multiprocessing
+from functools import partial
+
+
+
+from simtk.openmm.app import *
+from simtk.openmm import *
+from simtk.unit import *
+
+import MDAnalysis as mda
 
 def build_model(cfg, model_path):
     cvae = conv_variational_autoencoder(
@@ -240,7 +263,7 @@ def main(cfg: OutlierDetectionConfig):
             write_top_outliers(cfg, tmp_dir, top)
 
         with Timer("outlier_db"):
-            write_db(top, tmp_dir)
+            db = write_db(top, tmp_dir)
 
         with Timer("outlier_publish"):
             publish(tmp_dir, published_dir)
@@ -291,11 +314,6 @@ def read_lastN(adios_files_list, lastN):
     return variable_lists['contact_map'], np.concatenate(variable_lists['rmsd'])
 
 def project(cfg):
-    if(cfg.project_gpu):
-        from cuml import TSNE
-    else:
-        from sklearn.manifold import TSNE
-
     with Timer("wait_for_input"):
         adios_files_list = wait_for_input(cfg)
     with Timer("wait_for_model"):

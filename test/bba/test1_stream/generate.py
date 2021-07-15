@@ -221,6 +221,7 @@ class TASK_CONFIG_AGENT(CVAE):
     num_sim = md.num_tasks
     project_lastN = 50*1000
     adios_xml_agg = header.adios_xml_agg
+    project_gpu = False
 
 task_config_agent = TASK_CONFIG_AGENT()
 
