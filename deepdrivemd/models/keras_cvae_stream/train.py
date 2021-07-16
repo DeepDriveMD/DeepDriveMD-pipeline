@@ -1,41 +1,13 @@
 import time
-import json
-from pathlib import Path
-from typing import Tuple, List, Optional
+from typing import Optional
 import numpy as np
 from deepdrivemd.utils import Timer, timer, parse_args
-from deepdrivemd.data.api import DeepDriveMD_API
-from deepdrivemd.data.utils import get_virtual_h5_file
-from deepdrivemd.selection.latest.select_model import get_model_path
 from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
 from deepdrivemd.models.keras_cvae_stream.model import conv_variational_autoencoder
 import subprocess
 import glob
 from aggregator_reader import *
 import os, sys
-
-def get_init_weights(cfg: KerasCVAEModelConfig) -> Optional[str]:
-    if cfg.init_weights_path is None:
-
-        if cfg.stage_idx == 0:
-            # Case for first iteration with no pretrained weights
-            return
-
-        token = get_model_path(
-            stage_idx=cfg.stage_idx - 1, experiment_dir=cfg.experiment_directory
-        )
-        if token is None:
-            # Case for no pretrained weights
-            return
-        else:
-            # Case where model selection has run before
-            _, init_weights = token
-    else:
-        # Case for pretrained weights
-        init_weights = cfg.init_weights_path
-
-    return init_weights.as_posix()
-
 
 def wait_for_input(cfg):
     # Wait until the expected number of agg.bp exist
