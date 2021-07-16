@@ -3,19 +3,9 @@ from deepdrivemd.config import MachineLearningTaskConfig
 from pathlib import Path
 
 class KerasCVAEModelConfig(MachineLearningTaskConfig):
-    # Select the n most recent HDF5 files for training
-    last_n_h5_files: int = 10
-    # Select k random HDF5 files to train on from previous DeepDriveMD iterations
-    k_random_old_h5_files: int = 0
-    # Name of the dataset in the HDF5 file.
-    dataset_name: str = "contact_map"
-    # Shape of contact maps stored in HDF5 file
-    initial_shape: Tuple[int, ...] = (28, 28, 1)
     # Shape of contact maps passed to CVAE
     final_shape: Tuple[int, ...] = (28, 28, 1)
-    # Number of epochs to train during first iteration
-    initial_epochs: int = 10
-    # Number of epochs to train on later iterations
+    # Number of epochs
     epochs: int = 10
     # Training batch size
     batch_size: int = 32
@@ -42,16 +32,27 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     # Dropout values for each dense layer
     dense_dropouts: List[float] = [0.25]
 
+    # minimum number of steps in each aggregated file before the model is trained
     min_step_increment: int = 5000
+    # take up to this number of samples from each aggregated file to train the model
     max_steps: int = 8000
+    # if the loss is greater than this, do not publish the model, retrain the model from scratch at next iteration regardless of reinit value
     max_loss: int = 10000
+    # number of aggregators
     num_agg: int = 12
+    # if num_agg adios aggregated files are not available, sleep for timeout1 before trying again
     timeout1: int = 30
+    # if less than min_step_increment is available in each aggregated file, sleep for timeout2 before trying again
     timeout2: int = 10
+    # directory with aggregated tasks subdirectories
     agg_dir: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs/stage0000/"
+    # where to publish a trained model for the outlier search to pick up
     published_model_dir: Path
+    # temporary directory with model checkpoints
     checkpoint_dir: Path
+    # adios xml configuration file for aggregators
     adios_xml_agg: Path
+    # retrain the model from scratch at each iteration or start with the previously trained model
     reinit: bool = True
 
 if __name__ == "__main__":

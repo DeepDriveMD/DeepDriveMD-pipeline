@@ -36,10 +36,13 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     fraction_of_contacts: bool = True
     # Read outlier trajectory into memory while writing PDB file
     in_memory: bool = True
-    
+    # Name of bp "socket" file in simulation directory (.sst is added by adios)
     bp_file: Path = 'md.bp'
+    # adios file name copied into the simulation directory
     adios_cfg: Path = 'adios.xml'
+    # a template file for a simulation adios file (stream name should be replaced to be unique for each simulation)
     adios_xml_sim: Path = 'adios.xml'
+    # a directory with initial pdb files
     initial_pdb_dir: Path = '/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input'
 
     @root_validator()

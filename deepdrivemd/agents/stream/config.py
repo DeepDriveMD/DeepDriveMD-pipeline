@@ -6,36 +6,19 @@ from pathlib import Path
 class OutlierDetectionConfig(AgentTaskConfig):
     """Outlier detection algorithm configuration."""
 
-    # Number of outliers to detect with LOF
-    num_intrinsic_outliers: int = 100
-    # Number of outliers to choose from `num_intrinsic_outliers`
-    # ranked by the extrinsic scoring method
-    num_extrinsic_outliers: int = 100
-    # Intrinsic scoring method
-    intrinsic_score: Optional[str] = "lof"
-    # Exrtrinsic scoring method
-    extrinsic_score: Optional[str] = None
-    # Number of frames in each trajectory/HDF5 file
-    n_traj_frames: int = 200
-    # Select the n most recent HDF5 files for outlier search
-    n_most_recent_h5_files: int = 10
-    # Select k random HDF5 files from previous DeepDriveMD iterations for outlier search
-    k_random_old_h5_files: int = 0
-    # Number of workers to use for LOF
-    sklearn_num_jobs: int = -1
-    # Machine learning model type
-    model_type: str = "AAE3d"
-    # Inference batch size for encoder forward pass
-    inference_batch_size: int = 128
-
-
+    # top aggregation directory
     agg_dir: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs"
+    # number of aggregators
     num_agg: int = 2
+    # minimum acceptable number of steps in each aggregation file
     min_step_increment: int = 500
+    # sleep for timeout1 seconds if less than num_agg adios files are available
     timeout1: int = 30
+    # sleep for timeout2 seconds if less than min_step_increment number of steps is available in each aggregated file; same timeout2 is used to wait for the model to become available
     timeout2: int = 10
-
+    # path to the best model
     best_model: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/machine_learning_runs/stage0000/task0000/published_model/best.h5"
+    # use up to lastN last steps from each aggregated file to cluster and find outliers
     lastN: int = 8000
 
     # Model hyperparameters
@@ -56,55 +39,28 @@ class OutlierDetectionConfig(AgentTaskConfig):
     # Dropout values for each dense layer
     dense_dropouts: List[float] = [0.25]
 
-
-    best_model: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/machine_learning_runs/stage0000/task0000/published_model/best.h5"
+    # number of attempts to find between outlier_min and outlier_max
     outlier_count: int = 120
+    # maximum number of outliers
     outlier_max: int = 4500
+    # minimum number of outliers
     outlier_min: int = 3000
+    # path to the intial pdb file
     init_pdb_file: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb"
+    # path to the reference pdb file
     ref_pdb_file: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb"
-    n_workers: int = 39
+    # initial value for eps for dbscan
     init_eps: float = 1.3
+    # initial value for min_samples for dbscan
+    init_min_samples: int = 10
+    # adios xml configuration file for aggregated data
     adios_xml_agg: Path = ""
+    # batch file for reading data from adios file
     batch: int = 10000
+    # use rapids version of TSNE or scikit-learn version in postproduction when computing embeddings
     project_gpu: bool = False
+    # use project_lastN last samples from each aggregator to search for outliers
     project_lastN: int = 8000
 
-    @root_validator()
-    def num_outliers_check(cls, values: dict):
-        num_intrinsic_outliers = values.get("num_intrinsic_outliers")
-        num_extrinsic_outliers = values.get("num_extrinsic_outliers")
-        if num_extrinsic_outliers > num_intrinsic_outliers:
-            raise ValueError(
-                "num_extrinsic_outliers must be less than or equal to num_intrinsic_outliers"
-            )
-        return values
-
-    @root_validator()
-    def scoring_method_check(cls, values: dict):
-        intrinsic_score = values.get("intrinsic_score")
-        extrinsic_score = values.get("extrinsic_score")
-        valid_intrinsic_scores = {"lof", "dbscan", None}
-        valid_extrinsic_scores = {"rmsd", None}
-        if intrinsic_score is None and extrinsic_score is None:
-            raise ValueError("intrinsic_score and extrinsic_score cannot both be None.")
-        if intrinsic_score not in valid_intrinsic_scores:
-            raise ValueError(
-                f"intrinsic score must be one of {valid_intrinsic_scores}, not {intrinsic_score}."
-            )
-        if extrinsic_score not in valid_extrinsic_scores:
-            raise ValueError(
-                f"extrinsic score must be one of {valid_extrinsic_scores}, not {extrinsic_score}."
-            )
-        return values
-
-    @validator("model_type")
-    def model_type_check(cls, v):
-        valid_model_types = {"AAE3d", "keras_cvae"}
-        if v not in valid_model_types:
-            raise ValueError(f"model_type must be one of {valid_model_types}, not {v}.")
-        return v
-
-
 if __name__ == "__main__":
-    OutlierDetectionConfig().dump_yaml("lof_template.yaml")
+    OutlierDetectionConfig().dump_yaml("dbscan_template.yaml")
