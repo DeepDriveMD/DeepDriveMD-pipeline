@@ -218,6 +218,7 @@ machine_learning_stage:
     task_idx: 0
     timeout1: 30
     timeout2: 10
+    use_model_checkpoint: true
 molecular_dynamics_stage:
   arguments:
   - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py

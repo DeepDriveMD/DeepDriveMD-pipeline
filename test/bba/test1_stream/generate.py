@@ -167,6 +167,7 @@ class TASK_CONFIG_ML(CVAE):
     checkpoint_dir = 'set_by_deepdrivemd'
     adios_xml_agg = header.adios_xml_agg
     reinit = True
+    use_model_checkpoint = True
 
 task_config_ml = TASK_CONFIG_ML()
 

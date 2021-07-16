@@ -3,7 +3,7 @@ from typing import Optional
 import numpy as np
 from deepdrivemd.utils import Timer, timer, parse_args
 from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
-from deepdrivemd.models.keras_cvae_stream.model import conv_variational_autoencoder
+from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
 import subprocess
 import glob
 from aggregator_reader import *
@@ -103,6 +103,7 @@ def main(cfg):
                 batch_size=cfg.batch_size,
                 epochs=cfg.epochs,
                 checkpoint_path = cfg.checkpoint_dir,
+                use_model_checkpoint = cfg.use_model_checkpoint,
             )
 
         loss = cvae.history.val_losses[-1]

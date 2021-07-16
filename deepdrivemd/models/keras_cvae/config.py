@@ -42,6 +42,7 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     # Dropout values for each dense layer
     dense_dropouts: List[float] = [0.25]
 
+    use_model_checkpoint = False
 
 if __name__ == "__main__":
     KerasCVAEModelConfig().dump_yaml("keras_cvae_template.yaml")

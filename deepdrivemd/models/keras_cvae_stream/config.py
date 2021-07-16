@@ -54,6 +54,7 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     adios_xml_agg: Path
     # retrain the model from scratch at each iteration or start with the previously trained model
     reinit: bool = True
+    use_model_checkpoint = True
 
 if __name__ == "__main__":
     KerasCVAEModelConfig().dump_yaml("keras_cvae_template.yaml")

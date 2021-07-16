@@ -9,12 +9,9 @@ from tensorflow.keras.layers import Input, Dense, Lambda, Flatten, Reshape, Drop
 from tensorflow.keras.layers import Convolution2D, Conv2DTranspose
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import RMSprop
-from tensorflow.keras.callbacks import Callback  # , ModelCheckpoint
+from tensorflow.keras.callbacks import Callback, ModelCheckpoint
 import tensorflow.keras.backend as K
 import tensorflow.keras.losses as objectives
-
-
-# tensorflow.config.experimental_run_functions_eagerly(False)
 
 # save history from log;
 class LossHistory(Callback):
@@ -95,8 +92,6 @@ class conv_variational_autoencoder(object):
     ):
 
         self.history = LossHistory()
-
-        # tensorflow.config.experimental_run_functions_eagerly(False)
 
         # check that arguments are proper length;
         if len(filter_shapes) != conv_layers:
@@ -250,7 +245,7 @@ class conv_variational_autoencoder(object):
                 axis=None,
             )
         )
-        self.model.compile(optimizer=self.optimizer, loss=self._vae_loss1)
+        self.model.compile(optimizer=self.optimizer, loss=self._vae_loss)
         # self.model.compile(optimizer=self.optimizer)
         # self.model.compile(optimizer=self.optimizer, loss=objectives.MeanSquaredError());
         self.model.summary()
@@ -276,7 +271,7 @@ class conv_variational_autoencoder(object):
         )
         return z_mean + K.exp(z_log_var) * epsilon
 
-    def _vae_loss1(self, input, output):
+    def _vae_loss(self, input, output):
         input_flat = K.flatten(input)
         output_flat = K.flatten(output)
         xent_loss = (
@@ -291,9 +286,10 @@ class conv_variational_autoencoder(object):
         data,
         batch_size,
         epochs=1,
-        validation_data=None,
-        checkpoint=False,
-        filepath=None,
+        validation_data = None,
+        checkpoint_path = None,
+        file_path=None,
+        use_model_checkpoint = False
     ):
         """
         train network on given data
@@ -315,24 +311,37 @@ class conv_variational_autoencoder(object):
         outputs:
             None;
         """
-        if checkpoint and filepath is None:
-            raise Exception("Please enter a path to save the network")
+        # if checkpoint and filepath is None:
+        #    raise Exception("Please enter a path to save the network")
         # tensorflow.config.experimental_run_functions_eagerly(False)
 
-        self.model.fit(
-            data,
-            data,
-            batch_size,
-            epochs=epochs,
-            shuffle=True,
-            validation_data=(validation_data, validation_data),
-            callbacks=[
-                self.history,
-                # ModelCheckpoint(
-                #    "best.h5", monitor="val_loss", save_best_only=True, verbose=1
-                # ),
-            ],
-        )
+        if(use_model_checkpoint):
+            self.model.fit(
+                data,
+                data,
+                batch_size,
+                epochs=epochs,
+                shuffle=True,
+                validation_data=(validation_data, validation_data),
+                callbacks=[
+                    self.history,
+                    ModelCheckpoint(
+                        f"{checkpoint_path}/best.h5", monitor="val_loss", save_best_only=True, verbose=1
+                    ),
+                ],
+            )
+        else:
+            self.model.fit(
+                data,
+                data,
+                batch_size,
+                epochs=epochs,
+                shuffle=True,
+                validation_data=(validation_data, validation_data),
+                callbacks=[
+                    self.history,
+                ],
+            )
 
     def save(self, filepath):
         """

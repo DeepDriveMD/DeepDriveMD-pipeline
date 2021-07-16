@@ -19,7 +19,7 @@ from aggregator_reader import *
 import cupy as cp
 from cuml import DBSCAN as DBSCAN
 
-from deepdrivemd.models.keras_cvae_stream.model import conv_variational_autoencoder
+from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
 from simtk.openmm.app.pdbfile import PDBFile
 
 def build_model(cfg, model_path):
