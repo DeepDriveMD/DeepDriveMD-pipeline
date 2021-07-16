@@ -11,7 +11,6 @@ from deepdrivemd.sim.openmm.config import OpenMMConfig
 from openmm_reporter import ContactMapReporter
 import sys
 import os
-# from deepdrivemd.misc.OutlierDB import OutlierDB
 from OutlierDB import *
 from lockfile import LockFile
 import pickle

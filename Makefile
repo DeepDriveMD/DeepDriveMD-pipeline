@@ -12,7 +12,7 @@ watch3:
 	cd /p/gpfs1/${USER}/radical.pilot.sandbox && cd `ls -tr | tail -1` && cd pilot* && tail -f task.${d}/*.out
 clean:
 	rm -f *~ */*~
-	rm -rf __pycache__ */__pycache__ *.log
+	rm -rf __pycache__ */__pycache__ *.log */*/__pycache__ */*/*/__pycache__
 	rm -rf re.session.*
 	[[ ! -z "$d" ]] && echo "d = $d" && rm -rf ../Outputs/${d}
 
