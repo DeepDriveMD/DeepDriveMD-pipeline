@@ -167,6 +167,7 @@ class TASK_CONFIG_ML(CVAE):
     checkpoint_dir = 'set_by_deepdrivemd'
     adios_xml_agg = header.adios_xml_agg
     reinit = True
+
 task_config_ml = TASK_CONFIG_ML()
 
 class ML(BaseModel):
@@ -204,8 +205,9 @@ class TASK_CONFIG_AGENT(CVAE):
     batch = 10000
     num_sim = md.num_tasks
     project_lastN = 50*1000
-    adios_xml_agg = header.adios_xml_agg
     project_gpu = False
+    adios_xml_agg = header.adios_xml_agg
+
 
 task_config_agent = TASK_CONFIG_AGENT()
 

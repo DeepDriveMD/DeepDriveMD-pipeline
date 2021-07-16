@@ -119,7 +119,6 @@ class TASK_CONFIG_AGG(BaseModel):
     num_tasks = 10
     n_sim = md.num_tasks
     sleeptime_bpfiles = 30
-    adios_xml_sim = header.adios_xml_sim
     adios_xml_agg = header.adios_xml_agg
 
 task_config_agg = TASK_CONFIG_AGG()
@@ -154,12 +153,7 @@ class TASK_CONFIG_ML(CVAE):
     experiment_directory = 'set_by_deepdrivemd'
     stage_idx = 0
     task_idx = 0
-    output_pat = 'set_by_deepdrivemd'
-    node_local_path = 'set_by_deepdrivemd'
-    model_tag = 'set_by_deepdrivemd'
-    init_weights_path: str = None
-    dataset_name = 'contact_map'
-    initial_epochs = 5
+    output_path = 'set_by_deepdrivemd'
     epochs = 50
     batch_size = 32
     min_step_increment = 1000
@@ -171,7 +165,7 @@ class TASK_CONFIG_ML(CVAE):
     agg_dir =  f'{header.experiment_directory}/aggregation_runs/'
     published_model_dir = 'set_by_deepdrivemd'
     checkpoint_dir = 'set_by_deepdrivemd'
-    adios_xml_agg = header.adios_xml_agg    
+    adios_xml_agg = header.adios_xml_agg
     reinit = True
 
 task_config_ml = TASK_CONFIG_ML()
@@ -193,15 +187,6 @@ class TASK_CONFIG_AGENT(CVAE):
     stage_idx = 0
     task_idx = 0
     output_path = 'set_by_deepdrivemd'
-    node_local_path = 'set_by_deepdrivemd'
-    num_intrinsic_outliers = 100
-    num_extrinsic_outliers = 12
-    intrinsic_score = 'dbscan'
-    extrinsic_score = 'rmsd'
-    n_traj_frames = 1000
-    sklearn_num_jobs = -1
-    model_type = "keras_cvae"
-    inference_batch_size = 1024
     
     agg_dir = f'{header.experiment_directory}/aggregation_runs'
     num_agg = agg.num_tasks
@@ -215,12 +200,12 @@ class TASK_CONFIG_AGENT(CVAE):
     outlier_min = 1000
     init_pdb_file = f'{header.init_pdb_file}'
     ref_pdb_file = f'{header.ref_pdb_file}'
-    n_workers = 39
     init_eps = 1.3
     init_min_samples = 10
     batch = 10000
     num_sim = md.num_tasks
     project_lastN = 50*1000
+    project_gpu = False
     adios_xml_agg = header.adios_xml_agg
 
 task_config_agent = TASK_CONFIG_AGENT()
