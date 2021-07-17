@@ -5,6 +5,7 @@ import subprocess
 import time
 import sys
 import os
+import itertools
 
 from deepdrivemd.utils import Timer, timer, t1Dto2D, parse_args
 from deepdrivemd.data.api import DeepDriveMD_API
@@ -21,6 +22,7 @@ from cuml import DBSCAN as DBSCAN
 
 from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
 from simtk.openmm.app.pdbfile import PDBFile
+
 
 def build_model(cfg, model_path):
     cvae = conv_variational_autoencoder(
@@ -209,9 +211,7 @@ def main(cfg: OutlierDetectionConfig):
     eps = cfg.init_eps
     min_samples = cfg.init_min_samples
 
-    j = 0
-
-    while(True):
+    for j in itertools.count(0):
         print(f"outlier iteration {j}")
 
         timer("outlier_search_iteration", 1)
@@ -246,7 +246,6 @@ def main(cfg: OutlierDetectionConfig):
             publish(tmp_dir, published_dir)
 
         timer("outlier_search_iteration", -1)
-        j += 1
 
 
 def read_lastN(adios_files_list, lastN):

@@ -8,6 +8,7 @@ import subprocess
 import glob
 from aggregator_reader import *
 import os, sys
+import itertools
 
 def wait_for_input(cfg):
     # Wait until the expected number of agg.bp exist
@@ -90,8 +91,7 @@ def main(cfg):
 
     cvae = build_model(cfg)
 
-    i = 0
-    while(True):
+    for i in itertools.count(0):
         timer("ml_iteration", 1)
         print(f"ML iteration {i}")
         cm_data_train, cm_data_val = next_input(cfg, streams)
@@ -118,7 +118,6 @@ def main(cfg):
         if(loss < cfg.max_loss and os.path.exists(best_model) ):
            subprocess.getstatusoutput(f"mv {cfg.checkpoint_dir}/best.h5 {cfg.published_model_dir}/")
 
-        i += 1
         print("="*30)
         timer("ml_iteration", -1)
 

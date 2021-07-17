@@ -18,6 +18,7 @@ import parmed as pmd
 import numpy as np
 import subprocess
 import glob
+import itertools
 
 class SimulationContext:
     def __init__(self, cfg: OpenMMConfig):
@@ -233,13 +234,11 @@ def run_simulation(cfg: OpenMMConfig):
     with Timer("molecular_dynamics_configure_reporters"):
         configure_reporters(sim, ctx, cfg, report_steps)
 
-    iteration = 0
-    while(True):
+    for iteration in itertools.count(0):
         # Run simulation for nsteps
         print(f"Simulation iteration {iteration}"); sys.stdout.flush()
         with Timer("molecular_dynamics_step"):
             sim.step(nsteps)
-        iteration += 1
         prepare_simulation(cfg, iteration, sim)
 
 def adios_configuration(cfg: OpenMMConfig ):

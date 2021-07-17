@@ -9,6 +9,7 @@ import adios2
 import math
 import queue
 import subprocess
+import itertools
 
 def find_input(cfg: StreamAggregation):
     '''
@@ -55,8 +56,9 @@ def connect_to_input(cfg: StreamAggregation, bpfiles):
 
 
 def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
-    while(True):
+    for iteration in itertools.count(0):
         timer("aggregator_iteration", 1)
+        print("iteration = ", iteration)
 
         q = queue.Queue()
         for s in connections.keys():
