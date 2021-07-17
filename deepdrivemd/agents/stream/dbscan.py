@@ -144,9 +144,8 @@ def cluster(cfg, cm_predict, outlier_list, eps, min_samples):
 
 def write_pdb_frame(frame, original_pdb, output_pdb_fn):
     pdb = PDBFile(str(original_pdb))
-    f = open(str(output_pdb_fn), 'w')
-    PDBFile.writeFile(pdb.getTopology(), frame, f)
-    f.close()
+    with open(str(output_pdb_fn), 'w') as f:
+        PDBFile.writeFile(pdb.getTopology(), frame, f)
 
 def write_top_outliers(cfg, tmp_dir, top):
     positions = top[0]
