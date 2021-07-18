@@ -315,33 +315,24 @@ class conv_variational_autoencoder(object):
         #    raise Exception("Please enter a path to save the network")
         # tensorflow.config.experimental_run_functions_eagerly(False)
 
-        if(use_model_checkpoint):
-            self.model.fit(
-                data,
-                data,
-                batch_size,
-                epochs=epochs,
-                shuffle=True,
-                validation_data=(validation_data, validation_data),
-                callbacks=[
-                    self.history,
-                    ModelCheckpoint(
-                        f"{checkpoint_path}/best.h5", monitor="val_loss", save_best_only=True, verbose=1
-                    ),
-                ],
+
+        callbacks = [self.history]
+        if use_model_checkpoint:
+            callbacks.append(
+                ModelCheckpoint(
+                    f"{checkpoint_path}/best.h5", monitor="val_loss", save_best_only=True, verbose=1
+                )
             )
-        else:
-            self.model.fit(
-                data,
-                data,
-                batch_size,
-                epochs=epochs,
-                shuffle=True,
-                validation_data=(validation_data, validation_data),
-                callbacks=[
-                    self.history,
-                ],
-            )
+
+        self.model.fit(
+            data,
+            data,
+            batch_size,
+            epochs=epochs,
+            shuffle=True,
+            validation_data=(validation_data, validation_data),
+            callbacks=callbacks,
+        )
 
     def save(self, filepath):
         """
