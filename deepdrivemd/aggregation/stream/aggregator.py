@@ -179,6 +179,7 @@ if __name__ == "__main__":
 
     aggregate(cfg, connections, aggregator_stream)
 
+    # Currently there is an infinite loop in aggregate() and this statement should never be reached.
     aggregator_stream.close()
 
 
