@@ -63,14 +63,10 @@ class TASK_CONFIG_MD(BaseModel):
     dt_ps = 0.002
     temperature_kelvin = 300.0
     heat_bath_friction_coef = 1.0
-    wrap = False
     reference_pdb_file = f'{header.ref_pdb_file}'
     openmm_selection = ['CA']
     mda_selection = 'protein and name CA'
     threshold = 8.0
-    contact_map = True
-    point_cloud = False
-    fraction_of_contacts = False
     in_memory = False
     bp_file = 'set_by_deepdrivemd'
     outliers_dir = f'{header.experiment_directory}/agent_runs/stage0000/task0000/published_outliers'

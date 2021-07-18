@@ -17,9 +17,6 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     dt_ps: float = 0.002
     temperature_kelvin: float = 310.0
     heat_bath_friction_coef: float = 1.0
-    # Whether to wrap system, only implemented for nsp system
-    # TODO: generalize this implementation.
-    # wrap: bool = False
     # Reference PDB file used to compute RMSD and align point cloud
     reference_pdb_file: Optional[Path]
     # Atom selection for openmm
@@ -28,13 +25,7 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     mda_selection: str = "protein and name CA"
     # Distance threshold to use for computing contact (in Angstroms)
     threshold: float = 8.0
-    # Write contact maps to HDF5
-    # contact_map: bool = True
-    # Write point clouds to HDF5
-    # point_cloud: bool = True
-    # Write fraction of contacts to HDF5
-    # fraction_of_contacts: bool = True
-    # Read outlier trajectory into memory while writing PDB file
+    # Read outlier trajectory into memory while writing PDB file - not used but is in run*.py, should be cleaned out from there
     in_memory: bool = True
     # Name of bp "socket" file in simulation directory (.sst is added by adios)
     bp_file: Path = 'md.bp'

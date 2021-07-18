@@ -246,11 +246,9 @@ molecular_dynamics_stage:
   task_config:
     adios_xml_sim: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/test/bba/test1_stream/adios_sim.xml
     bp_file: set_by_deepdrivemd
-    contact_map: true
     copy_velocities_p: 0.5
     dt_ps: 0.002
     experiment_directory: set_by_deepdrivemd
-    fraction_of_contacts: false
     heat_bath_friction_coef: 1.0
     in_memory: false
     initial_pdb_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input
@@ -263,7 +261,6 @@ molecular_dynamics_stage:
     outliers_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/3/agent_runs/stage0000/task0000/published_outliers
     output_path: set_by_deepdrivemd
     pdb_file: set_by_deepdrivemd
-    point_cloud: false
     reference_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb
     report_interval_ps: 50.0
     simulation_length_ns: 10.0
@@ -273,5 +270,4 @@ molecular_dynamics_stage:
     temperature_kelvin: 300.0
     threshold: 8.0
     top_suffix: null
-    wrap: false
 
