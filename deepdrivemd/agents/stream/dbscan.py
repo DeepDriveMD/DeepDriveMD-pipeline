@@ -41,6 +41,10 @@ def build_model(cfg, model_path):
     return cvae
 
 def wait_for_model(cfg):
+    """
+    Wait for the trained model to be published by machine learning pipeline
+    """
+
     while(True):
         if(os.path.exists(cfg.best_model)):
             break
@@ -49,7 +53,9 @@ def wait_for_model(cfg):
     return cfg.best_model
 
 def wait_for_input(cfg):
-    # Wait until the expected number of agg.bp exist
+    """
+    Wait for enough data to be produced by simulations
+    """
     while(True):
         bpfiles = glob.glob(str(cfg.agg_dir/"*/*/agg.bp"))
         if(len(bpfiles) == cfg.num_agg):
@@ -87,6 +93,9 @@ def wait_for_input(cfg):
 
 
 def dirs(cfg):
+    """
+    Create tmp_dir and published_dir into which outliers are written
+    """
     top_dir = cfg.output_path
     tmp_dir = f"{top_dir}/tmp"
     published_dir = f"{top_dir}/published_outliers"
@@ -98,6 +107,9 @@ def dirs(cfg):
     return top_dir, tmp_dir, published_dir
 
 def predict(cfg, model_path, cvae_input, batch_size=32):
+    """
+    Project contact maps into the middle layer of CVAE
+    """
     cvae = build_model(cfg, model_path)
     input = np.expand_dims(cvae_input[0], axis = -1)
 
@@ -107,6 +119,9 @@ def predict(cfg, model_path, cvae_input, batch_size=32):
     return cm_predict
 
 def outliers_from_latent(cm_predict, eps=0.35, min_samples=10):
+    """
+    Cluster the elements in the middle layer of CVAE.
+    """
     cm_predict = cp.asarray(cm_predict)
     db = DBSCAN(eps=eps, min_samples=min_samples, max_mbytes_per_batch=100).fit(cm_predict)
     db_label = db.labels_.to_array()
@@ -116,6 +131,10 @@ def outliers_from_latent(cm_predict, eps=0.35, min_samples=10):
     return outlier_list
 
 def cluster(cfg, cm_predict, outlier_list, eps, min_samples):
+    """
+    Run outliers_from_latent changing parameters of DBSCAN until
+    the desired number of outliers is obtained
+    """
     outlier_count = cfg.outlier_count
     while outlier_count > 0:
         n_outlier = 0
@@ -143,11 +162,17 @@ def cluster(cfg, cm_predict, outlier_list, eps, min_samples):
 
 
 def write_pdb_frame(frame, original_pdb, output_pdb_fn):
+    """
+    Write positions into pdb file
+    """
     pdb = PDBFile(str(original_pdb))
     with open(str(output_pdb_fn), 'w') as f:
         PDBFile.writeFile(pdb.getTopology(), frame, f)
 
 def write_top_outliers(cfg, tmp_dir, top):
+    """
+    Save to pdb files top outliers
+    """
     positions = top[0]
     velocities = top[1]
     md5s = top[2]
@@ -159,6 +184,9 @@ def write_top_outliers(cfg, tmp_dir, top):
         np.save(outlier_v_file, v)
 
 def write_db(top, tmp_dir):
+    """
+    Create and save a database of outliers to be used by simulation
+    """
     outlier_db_fn = f'{tmp_dir}/OutlierDB.pickle'
     outlier_files = list(map(lambda x: f'{tmp_dir}/{x}.pdb', top[2]))
     rmsds = top[3]
@@ -168,6 +196,9 @@ def write_db(top, tmp_dir):
     return db
 
 def publish(tmp_dir, published_dir):
+    """
+    Publish outliers and the corresponding database for simulations to pick up
+    """
     dbfn = f"{published_dir}/OutlierDB.pickle"
     subprocess.getstatusoutput(f"touch {dbfn}")
 
@@ -181,6 +212,9 @@ def publish(tmp_dir, published_dir):
     return
 
 def top_outliers(cfg, cvae_input, outlier_list):
+    """
+    Find top num_sim outliers sorted by rmsd
+    """
     N = cfg.num_sim
     outlier_list = list(outlier_list[0])
     positions = cvae_input[1][outlier_list]
@@ -210,6 +244,7 @@ def main(cfg: OutlierDetectionConfig):
     eps = cfg.init_eps
     min_samples = cfg.init_min_samples
 
+    # Infinite loop of outlier search iterations
     for j in itertools.count(0):
         print(f"outlier iteration {j}")
 
@@ -248,6 +283,9 @@ def main(cfg: OutlierDetectionConfig):
 
 
 def read_lastN(adios_files_list, lastN):
+    """
+    Read lastN steps from each aggregated file. Used by project()
+    """
     variable_lists = {}
     for bp in adios_files_list:
         with adios2.open(bp,  "r") as fh:
@@ -289,6 +327,9 @@ def read_lastN(adios_files_list, lastN):
     return variable_lists['contact_map'], np.concatenate(variable_lists['rmsd'])
 
 def project(cfg):
+    """
+    Postproduction: compute TSNE embeddings
+    """
     if(cfg.project_gpu):
         from cuml import TSNE
     else:

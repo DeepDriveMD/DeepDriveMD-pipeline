@@ -32,6 +32,16 @@ def configure_reporters(
 
 
 def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
+    """
+    Get the next outlier to use as an initial state.
+    Copy the corresponding pdb file with positions and numpy
+    file with velocities into the simulation directory.
+    return the coresponding file names, rmsd, md5.
+    Only one outlier selection policy is currently implemented:
+    sort the outliers by rmsd and use simulation task id as
+    an index into this sorted array.
+    
+    """
     if(cfg.next_outlier_policy == 1):
         cfg.pickle_db = cfg.outliers_dir + "/OutlierDB.pickle"
 
@@ -56,6 +66,9 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
         with open(cfg.current_dir + "/rmsd.txt","w") as f:
             f.write(f"{rmsd}\n")
 
+        positions_pdb = cfg.current_dir + f"/{md5}.pdb"
+        velocities_npy = cfg.current_dir + f"/{md5}.npy"
+
         return positions_pdb, velocities_npy, rmsd, md5
         
     elif(cfg.next_outlier_policy == 0):
@@ -63,6 +76,10 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
         return None
 
 def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulation):
+    """
+    Replace positions and, with cfg.copy_velocities_p probability, velocities
+    of the current simulation state from an outlier
+    """
     sim_dir = cfg.output_path/str(iteration)
     sim_dir.mkdir(exist_ok = True)
     cfg.current_dir = str(sim_dir)
@@ -93,6 +110,11 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
         return False
 
 def init_input(cfg):
+    """
+    The first iteration of the simulation is initialized from pdb
+    files in cfg.initial_pdb_dir. For the given simulation the pdb file is
+    selected using simulation task_id in a round robin fashion.
+    """
     pdb_files = glob.glob(str(cfg.initial_pdb_dir/"*.pdb"))
     pdb_files.sort()
     n = len(pdb_files)
@@ -136,6 +158,7 @@ def run_simulation(cfg: OpenMMConfig):
     with Timer("molecular_dynamics_configure_reporters"):
         configure_reporters(sim, ctx, cfg, report_steps)
 
+    # Infinite simulation loop
     for iteration in itertools.count(0):
         # Run simulation for nsteps
         print(f"Simulation iteration {iteration}"); sys.stdout.flush()
@@ -144,6 +167,11 @@ def run_simulation(cfg: OpenMMConfig):
         prepare_simulation(cfg, iteration, sim)
 
 def adios_configuration(cfg: OpenMMConfig ):
+    """
+    Read a template adios.xml file, replace "SimulationOutput"
+    stream name with the simulation taskid and write the resulting
+    configuration file into simulation directory.
+    """
     adios_cfg = cfg.output_path/"adios.xml"
     shutil.copy(cfg.adios_xml_sim, adios_cfg)
     cfg.adios_cfg = adios_cfg

@@ -25,6 +25,9 @@ class ContactMapReporter(object):
         return (steps, True, False, False, False, None)
 
     def report(self, simulation, state):
+        """
+        Computes contact maps, md5 sum of positions, rmsd to the reference state and records them into self._adios_stream
+        """
         step = self.step
         stateA = simulation.context.getState(getPositions=True, getVelocities=True)
         ca_indices = []
@@ -42,7 +45,6 @@ class ContactMapReporter(object):
         md5 = m.hexdigest()
         md5 = hash2intarray(md5)
 
-        int(np.round(state.getTime().value_in_unit(u.picosecond)))
         positions_ca = positions[ca_indices].astype(np.float32)
         contact_map = distances.contact_matrix(positions_ca, cutoff=self.cfg.threshold, returntype='numpy', box=None).astype('uint8')
         contact_map = t2Dto1D(contact_map)
@@ -59,6 +61,10 @@ class ContactMapReporter(object):
         self.step += 1
 
     def write_adios_step(self, output):
+        """
+        output is a dictionary: adios column name, variable name
+        The function writes a row into self._adios_stream.
+        """
         for k in output:
             v = output[k]
             self._adios_stream.write(k, v, list(v.shape), [0]*len(v.shape), list(v.shape))

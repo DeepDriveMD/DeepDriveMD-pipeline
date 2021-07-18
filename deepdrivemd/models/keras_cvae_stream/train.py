@@ -11,7 +11,12 @@ import os, sys
 import itertools
 
 def wait_for_input(cfg):
-    # Wait until the expected number of agg.bp exist
+    """
+    Wait for the expected number of sufficiently large agg.bp files to be produced.
+    Return the list of their paths.
+    """
+
+    #Wait for enough bpfiles
     while(True):
         bpfiles = glob.glob(str(cfg.agg_dir/"*/*/agg.bp"))
         if(len(bpfiles) == cfg.num_agg):
@@ -48,6 +53,11 @@ def wait_for_input(cfg):
     return bpfiles
 
 def next_input(cfg, streams):
+    """
+    Read the next batch of contact maps from aggregated files
+    Return training and validation sets.
+    """
+
     with Timer("ml_read"):
         cm_data_input = streams.next_cm()
     cm_data_input = np.expand_dims(cm_data_input, axis = -1)
@@ -91,6 +101,8 @@ def main(cfg):
 
     cvae = build_model(cfg)
 
+    # Infinite loop of CVAE training
+    # After training iteration, publish the model in the directory from which it is picked up by outlier search
     for i in itertools.count(0):
         timer("ml_iteration", 1)
         print(f"ML iteration {i}")

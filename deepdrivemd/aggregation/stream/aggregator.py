@@ -15,6 +15,7 @@ def find_input(cfg: StreamAggregation):
     '''
     Find and return simulation adios streams. 
     Wait until those are created by simulations.
+    Returns the list of *.sst files associated with the corresponding adios streams.
     '''
     while(True):
         bpfiles = glob.glob(str(cfg.experiment_directory) + "/*/*/*/md.bp*")
@@ -28,6 +29,10 @@ def find_input(cfg: StreamAggregation):
     return bpfiles
 
 def connect_to_input(cfg: StreamAggregation, bpfiles):
+    '''
+    Open adios streams for reading and return a dictionary: key - simulation task id,
+    value - tuple of the corresponding adios objects
+    '''
     connections = {}
     bp_slice = math.ceil(cfg.n_sim/cfg.num_tasks)
     print("bp_slice = ", bp_slice)
@@ -56,6 +61,13 @@ def connect_to_input(cfg: StreamAggregation, bpfiles):
 
 
 def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
+    """
+    Read adios streams from a subset of simulations handled by this aggregator and write them to adios file to be used 
+    by machine learning and outlier search. If we do not need to save the data for postproduction, we can get rid of the aggregated
+    adios file and replace it by SST stream.
+    """
+
+    # infinite loop over simulation reporting steps
     for iteration in itertools.count(0):
         timer("aggregator_iteration", 1)
         print("iteration = ", iteration)
@@ -64,6 +76,8 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
         for s in connections.keys():
             q.put(s)
 
+        # Read data from each simulation and write it to the aggregated adios file
+        # If the data is not ready yet, go to the next simulation and revisit the current one later
         while(not q.empty()):
             sim_task_id = q.get()
             adios,io,stream = connections[sim_task_id]
