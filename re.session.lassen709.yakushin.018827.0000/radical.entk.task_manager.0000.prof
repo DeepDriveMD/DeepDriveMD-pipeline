@@ -1,0 +1,538 @@
+#time,event,comp,thread,uid,state,msg
+1626661867.7765300,sync_abs,radical.entk.task_manager.0000,MainThread,,,lassen709:192.168.66.201:1626661867.773833:1626661867.773833:sys
+1626661867.8308880,tmgr_create,radical.entk.task_manager.0000,MainThread,task_manager.0000,,
+1626661867.8638670,creating tmgr process,radical.entk.task_manager.0000,MainThread,task_manager.0000,,
+1626661867.8673515,starting tmgr process,radical.entk.task_manager.0000,MainThread,task_manager.0000,,
+1626661867.8733025,hbeat_create,radical.entk.task_manager.0000,MainThread,task_manager.0000,,
+1626661867.8742836,starting heartbeat thread,radical.entk.task_manager.0000,MainThread,task_manager.0000,,
+1626661867.8746531,hbeat_start,radical.entk.task_manager.0000,heartbeat,task_manager.0000,,
+1626661867.8835835,tmgr process started,radical.entk.task_manager.0000,MainThread,task_manager.0000,,
+1626661867.9813116,tmgr infrastructure setup done,radical.entk.task_manager.0000,MainThread,task_manager.0000,,
+1626661889.1770079,td_create,radical.entk.task_manager.0000,Thread-13,task.0000,,
+1626661889.1799836,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0000,,
+1626661889.1802652,advance,radical.entk.task_manager.0000,Thread-13,task.0000,SUBMITTING,stage.0000
+1626661889.1805036,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0000,SUBMITTING,stage.0000
+1626661889.1813862,td_create,radical.entk.task_manager.0000,Thread-13,task.0102,,
+1626661889.1831031,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0102,,
+1626661889.1831937,advance,radical.entk.task_manager.0000,Thread-13,task.0102,SUBMITTING,stage.0000
+1626661889.1833482,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0102,SUBMITTING,stage.0000
+1626661889.1843033,td_create,radical.entk.task_manager.0000,Thread-13,task.0036,,
+1626661889.1856027,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0036,,
+1626661889.1858649,advance,radical.entk.task_manager.0000,Thread-13,task.0036,SUBMITTING,stage.0000
+1626661889.1860590,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0036,SUBMITTING,stage.0000
+1626661889.1868420,td_create,radical.entk.task_manager.0000,Thread-13,task.0060,,
+1626661889.1883638,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0060,,
+1626661889.1884532,advance,radical.entk.task_manager.0000,Thread-13,task.0060,SUBMITTING,stage.0000
+1626661889.1887875,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0060,SUBMITTING,stage.0000
+1626661889.1895142,td_create,radical.entk.task_manager.0000,Thread-13,task.0101,,
+1626661889.1908402,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0101,,
+1626661889.1909297,advance,radical.entk.task_manager.0000,Thread-13,task.0101,SUBMITTING,stage.0000
+1626661889.1910834,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0101,SUBMITTING,stage.0000
+1626661889.1918762,td_create,radical.entk.task_manager.0000,Thread-13,task.0034,,
+1626661889.1935222,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0034,,
+1626661889.1936336,advance,radical.entk.task_manager.0000,Thread-13,task.0034,SUBMITTING,stage.0000
+1626661889.1939721,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0034,SUBMITTING,stage.0000
+1626661889.1947393,td_create,radical.entk.task_manager.0000,Thread-13,task.0105,,
+1626661889.1962335,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0105,,
+1626661889.1963239,advance,radical.entk.task_manager.0000,Thread-13,task.0105,SUBMITTING,stage.0000
+1626661889.1964767,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0105,SUBMITTING,stage.0000
+1626661889.1974180,td_create,radical.entk.task_manager.0000,Thread-13,task.0062,,
+1626661889.1987731,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0062,,
+1626661889.1988621,advance,radical.entk.task_manager.0000,Thread-13,task.0062,SUBMITTING,stage.0000
+1626661889.1991925,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0062,SUBMITTING,stage.0000
+1626661889.1998606,td_create,radical.entk.task_manager.0000,Thread-13,task.0085,,
+1626661889.2013233,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0085,,
+1626661889.2015901,advance,radical.entk.task_manager.0000,Thread-13,task.0085,SUBMITTING,stage.0000
+1626661889.2018278,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0085,SUBMITTING,stage.0000
+1626661889.2026649,td_create,radical.entk.task_manager.0000,Thread-13,task.0033,,
+1626661889.2039096,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0033,,
+1626661889.2040203,advance,radical.entk.task_manager.0000,Thread-13,task.0033,SUBMITTING,stage.0000
+1626661889.2043622,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0033,SUBMITTING,stage.0000
+1626661889.2053502,td_create,radical.entk.task_manager.0000,Thread-13,task.0098,,
+1626661889.2068329,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0098,,
+1626661889.2069235,advance,radical.entk.task_manager.0000,Thread-13,task.0098,SUBMITTING,stage.0000
+1626661889.2071056,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0098,SUBMITTING,stage.0000
+1626661889.2079096,td_create,radical.entk.task_manager.0000,Thread-13,task.0032,,
+1626661889.2092350,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0032,,
+1626661889.2093263,advance,radical.entk.task_manager.0000,Thread-13,task.0032,SUBMITTING,stage.0000
+1626661889.2094939,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0032,SUBMITTING,stage.0000
+1626661889.2103293,td_create,radical.entk.task_manager.0000,Thread-13,task.0103,,
+1626661889.2117887,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0103,,
+1626661889.2118909,advance,radical.entk.task_manager.0000,Thread-13,task.0103,SUBMITTING,stage.0000
+1626661889.2122126,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0103,SUBMITTING,stage.0000
+1626661889.2129736,td_create,radical.entk.task_manager.0000,Thread-13,task.0063,,
+1626661889.2142346,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0063,,
+1626661889.2143104,advance,radical.entk.task_manager.0000,Thread-13,task.0063,SUBMITTING,stage.0000
+1626661889.2144425,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0063,SUBMITTING,stage.0000
+1626661889.2151668,td_create,radical.entk.task_manager.0000,Thread-13,task.0061,,
+1626661889.2165391,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0061,,
+1626661889.2167511,advance,radical.entk.task_manager.0000,Thread-13,task.0061,SUBMITTING,stage.0000
+1626661889.2170620,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0061,SUBMITTING,stage.0000
+1626661889.2177281,td_create,radical.entk.task_manager.0000,Thread-13,task.0065,,
+1626661889.2191596,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0065,,
+1626661889.2192619,advance,radical.entk.task_manager.0000,Thread-13,task.0065,SUBMITTING,stage.0000
+1626661889.2195847,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0065,SUBMITTING,stage.0000
+1626661889.2201321,td_create,radical.entk.task_manager.0000,Thread-13,task.0067,,
+1626661889.2214704,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0067,,
+1626661889.2217743,advance,radical.entk.task_manager.0000,Thread-13,task.0067,SUBMITTING,stage.0000
+1626661889.2219572,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0067,SUBMITTING,stage.0000
+1626661889.2226994,td_create,radical.entk.task_manager.0000,Thread-13,task.0003,,
+1626661889.2241244,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0003,,
+1626661889.2242577,advance,radical.entk.task_manager.0000,Thread-13,task.0003,SUBMITTING,stage.0000
+1626661889.2244456,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0003,SUBMITTING,stage.0000
+1626661889.2250848,td_create,radical.entk.task_manager.0000,Thread-13,task.0035,,
+1626661889.2264209,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0035,,
+1626661889.2265003,advance,radical.entk.task_manager.0000,Thread-13,task.0035,SUBMITTING,stage.0000
+1626661889.2266366,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0035,SUBMITTING,stage.0000
+1626661889.2273955,td_create,radical.entk.task_manager.0000,Thread-13,task.0104,,
+1626661889.2286687,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0104,,
+1626661889.2287478,advance,radical.entk.task_manager.0000,Thread-13,task.0104,SUBMITTING,stage.0000
+1626661889.2288811,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0104,SUBMITTING,stage.0000
+1626661889.2296479,td_create,radical.entk.task_manager.0000,Thread-13,task.0066,,
+1626661889.2313447,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0066,,
+1626661889.2315824,advance,radical.entk.task_manager.0000,Thread-13,task.0066,SUBMITTING,stage.0000
+1626661889.2318244,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0066,SUBMITTING,stage.0000
+1626661889.2327564,td_create,radical.entk.task_manager.0000,Thread-13,task.0030,,
+1626661889.2340474,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0030,,
+1626661889.2341263,advance,radical.entk.task_manager.0000,Thread-13,task.0030,SUBMITTING,stage.0000
+1626661889.2345281,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0030,SUBMITTING,stage.0000
+1626661889.2357364,td_create,radical.entk.task_manager.0000,Thread-13,task.0108,,
+1626661889.2370770,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0108,,
+1626661889.2371798,advance,radical.entk.task_manager.0000,Thread-13,task.0108,SUBMITTING,stage.0000
+1626661889.2375560,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0108,SUBMITTING,stage.0000
+1626661889.2383950,td_create,radical.entk.task_manager.0000,Thread-13,task.0037,,
+1626661889.2398398,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0037,,
+1626661889.2399709,advance,radical.entk.task_manager.0000,Thread-13,task.0037,SUBMITTING,stage.0000
+1626661889.2403662,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0037,SUBMITTING,stage.0000
+1626661889.2412035,td_create,radical.entk.task_manager.0000,Thread-13,task.0064,,
+1626661889.2424788,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0064,,
+1626661889.2425864,advance,radical.entk.task_manager.0000,Thread-13,task.0064,SUBMITTING,stage.0000
+1626661889.2429059,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0064,SUBMITTING,stage.0000
+1626661889.2436578,td_create,radical.entk.task_manager.0000,Thread-13,task.0092,,
+1626661889.2449911,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0092,,
+1626661889.2451072,advance,radical.entk.task_manager.0000,Thread-13,task.0092,SUBMITTING,stage.0000
+1626661889.2454596,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0092,SUBMITTING,stage.0000
+1626661889.2463145,td_create,radical.entk.task_manager.0000,Thread-13,task.0106,,
+1626661889.2475779,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0106,,
+1626661889.2476714,advance,radical.entk.task_manager.0000,Thread-13,task.0106,SUBMITTING,stage.0000
+1626661889.2478487,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0106,SUBMITTING,stage.0000
+1626661889.2487004,td_create,radical.entk.task_manager.0000,Thread-13,task.0041,,
+1626661889.2501645,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0041,,
+1626661889.2502992,advance,radical.entk.task_manager.0000,Thread-13,task.0041,SUBMITTING,stage.0000
+1626661889.2504725,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0041,SUBMITTING,stage.0000
+1626661889.2514436,td_create,radical.entk.task_manager.0000,Thread-13,task.0100,,
+1626661889.2527833,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0100,,
+1626661889.2528992,advance,radical.entk.task_manager.0000,Thread-13,task.0100,SUBMITTING,stage.0000
+1626661889.2532589,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0100,SUBMITTING,stage.0000
+1626661889.2542164,td_create,radical.entk.task_manager.0000,Thread-13,task.0016,,
+1626661889.2558262,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0016,,
+1626661889.2561026,advance,radical.entk.task_manager.0000,Thread-13,task.0016,SUBMITTING,stage.0000
+1626661889.2563405,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0016,SUBMITTING,stage.0000
+1626661889.2571473,td_create,radical.entk.task_manager.0000,Thread-13,task.0038,,
+1626661889.2585363,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0038,,
+1626661889.2586696,advance,radical.entk.task_manager.0000,Thread-13,task.0038,SUBMITTING,stage.0000
+1626661889.2588508,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0038,SUBMITTING,stage.0000
+1626661889.2597451,td_create,radical.entk.task_manager.0000,Thread-13,task.0107,,
+1626661889.2612729,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0107,,
+1626661889.2615356,advance,radical.entk.task_manager.0000,Thread-13,task.0107,SUBMITTING,stage.0000
+1626661889.2617700,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0107,SUBMITTING,stage.0000
+1626661889.2625885,td_create,radical.entk.task_manager.0000,Thread-13,task.0002,,
+1626661889.2641170,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0002,,
+1626661889.2643611,advance,radical.entk.task_manager.0000,Thread-13,task.0002,SUBMITTING,stage.0000
+1626661889.2645679,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0002,SUBMITTING,stage.0000
+1626661889.2652509,td_create,radical.entk.task_manager.0000,Thread-13,task.0039,,
+1626661889.2667518,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0039,,
+1626661889.2668734,advance,radical.entk.task_manager.0000,Thread-13,task.0039,SUBMITTING,stage.0000
+1626661889.2670372,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0039,SUBMITTING,stage.0000
+1626661889.2677827,td_create,radical.entk.task_manager.0000,Thread-13,task.0084,,
+1626661889.2692883,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0084,,
+1626661889.2694213,advance,radical.entk.task_manager.0000,Thread-13,task.0084,SUBMITTING,stage.0000
+1626661889.2696047,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0084,SUBMITTING,stage.0000
+1626661889.2703698,td_create,radical.entk.task_manager.0000,Thread-13,task.0111,,
+1626661889.2717397,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0111,,
+1626661889.2719858,advance,radical.entk.task_manager.0000,Thread-13,task.0111,SUBMITTING,stage.0000
+1626661889.2721906,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0111,SUBMITTING,stage.0000
+1626661889.2728333,td_create,radical.entk.task_manager.0000,Thread-13,task.0001,,
+1626661889.2741435,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0001,,
+1626661889.2742693,advance,radical.entk.task_manager.0000,Thread-13,task.0001,SUBMITTING,stage.0000
+1626661889.2744055,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0001,SUBMITTING,stage.0000
+1626661889.2751441,td_create,radical.entk.task_manager.0000,Thread-13,task.0068,,
+1626661889.2763667,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0068,,
+1626661889.2764442,advance,radical.entk.task_manager.0000,Thread-13,task.0068,SUBMITTING,stage.0000
+1626661889.2767708,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0068,SUBMITTING,stage.0000
+1626661889.2774701,td_create,radical.entk.task_manager.0000,Thread-13,task.0099,,
+1626661889.2787604,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0099,,
+1626661889.2788377,advance,radical.entk.task_manager.0000,Thread-13,task.0099,SUBMITTING,stage.0000
+1626661889.2789698,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0099,SUBMITTING,stage.0000
+1626661889.2796812,td_create,radical.entk.task_manager.0000,Thread-13,task.0031,,
+1626661889.2809925,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0031,,
+1626661889.2812483,advance,radical.entk.task_manager.0000,Thread-13,task.0031,SUBMITTING,stage.0000
+1626661889.2814467,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0031,SUBMITTING,stage.0000
+1626661889.2821112,td_create,radical.entk.task_manager.0000,Thread-13,task.0109,,
+1626661889.2836201,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0109,,
+1626661889.2837596,advance,radical.entk.task_manager.0000,Thread-13,task.0109,SUBMITTING,stage.0000
+1626661889.2838938,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0109,SUBMITTING,stage.0000
+1626661889.2846215,td_create,radical.entk.task_manager.0000,Thread-13,task.0043,,
+1626661889.2858443,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0043,,
+1626661889.2859211,advance,radical.entk.task_manager.0000,Thread-13,task.0043,SUBMITTING,stage.0000
+1626661889.2862298,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0043,SUBMITTING,stage.0000
+1626661889.2868187,td_create,radical.entk.task_manager.0000,Thread-13,task.0044,,
+1626661889.2882802,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0044,,
+1626661889.2884037,advance,radical.entk.task_manager.0000,Thread-13,task.0044,SUBMITTING,stage.0000
+1626661889.2887056,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0044,SUBMITTING,stage.0000
+1626661889.2892525,td_create,radical.entk.task_manager.0000,Thread-13,task.0112,,
+1626661889.2906148,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0112,,
+1626661889.2906909,advance,radical.entk.task_manager.0000,Thread-13,task.0112,SUBMITTING,stage.0000
+1626661889.2908235,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0112,SUBMITTING,stage.0000
+1626661889.2915456,td_create,radical.entk.task_manager.0000,Thread-13,task.0040,,
+1626661889.2929046,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0040,,
+1626661889.2931104,advance,radical.entk.task_manager.0000,Thread-13,task.0040,SUBMITTING,stage.0000
+1626661889.2933507,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0040,SUBMITTING,stage.0000
+1626661889.2940495,td_create,radical.entk.task_manager.0000,Thread-13,task.0069,,
+1626661889.2954311,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0069,,
+1626661889.2955081,advance,radical.entk.task_manager.0000,Thread-13,task.0069,SUBMITTING,stage.0000
+1626661889.2958241,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0069,SUBMITTING,stage.0000
+1626661889.2965162,td_create,radical.entk.task_manager.0000,Thread-13,task.0070,,
+1626661889.2978883,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0070,,
+1626661889.2980444,advance,radical.entk.task_manager.0000,Thread-13,task.0070,SUBMITTING,stage.0000
+1626661889.2982509,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0070,SUBMITTING,stage.0000
+1626661889.2988999,td_create,radical.entk.task_manager.0000,Thread-13,task.0114,,
+1626661889.3002779,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0114,,
+1626661889.3005250,advance,radical.entk.task_manager.0000,Thread-13,task.0114,SUBMITTING,stage.0000
+1626661889.3007081,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0114,SUBMITTING,stage.0000
+1626661889.3013921,td_create,radical.entk.task_manager.0000,Thread-13,task.0095,,
+1626661889.3026876,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0095,,
+1626661889.3029304,advance,radical.entk.task_manager.0000,Thread-13,task.0095,SUBMITTING,stage.0000
+1626661889.3031285,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0095,SUBMITTING,stage.0000
+1626661889.3038061,td_create,radical.entk.task_manager.0000,Thread-13,task.0110,,
+1626661889.3051991,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0110,,
+1626661889.3054419,advance,radical.entk.task_manager.0000,Thread-13,task.0110,SUBMITTING,stage.0000
+1626661889.3056455,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0110,SUBMITTING,stage.0000
+1626661889.3063080,td_create,radical.entk.task_manager.0000,Thread-13,task.0042,,
+1626661889.3076296,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0042,,
+1626661889.3077552,advance,radical.entk.task_manager.0000,Thread-13,task.0042,SUBMITTING,stage.0000
+1626661889.3079166,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0042,SUBMITTING,stage.0000
+1626661889.3086402,td_create,radical.entk.task_manager.0000,Thread-13,task.0046,,
+1626661889.3098865,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0046,,
+1626661889.3099890,advance,radical.entk.task_manager.0000,Thread-13,task.0046,SUBMITTING,stage.0000
+1626661889.3103170,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0046,SUBMITTING,stage.0000
+1626661889.3110530,td_create,radical.entk.task_manager.0000,Thread-13,task.0088,,
+1626661889.3123863,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0088,,
+1626661889.3125072,advance,radical.entk.task_manager.0000,Thread-13,task.0088,SUBMITTING,stage.0000
+1626661889.3126721,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0088,SUBMITTING,stage.0000
+1626661889.3133695,td_create,radical.entk.task_manager.0000,Thread-13,task.0072,,
+1626661889.3148015,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0072,,
+1626661889.3150115,advance,radical.entk.task_manager.0000,Thread-13,task.0072,SUBMITTING,stage.0000
+1626661889.3152554,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0072,SUBMITTING,stage.0000
+1626661889.3160522,td_create,radical.entk.task_manager.0000,Thread-13,task.0076,,
+1626661889.3173621,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0076,,
+1626661889.3174829,advance,radical.entk.task_manager.0000,Thread-13,task.0076,SUBMITTING,stage.0000
+1626661889.3176453,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0076,SUBMITTING,stage.0000
+1626661889.3183706,td_create,radical.entk.task_manager.0000,Thread-13,task.0011,,
+1626661889.3197992,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0011,,
+1626661889.3199284,advance,radical.entk.task_manager.0000,Thread-13,task.0011,SUBMITTING,stage.0000
+1626661889.3201103,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0011,SUBMITTING,stage.0000
+1626661889.3207712,td_create,radical.entk.task_manager.0000,Thread-13,task.0071,,
+1626661889.3222072,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0071,,
+1626661889.3224473,advance,radical.entk.task_manager.0000,Thread-13,task.0071,SUBMITTING,stage.0000
+1626661889.3226478,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0071,SUBMITTING,stage.0000
+1626661889.3233595,td_create,radical.entk.task_manager.0000,Thread-13,task.0117,,
+1626661889.3248427,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0117,,
+1626661889.3249636,advance,radical.entk.task_manager.0000,Thread-13,task.0117,SUBMITTING,stage.0000
+1626661889.3251274,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0117,SUBMITTING,stage.0000
+1626661889.3258610,td_create,radical.entk.task_manager.0000,Thread-13,task.0008,,
+1626661889.3272290,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0008,,
+1626661889.3273559,advance,radical.entk.task_manager.0000,Thread-13,task.0008,SUBMITTING,stage.0000
+1626661889.3275335,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0008,SUBMITTING,stage.0000
+1626661889.3282070,td_create,radical.entk.task_manager.0000,Thread-13,task.0047,,
+1626661889.3295062,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0047,,
+1626661889.3296077,advance,radical.entk.task_manager.0000,Thread-13,task.0047,SUBMITTING,stage.0000
+1626661889.3299274,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0047,SUBMITTING,stage.0000
+1626661889.3306510,td_create,radical.entk.task_manager.0000,Thread-13,task.0113,,
+1626661889.3321207,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0113,,
+1626661889.3322425,advance,radical.entk.task_manager.0000,Thread-13,task.0113,SUBMITTING,stage.0000
+1626661889.3324039,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0113,SUBMITTING,stage.0000
+1626661889.3331103,td_create,radical.entk.task_manager.0000,Thread-13,task.0073,,
+1626661889.3343618,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0073,,
+1626661889.3346221,advance,radical.entk.task_manager.0000,Thread-13,task.0073,SUBMITTING,stage.0000
+1626661889.3348222,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0073,SUBMITTING,stage.0000
+1626661889.3355057,td_create,radical.entk.task_manager.0000,Thread-13,task.0022,,
+1626661889.3369260,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0022,,
+1626661889.3370459,advance,radical.entk.task_manager.0000,Thread-13,task.0022,SUBMITTING,stage.0000
+1626661889.3372064,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0022,SUBMITTING,stage.0000
+1626661889.3379366,td_create,radical.entk.task_manager.0000,Thread-13,task.0045,,
+1626661889.3393207,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0045,,
+1626661889.3394396,advance,radical.entk.task_manager.0000,Thread-13,task.0045,SUBMITTING,stage.0000
+1626661889.3395989,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0045,SUBMITTING,stage.0000
+1626661889.3403656,td_create,radical.entk.task_manager.0000,Thread-13,task.0115,,
+1626661889.3417287,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0115,,
+1626661889.3419397,advance,radical.entk.task_manager.0000,Thread-13,task.0115,SUBMITTING,stage.0000
+1626661889.3421760,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0115,SUBMITTING,stage.0000
+1626661889.3428767,td_create,radical.entk.task_manager.0000,Thread-13,task.0049,,
+1626661889.3442726,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0049,,
+1626661889.3443987,advance,radical.entk.task_manager.0000,Thread-13,task.0049,SUBMITTING,stage.0000
+1626661889.3445776,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0049,SUBMITTING,stage.0000
+1626661889.3452017,td_create,radical.entk.task_manager.0000,Thread-13,task.0074,,
+1626661889.3466008,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0074,,
+1626661889.3467593,advance,radical.entk.task_manager.0000,Thread-13,task.0074,SUBMITTING,stage.0000
+1626661889.3469708,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0074,SUBMITTING,stage.0000
+1626661889.3476348,td_create,radical.entk.task_manager.0000,Thread-13,task.0090,,
+1626661889.3489699,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0090,,
+1626661889.3491709,advance,radical.entk.task_manager.0000,Thread-13,task.0090,SUBMITTING,stage.0000
+1626661889.3494132,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0090,SUBMITTING,stage.0000
+1626661889.3501205,td_create,radical.entk.task_manager.0000,Thread-13,task.0082,,
+1626661889.3514991,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0082,,
+1626661889.3516247,advance,radical.entk.task_manager.0000,Thread-13,task.0082,SUBMITTING,stage.0000
+1626661889.3517582,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0082,SUBMITTING,stage.0000
+1626661889.3525131,td_create,radical.entk.task_manager.0000,Thread-13,task.0050,,
+1626661889.3537521,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0050,,
+1626661889.3538301,advance,radical.entk.task_manager.0000,Thread-13,task.0050,SUBMITTING,stage.0000
+1626661889.3539622,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0050,SUBMITTING,stage.0000
+1626661889.3546989,td_create,radical.entk.task_manager.0000,Thread-13,task.0116,,
+1626661889.3559375,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0116,,
+1626661889.3560145,advance,radical.entk.task_manager.0000,Thread-13,task.0116,SUBMITTING,stage.0000
+1626661889.3561466,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0116,SUBMITTING,stage.0000
+1626661889.3570030,td_create,radical.entk.task_manager.0000,Thread-13,task.0006,,
+1626661889.3583279,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0006,,
+1626661889.3584054,advance,radical.entk.task_manager.0000,Thread-13,task.0006,SUBMITTING,stage.0000
+1626661889.3586981,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0006,SUBMITTING,stage.0000
+1626661889.3594396,td_create,radical.entk.task_manager.0000,Thread-13,task.0048,,
+1626661889.3608799,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0048,,
+1626661889.3609569,advance,radical.entk.task_manager.0000,Thread-13,task.0048,SUBMITTING,stage.0000
+1626661889.3613012,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0048,SUBMITTING,stage.0000
+1626661889.3619301,td_create,radical.entk.task_manager.0000,Thread-13,task.0118,,
+1626661889.3634169,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0118,,
+1626661889.3635364,advance,radical.entk.task_manager.0000,Thread-13,task.0118,SUBMITTING,stage.0000
+1626661889.3636987,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0118,SUBMITTING,stage.0000
+1626661889.3644152,td_create,radical.entk.task_manager.0000,Thread-13,task.0004,,
+1626661889.3656988,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0004,,
+1626661889.3657763,advance,radical.entk.task_manager.0000,Thread-13,task.0004,SUBMITTING,stage.0000
+1626661889.3659101,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0004,SUBMITTING,stage.0000
+1626661889.3666561,td_create,radical.entk.task_manager.0000,Thread-13,task.0094,,
+1626661889.3680990,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0094,,
+1626661889.3681798,advance,radical.entk.task_manager.0000,Thread-13,task.0094,SUBMITTING,stage.0000
+1626661889.3683515,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0094,SUBMITTING,stage.0000
+1626661889.3691177,td_create,radical.entk.task_manager.0000,Thread-13,task.0010,,
+1626661889.3703887,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0010,,
+1626661889.3704643,advance,radical.entk.task_manager.0000,Thread-13,task.0010,SUBMITTING,stage.0000
+1626661889.3705945,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0010,SUBMITTING,stage.0000
+1626661889.3713484,td_create,radical.entk.task_manager.0000,Thread-13,task.0053,,
+1626661889.3725810,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0053,,
+1626661889.3726578,advance,radical.entk.task_manager.0000,Thread-13,task.0053,SUBMITTING,stage.0000
+1626661889.3727891,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0053,SUBMITTING,stage.0000
+1626661889.3734968,td_create,radical.entk.task_manager.0000,Thread-13,task.0086,,
+1626661889.3748939,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0086,,
+1626661889.3749702,advance,radical.entk.task_manager.0000,Thread-13,task.0086,SUBMITTING,stage.0000
+1626661889.3751354,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0086,SUBMITTING,stage.0000
+1626661889.3758800,td_create,radical.entk.task_manager.0000,Thread-13,task.0083,,
+1626661889.3772421,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0083,,
+1626661889.3774824,advance,radical.entk.task_manager.0000,Thread-13,task.0083,SUBMITTING,stage.0000
+1626661889.3776667,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0083,SUBMITTING,stage.0000
+1626661889.3783963,td_create,radical.entk.task_manager.0000,Thread-13,task.0007,,
+1626661889.3797843,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0007,,
+1626661889.3799417,advance,radical.entk.task_manager.0000,Thread-13,task.0007,SUBMITTING,stage.0000
+1626661889.3801479,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0007,SUBMITTING,stage.0000
+1626661889.3808093,td_create,radical.entk.task_manager.0000,Thread-13,task.0075,,
+1626661889.3822451,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0075,,
+1626661889.3824894,advance,radical.entk.task_manager.0000,Thread-13,task.0075,SUBMITTING,stage.0000
+1626661889.3826933,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0075,SUBMITTING,stage.0000
+1626661889.3834355,td_create,radical.entk.task_manager.0000,Thread-13,task.0089,,
+1626661889.3849354,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0089,,
+1626661889.3850548,advance,radical.entk.task_manager.0000,Thread-13,task.0089,SUBMITTING,stage.0000
+1626661889.3852150,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0089,SUBMITTING,stage.0000
+1626661889.3860116,td_create,radical.entk.task_manager.0000,Thread-13,task.0119,,
+1626661889.3875945,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0119,,
+1626661889.3876977,advance,radical.entk.task_manager.0000,Thread-13,task.0119,SUBMITTING,stage.0000
+1626661889.3880260,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0119,SUBMITTING,stage.0000
+1626661889.3888433,td_create,radical.entk.task_manager.0000,Thread-13,task.0051,,
+1626661889.3902607,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0051,,
+1626661889.3903806,advance,radical.entk.task_manager.0000,Thread-13,task.0051,SUBMITTING,stage.0000
+1626661889.3905404,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0051,SUBMITTING,stage.0000
+1626661889.3913567,td_create,radical.entk.task_manager.0000,Thread-13,task.0019,,
+1626661889.3928030,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0019,,
+1626661889.3929052,advance,radical.entk.task_manager.0000,Thread-13,task.0019,SUBMITTING,stage.0000
+1626661889.3932407,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0019,SUBMITTING,stage.0000
+1626661889.3940532,td_create,radical.entk.task_manager.0000,Thread-13,task.0087,,
+1626661889.3954539,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0087,,
+1626661889.3955731,advance,radical.entk.task_manager.0000,Thread-13,task.0087,SUBMITTING,stage.0000
+1626661889.3957345,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0087,SUBMITTING,stage.0000
+1626661889.3966146,td_create,radical.entk.task_manager.0000,Thread-13,task.0009,,
+1626661889.3979502,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0009,,
+1626661889.3980520,advance,radical.entk.task_manager.0000,Thread-13,task.0009,SUBMITTING,stage.0000
+1626661889.3983710,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0009,SUBMITTING,stage.0000
+1626661889.3991857,td_create,radical.entk.task_manager.0000,Thread-13,task.0056,,
+1626661889.4006481,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0056,,
+1626661889.4007752,advance,radical.entk.task_manager.0000,Thread-13,task.0056,SUBMITTING,stage.0000
+1626661889.4009557,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0056,SUBMITTING,stage.0000
+1626661889.4017713,td_create,radical.entk.task_manager.0000,Thread-13,task.0024,,
+1626661889.4032028,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0024,,
+1626661889.4033084,advance,radical.entk.task_manager.0000,Thread-13,task.0024,SUBMITTING,stage.0000
+1626661889.4036307,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0024,SUBMITTING,stage.0000
+1626661889.4043701,td_create,radical.entk.task_manager.0000,Thread-13,task.0052,,
+1626661889.4057577,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0052,,
+1626661889.4059663,advance,radical.entk.task_manager.0000,Thread-13,task.0052,SUBMITTING,stage.0000
+1626661889.4062095,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0052,SUBMITTING,stage.0000
+1626661889.4070230,td_create,radical.entk.task_manager.0000,Thread-13,task.0020,,
+1626661889.4084685,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0020,,
+1626661889.4085877,advance,radical.entk.task_manager.0000,Thread-13,task.0020,SUBMITTING,stage.0000
+1626661889.4087496,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0020,SUBMITTING,stage.0000
+1626661889.4095199,td_create,radical.entk.task_manager.0000,Thread-13,task.0054,,
+1626661889.4110355,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0054,,
+1626661889.4111507,advance,radical.entk.task_manager.0000,Thread-13,task.0054,SUBMITTING,stage.0000
+1626661889.4114745,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0054,SUBMITTING,stage.0000
+1626661889.4122379,td_create,radical.entk.task_manager.0000,Thread-13,task.0029,,
+1626661889.4136586,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0029,,
+1626661889.4138961,advance,radical.entk.task_manager.0000,Thread-13,task.0029,SUBMITTING,stage.0000
+1626661889.4140997,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0029,SUBMITTING,stage.0000
+1626661889.4148645,td_create,radical.entk.task_manager.0000,Thread-13,task.0077,,
+1626661889.4163570,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0077,,
+1626661889.4164350,advance,radical.entk.task_manager.0000,Thread-13,task.0077,SUBMITTING,stage.0000
+1626661889.4167631,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0077,SUBMITTING,stage.0000
+1626661889.4175026,td_create,radical.entk.task_manager.0000,Thread-13,task.0014,,
+1626661889.4187944,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0014,,
+1626661889.4188731,advance,radical.entk.task_manager.0000,Thread-13,task.0014,SUBMITTING,stage.0000
+1626661889.4192038,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0014,SUBMITTING,stage.0000
+1626661889.4199586,td_create,radical.entk.task_manager.0000,Thread-13,task.0013,,
+1626661889.4214907,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0013,,
+1626661889.4216492,advance,radical.entk.task_manager.0000,Thread-13,task.0013,SUBMITTING,stage.0000
+1626661889.4218538,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0013,SUBMITTING,stage.0000
+1626661889.4226360,td_create,radical.entk.task_manager.0000,Thread-13,task.0097,,
+1626661889.4240644,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0097,,
+1626661889.4241905,advance,radical.entk.task_manager.0000,Thread-13,task.0097,SUBMITTING,stage.0000
+1626661889.4243445,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0097,SUBMITTING,stage.0000
+1626661889.4252169,td_create,radical.entk.task_manager.0000,Thread-13,task.0012,,
+1626661889.4266384,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0012,,
+1626661889.4267414,advance,radical.entk.task_manager.0000,Thread-13,task.0012,SUBMITTING,stage.0000
+1626661889.4270592,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0012,SUBMITTING,stage.0000
+1626661889.4278324,td_create,radical.entk.task_manager.0000,Thread-13,task.0078,,
+1626661889.4292965,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0078,,
+1626661889.4295373,advance,radical.entk.task_manager.0000,Thread-13,task.0078,SUBMITTING,stage.0000
+1626661889.4297404,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0078,SUBMITTING,stage.0000
+1626661889.4305093,td_create,radical.entk.task_manager.0000,Thread-13,task.0026,,
+1626661889.4320612,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0026,,
+1626661889.4321911,advance,radical.entk.task_manager.0000,Thread-13,task.0026,SUBMITTING,stage.0000
+1626661889.4325223,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0026,SUBMITTING,stage.0000
+1626661889.4333177,td_create,radical.entk.task_manager.0000,Thread-13,task.0059,,
+1626661889.4348164,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0059,,
+1626661889.4349363,advance,radical.entk.task_manager.0000,Thread-13,task.0059,SUBMITTING,stage.0000
+1626661889.4350967,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0059,SUBMITTING,stage.0000
+1626661889.4360111,td_create,radical.entk.task_manager.0000,Thread-13,task.0017,,
+1626661889.4374120,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0017,,
+1626661889.4376447,advance,radical.entk.task_manager.0000,Thread-13,task.0017,SUBMITTING,stage.0000
+1626661889.4378428,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0017,SUBMITTING,stage.0000
+1626661889.4386344,td_create,radical.entk.task_manager.0000,Thread-13,task.0055,,
+1626661889.4400892,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0055,,
+1626661889.4402084,advance,radical.entk.task_manager.0000,Thread-13,task.0055,SUBMITTING,stage.0000
+1626661889.4403691,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0055,SUBMITTING,stage.0000
+1626661889.4411671,td_create,radical.entk.task_manager.0000,Thread-13,task.0005,,
+1626661889.4426813,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0005,,
+1626661889.4427829,advance,radical.entk.task_manager.0000,Thread-13,task.0005,SUBMITTING,stage.0000
+1626661889.4431121,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0005,SUBMITTING,stage.0000
+1626661889.4439287,td_create,radical.entk.task_manager.0000,Thread-13,task.0079,,
+1626661889.4453394,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0079,,
+1626661889.4454415,advance,radical.entk.task_manager.0000,Thread-13,task.0079,SUBMITTING,stage.0000
+1626661889.4457562,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0079,SUBMITTING,stage.0000
+1626661889.4465842,td_create,radical.entk.task_manager.0000,Thread-13,task.0015,,
+1626661889.4481030,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0015,,
+1626661889.4483011,advance,radical.entk.task_manager.0000,Thread-13,task.0015,SUBMITTING,stage.0000
+1626661889.4485354,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0015,SUBMITTING,stage.0000
+1626661889.4493220,td_create,radical.entk.task_manager.0000,Thread-13,task.0057,,
+1626661889.4507804,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0057,,
+1626661889.4508996,advance,radical.entk.task_manager.0000,Thread-13,task.0057,SUBMITTING,stage.0000
+1626661889.4510589,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0057,SUBMITTING,stage.0000
+1626661889.4518409,td_create,radical.entk.task_manager.0000,Thread-13,task.0025,,
+1626661889.4533582,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0025,,
+1626661889.4534597,advance,radical.entk.task_manager.0000,Thread-13,task.0025,SUBMITTING,stage.0000
+1626661889.4537716,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0025,SUBMITTING,stage.0000
+1626661889.4545743,td_create,radical.entk.task_manager.0000,Thread-13,task.0091,,
+1626661889.4560235,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0091,,
+1626661889.4561439,advance,radical.entk.task_manager.0000,Thread-13,task.0091,SUBMITTING,stage.0000
+1626661889.4563034,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0091,SUBMITTING,stage.0000
+1626661889.4572201,td_create,radical.entk.task_manager.0000,Thread-13,task.0021,,
+1626661889.4586186,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0021,,
+1626661889.4588239,advance,radical.entk.task_manager.0000,Thread-13,task.0021,SUBMITTING,stage.0000
+1626661889.4590569,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0021,SUBMITTING,stage.0000
+1626661889.4598169,td_create,radical.entk.task_manager.0000,Thread-13,task.0096,,
+1626661889.4613426,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0096,,
+1626661889.4614620,advance,radical.entk.task_manager.0000,Thread-13,task.0096,SUBMITTING,stage.0000
+1626661889.4616239,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0096,SUBMITTING,stage.0000
+1626661889.4625342,td_create,radical.entk.task_manager.0000,Thread-13,task.0023,,
+1626661889.4639285,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0023,,
+1626661889.4640300,advance,radical.entk.task_manager.0000,Thread-13,task.0023,SUBMITTING,stage.0000
+1626661889.4643447,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0023,SUBMITTING,stage.0000
+1626661889.4651568,td_create,radical.entk.task_manager.0000,Thread-13,task.0093,,
+1626661889.4665804,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0093,,
+1626661889.4666841,advance,radical.entk.task_manager.0000,Thread-13,task.0093,SUBMITTING,stage.0000
+1626661889.4669466,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0093,SUBMITTING,stage.0000
+1626661889.4677575,td_create,radical.entk.task_manager.0000,Thread-13,task.0027,,
+1626661889.4691813,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0027,,
+1626661889.4694457,advance,radical.entk.task_manager.0000,Thread-13,task.0027,SUBMITTING,stage.0000
+1626661889.4696491,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0027,SUBMITTING,stage.0000
+1626661889.4704189,td_create,radical.entk.task_manager.0000,Thread-13,task.0081,,
+1626661889.4718769,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0081,,
+1626661889.4719558,advance,radical.entk.task_manager.0000,Thread-13,task.0081,SUBMITTING,stage.0000
+1626661889.4722886,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0081,SUBMITTING,stage.0000
+1626661889.4730716,td_create,radical.entk.task_manager.0000,Thread-13,task.0028,,
+1626661889.4747260,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0028,,
+1626661889.4748461,advance,radical.entk.task_manager.0000,Thread-13,task.0028,SUBMITTING,stage.0000
+1626661889.4750085,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0028,SUBMITTING,stage.0000
+1626661889.4757998,td_create,radical.entk.task_manager.0000,Thread-13,task.0058,,
+1626661889.4772928,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0058,,
+1626661889.4774187,advance,radical.entk.task_manager.0000,Thread-13,task.0058,SUBMITTING,stage.0000
+1626661889.4775763,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0058,SUBMITTING,stage.0000
+1626661889.4783702,td_create,radical.entk.task_manager.0000,Thread-13,task.0080,,
+1626661889.4799409,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0080,,
+1626661889.4801466,advance,radical.entk.task_manager.0000,Thread-13,task.0080,SUBMITTING,stage.0000
+1626661889.4803836,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0080,SUBMITTING,stage.0000
+1626661889.4812224,td_create,radical.entk.task_manager.0000,Thread-13,task.0018,,
+1626661889.4826696,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0018,,
+1626661889.4827945,advance,radical.entk.task_manager.0000,Thread-13,task.0018,SUBMITTING,stage.0000
+1626661889.4829540,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0018,SUBMITTING,stage.0000
+1626661889.4838872,td_create,radical.entk.task_manager.0000,Thread-13,task.0122,,
+1626661889.4853568,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0122,,
+1626661889.4855988,advance,radical.entk.task_manager.0000,Thread-13,task.0122,SUBMITTING,stage.0001
+1626661889.4858038,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0122,SUBMITTING,stage.0001
+1626661889.4866078,td_create,radical.entk.task_manager.0000,Thread-13,task.0126,,
+1626661889.4882073,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0126,,
+1626661889.4884493,advance,radical.entk.task_manager.0000,Thread-13,task.0126,SUBMITTING,stage.0001
+1626661889.4886374,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0126,SUBMITTING,stage.0001
+1626661889.4893887,td_create,radical.entk.task_manager.0000,Thread-13,task.0121,,
+1626661889.4909797,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0121,,
+1626661889.4911082,advance,radical.entk.task_manager.0000,Thread-13,task.0121,SUBMITTING,stage.0001
+1626661889.4912996,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0121,SUBMITTING,stage.0001
+1626661889.4922361,td_create,radical.entk.task_manager.0000,Thread-13,task.0123,,
+1626661889.4935770,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0123,,
+1626661889.4936807,advance,radical.entk.task_manager.0000,Thread-13,task.0123,SUBMITTING,stage.0001
+1626661889.4940069,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0123,SUBMITTING,stage.0001
+1626661889.4947841,td_create,radical.entk.task_manager.0000,Thread-13,task.0127,,
+1626661889.4963865,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0127,,
+1626661889.4965165,advance,radical.entk.task_manager.0000,Thread-13,task.0127,SUBMITTING,stage.0001
+1626661889.4968383,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0127,SUBMITTING,stage.0001
+1626661889.4976346,td_create,radical.entk.task_manager.0000,Thread-13,task.0129,,
+1626661889.4991133,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0129,,
+1626661889.4992347,advance,radical.entk.task_manager.0000,Thread-13,task.0129,SUBMITTING,stage.0001
+1626661889.4993968,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0129,SUBMITTING,stage.0001
+1626661889.5002167,td_create,radical.entk.task_manager.0000,Thread-13,task.0120,,
+1626661889.5017848,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0120,,
+1626661889.5018880,advance,radical.entk.task_manager.0000,Thread-13,task.0120,SUBMITTING,stage.0001
+1626661889.5022054,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0120,SUBMITTING,stage.0001
+1626661889.5029876,td_create,radical.entk.task_manager.0000,Thread-13,task.0125,,
+1626661889.5042617,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0125,,
+1626661889.5044734,advance,radical.entk.task_manager.0000,Thread-13,task.0125,SUBMITTING,stage.0001
+1626661889.5047100,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0125,SUBMITTING,stage.0001
+1626661889.5055420,td_create,radical.entk.task_manager.0000,Thread-13,task.0128,,
+1626661889.5070965,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0128,,
+1626661889.5071733,advance,radical.entk.task_manager.0000,Thread-13,task.0128,SUBMITTING,stage.0001
+1626661889.5074842,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0128,SUBMITTING,stage.0001
+1626661889.5082505,td_create,radical.entk.task_manager.0000,Thread-13,task.0124,,
+1626661889.5095742,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0124,,
+1626661889.5096953,advance,radical.entk.task_manager.0000,Thread-13,task.0124,SUBMITTING,stage.0001
+1626661889.5098548,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0124,SUBMITTING,stage.0001
+1626661889.5106459,td_create,radical.entk.task_manager.0000,Thread-13,task.0130,,
+1626661889.5125635,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0130,,
+1626661889.5126905,advance,radical.entk.task_manager.0000,Thread-13,task.0130,SUBMITTING,stage.0002
+1626661889.5128355,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0130,SUBMITTING,stage.0002
+1626661889.5138166,td_create,radical.entk.task_manager.0000,Thread-13,task.0131,,
+1626661889.5151427,td from task - done,radical.entk.task_manager.0000,Thread-13,task.0131,,
+1626661889.5152695,advance,radical.entk.task_manager.0000,Thread-13,task.0131,SUBMITTING,stage.0003
+1626661889.5154064,pub_sync,radical.entk.task_manager.0000,Thread-13,task.0131,SUBMITTING,stage.0003
