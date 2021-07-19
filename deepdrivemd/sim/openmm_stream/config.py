@@ -28,13 +28,15 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     # Read outlier trajectory into memory while writing PDB file - not used but is in run*.py, should be cleaned out from there
     in_memory: bool = True
     # Name of bp "socket" file in simulation directory (.sst is added by adios)
-    bp_file: Path = 'md.bp'
+    bp_file: Path = "md.bp"
     # adios file name copied into the simulation directory
-    adios_cfg: Path = 'adios.xml'
+    adios_cfg: Path = "adios.xml"
     # a template file for a simulation adios file (stream name should be replaced to be unique for each simulation)
-    adios_xml_sim: Path = 'adios.xml'
+    adios_xml_sim: Path = "adios.xml"
     # a directory with initial pdb files
-    initial_pdb_dir: Path = '/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input'
+    initial_pdb_dir: Path = (
+        "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input"
+    )
 
     @root_validator()
     def explicit_solvent_requires_top_suffix(cls, values: dict):

@@ -2,6 +2,7 @@ from typing import List, Tuple
 from deepdrivemd.config import MachineLearningTaskConfig
 from pathlib import Path
 
+
 class KerasCVAEModelConfig(MachineLearningTaskConfig):
     # Shape of contact maps passed to CVAE
     final_shape: Tuple[int, ...] = (28, 28, 1)
@@ -55,6 +56,7 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     # retrain the model from scratch at each iteration or start with the previously trained model
     reinit: bool = True
     use_model_checkpoint = True
+
 
 if __name__ == "__main__":
     KerasCVAEModelConfig().dump_yaml("keras_cvae_template.yaml")

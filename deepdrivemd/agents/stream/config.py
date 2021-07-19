@@ -2,11 +2,14 @@ from typing import List, Tuple
 from deepdrivemd.config import AgentTaskConfig
 from pathlib import Path
 
+
 class OutlierDetectionConfig(AgentTaskConfig):
     """Outlier detection algorithm configuration."""
 
     # top aggregation directory
-    agg_dir: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs"
+    agg_dir: Path = (
+        "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs"
+    )
     # number of aggregators
     num_agg: int = 2
     # minimum acceptable number of steps in each aggregation file
@@ -45,9 +48,13 @@ class OutlierDetectionConfig(AgentTaskConfig):
     # minimum number of outliers
     outlier_min: int = 3000
     # path to the intial pdb file
-    init_pdb_file: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb"
+    init_pdb_file: Path = (
+        "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb"
+    )
     # path to the reference pdb file
-    ref_pdb_file: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb"
+    ref_pdb_file: Path = (
+        "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb"
+    )
     # initial value for eps for dbscan
     init_eps: float = 1.3
     # initial value for min_samples for dbscan
@@ -60,6 +67,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     project_gpu: bool = False
     # use project_lastN last samples from each aggregator to search for outliers
     project_lastN: int = 8000
+
 
 if __name__ == "__main__":
     OutlierDetectionConfig().dump_yaml("dbscan_template.yaml")

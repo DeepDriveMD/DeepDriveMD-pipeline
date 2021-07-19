@@ -135,13 +135,16 @@ class AggregationStageConfig(BaseStageConfig):
     """
     Global aggregation configuration (written one per experiment)
     """
+
     # Whether or not to skip aggregation stage
     skip_aggregation: bool = False
     # Arbitrary task parameters
     task_config: AggregationTaskConfig = AggregationTaskConfig()
 
+
 class StreamingAggregationStageConfig(AggregationStageConfig):
     num_tasks: int = 1
+
 
 class MachineLearningTaskConfig(BaseTaskConfig):
     """Base class for specific model configs to inherit."""
@@ -211,6 +214,7 @@ class ExperimentConfig(BaseSettings):
     machine_learning_stage: MachineLearningStageConfig
     model_selection_stage: ModelSelectionStageConfig
     agent_stage: AgentStageConfig
+
     @validator("experiment_directory")
     def experiment_directory_cannot_exist(cls, v):
         if v.exists():
@@ -229,6 +233,7 @@ class StreamingExperimentConfig(ExperimentConfig):
     ref_pdb_file: Path
     model_selection_stage: Optional[ModelSelectionStageConfig]
     aggregation_stage: StreamingAggregationStageConfig
+
 
 def generate_sample_config():
     return ExperimentConfig(

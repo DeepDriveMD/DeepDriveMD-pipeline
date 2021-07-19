@@ -1,8 +1,9 @@
 from aggregator_reader import ADIOS_READER, STREAMS
 
+
 def test1(ar, n):
     for j in range(20):
-        print('='*30)
+        print("=" * 30)
         i, steps, md5s, cms, positions, velocities = ar.next_all(n)
         print(f"j={j}, i={i}")
         print(f"md5s = {md5s}")
@@ -17,23 +18,26 @@ def test1(ar, n):
     print(cms[0].shape)
     print(velocities[0].shape)
 
+
 def test2(ar, n):
     for j in range(7):
-        print('*'*30)
+        print("*" * 30)
         i, cms = ar.next_cm(n)
         print(f"j={j}, i={i}")
 
     print(type(cms[0]))
     print(cms[0].shape)
 
+
 def test3():
-    s = STREAMS(['aggregator0.bp'])
+    s = STREAMS(["aggregator0.bp"])
     z = s.next_cm()
     print(type(z))
     print(z.shape)
 
+
 def test4():
-    s = STREAMS(['aggregator0.bp','aggregator1.bp'])
+    s = STREAMS(["aggregator0.bp", "aggregator1.bp"])
     z = s.next()
     n = len(z)
     print(n)
@@ -42,18 +46,19 @@ def test4():
         print(type(z[i]))
         print(z[i].shape)
 
-if(__name__ == '__main__'):
 
-    fn = 'aggregator0.bp'
-    ADIOS_XML_AGGREGATOR = 'adios.xml'
-    stream_name = 'AggregatorOutput'
+if __name__ == "__main__":
 
-    ar = ADIOS_READER('aggregator0.bp', 'adios.xml', 'AggregatorOutput')
+    fn = "aggregator0.bp"
+    ADIOS_XML_AGGREGATOR = "adios.xml"
+    stream_name = "AggregatorOutput"
+
+    ar = ADIOS_READER("aggregator0.bp", "adios.xml", "AggregatorOutput")
 
     test1(ar, 10)
-    print("&"*30)
+    print("&" * 30)
     test2(ar, 10)
-    print("&"*30)
+    print("&" * 30)
     test3()
-    print("&"*30)
+    print("&" * 30)
     test4()

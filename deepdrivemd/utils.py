@@ -6,6 +6,7 @@ from typing import Tuple
 import math
 import argparse
 
+
 def setup_mpi_comm(distributed: bool):
     if distributed:
         # get communicator: duplicate from comm world
@@ -93,24 +94,25 @@ def bestk(
 
 
 def t2Dto1D(A):
-    n,m = A.shape
-    B = np.zeros(int(n*(n-1)/2), dtype=np.uint8)
+    n, m = A.shape
+    B = np.zeros(int(n * (n - 1) / 2), dtype=np.uint8)
     k = 0
     for i in range(n):
-        for j in range(i+1, n):
+        for j in range(i + 1, n):
             B[k] = A[i, j]
             k += 1
     return B
 
+
 def t1Dto2D(B):
     m = B.shape[0]
-    n = int((1 + math.sqrt(1 + 8*m))/2)
-    A = np.ones((n,n), dtype=np.uint8)
+    n = int((1 + math.sqrt(1 + 8 * m)) / 2)
+    A = np.ones((n, n), dtype=np.uint8)
     k = 0
     for i in range(n):
-        for j in range(i+1, n):
-            A[i,j] = B[k]
-            A[j,i] = B[k]
+        for j in range(i + 1, n):
+            A[i, j] = B[k]
+            A[j, i] = B[k]
             k += 1
     return A
 
@@ -120,20 +122,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-c", "--config", help="YAML config file", type=str, required=True
     )
-    parser.add_argument("-p", "--project", action="store_true",                                                                                                                                                                                                                           
-                    help="compute tsne")                                                                                                                                                                                                                                                  
+    parser.add_argument("-p", "--project", action="store_true", help="compute tsne")
     args = parser.parse_args()
     return args
 
 
 def hash2intarray(h):
     b = []
-    for i in range(len(h)//4):
-        b.append(int(h[4*i:4*(i+1)], 16))
+    for i in range(len(h) // 4):
+        b.append(int(h[4 * i : 4 * (i + 1)], 16))
     return np.asarray(b, dtype=np.int64)
 
+
 def intarray2hash(ia):
-    c = list(map(lambda x: "{0:#0{1}x}".format(x,6).replace("0x",""), ia))
+    c = list(map(lambda x: "{0:#0{1}x}".format(x, 6).replace("0x", ""), ia))
     return "".join(c)
-
-

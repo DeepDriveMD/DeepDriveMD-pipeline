@@ -24,6 +24,7 @@ from simtk.openmm.app.pdbfile import PDBFile
 
 import adios2
 
+
 def build_model(cfg, model_path):
     cvae = conv_variational_autoencoder(
         image_size=cfg.final_shape,
@@ -40,25 +41,28 @@ def build_model(cfg, model_path):
     cvae.load(model_path)
     return cvae
 
+
 def wait_for_model(cfg):
     """
     Wait for the trained model to be published by machine learning pipeline
     """
 
-    while(True):
-        if(os.path.exists(cfg.best_model)):
+    while True:
+        if os.path.exists(cfg.best_model):
             break
-        print(f"No model {cfg.best_model}, sleeping"); sys.stdout.flush()
+        print(f"No model {cfg.best_model}, sleeping")
+        sys.stdout.flush()
         time.sleep(cfg.timeout2)
     return cfg.best_model
+
 
 def wait_for_input(cfg):
     """
     Wait for enough data to be produced by simulations
     """
-    while(True):
-        bpfiles = glob.glob(str(cfg.agg_dir/"*/*/agg.bp"))
-        if(len(bpfiles) == cfg.num_agg):
+    while True:
+        bpfiles = glob.glob(str(cfg.agg_dir / "*/*/agg.bp"))
+        if len(bpfiles) == cfg.num_agg:
             break
         print(f"Waiting for {cfg.num_agg} agg.bp files")
         time.sleep(cfg.timeout1)
@@ -66,12 +70,12 @@ def wait_for_input(cfg):
     print(f"bpfiles = {bpfiles}")
 
     # Wait for enough time steps in each bp file
-    while(True):
+    while True:
         enough = True
         for bp in bpfiles:
             com = f"bpls {bp}"
             a = subprocess.getstatusoutput(com)
-            if(a[0] != 0):
+            if a[0] != 0:
                 enough = False
                 print(f"Waiting, a = {a}, {bp}")
                 break
@@ -81,11 +85,11 @@ def wait_for_input(cfg):
                 print("Exception ", e)
                 steps = 0
                 enough = False
-            if(steps < cfg.min_step_increment):
+            if steps < cfg.min_step_increment:
                 enough = False
                 print(f"Waiting, steps = {steps}, {bp}")
                 break
-        if(enough):
+        if enough:
             break
         else:
             time.sleep(cfg.timeout2)
@@ -101,35 +105,40 @@ def dirs(cfg):
     tmp_dir = f"{top_dir}/tmp"
     published_dir = f"{top_dir}/published_outliers"
 
-    if(not os.path.exists(tmp_dir)):
-         os.mkdir(tmp_dir)
-    if(not os.path.exists(published_dir)):
-         os.mkdir(published_dir)
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+    if not os.path.exists(published_dir):
+        os.mkdir(published_dir)
     return top_dir, tmp_dir, published_dir
+
 
 def predict(cfg, model_path, cvae_input, batch_size=32):
     """
     Project contact maps into the middle layer of CVAE
     """
     cvae = build_model(cfg, model_path)
-    input = np.expand_dims(cvae_input[0], axis = -1)
+    input = np.expand_dims(cvae_input[0], axis=-1)
 
     cm_predict = cvae.return_embeddings(input, batch_size)
-    del cvae 
+    del cvae
     K.clear_session()
     return cm_predict
+
 
 def outliers_from_latent(cm_predict, eps=0.35, min_samples=10):
     """
     Cluster the elements in the middle layer of CVAE.
     """
     cm_predict = cp.asarray(cm_predict)
-    db = DBSCAN(eps=eps, min_samples=min_samples, max_mbytes_per_batch=100).fit(cm_predict)
+    db = DBSCAN(eps=eps, min_samples=min_samples, max_mbytes_per_batch=100).fit(
+        cm_predict
+    )
     db_label = db.labels_.to_array()
     print("unique labels = ", np.unique(db_label))
     outlier_list = np.where(db_label == -1)
     K.clear_session()
     return outlier_list
+
 
 def cluster(cfg, cm_predict, outlier_list, eps, min_samples):
     """
@@ -140,24 +149,28 @@ def cluster(cfg, cm_predict, outlier_list, eps, min_samples):
     while outlier_count > 0:
         n_outlier = 0
         try:
-            outliers = np.squeeze(outliers_from_latent(cm_predict, eps=eps, min_samples=min_samples)) 
+            outliers = np.squeeze(
+                outliers_from_latent(cm_predict, eps=eps, min_samples=min_samples)
+            )
             n_outlier = len(outliers)
         except Exception as e:
             print(e)
             print("No outliers found")
 
-        print(f'eps = {eps}, min_samples = {min_samples}, number of outlier found: {n_outlier}')
+        print(
+            f"eps = {eps}, min_samples = {min_samples}, number of outlier found: {n_outlier}"
+        )
 
-        if n_outlier > cfg.outlier_max: 
-            eps = eps + 0.09*random.random()
+        if n_outlier > cfg.outlier_max:
+            eps = eps + 0.09 * random.random()
             min_samples -= int(random.random() < 0.5)
             min_samples = max(5, min_samples)
         elif n_outlier < cfg.outlier_min:
-            eps = max(0.01, eps - 0.09*random.random())
+            eps = max(0.01, eps - 0.09 * random.random())
             min_samples += int(random.random() < 0.5)
-        else: 
-            outlier_list.append(outliers) 
-            break 
+        else:
+            outlier_list.append(outliers)
+            break
         outlier_count -= 1
     return eps, min_samples
 
@@ -167,8 +180,9 @@ def write_pdb_frame(frame, original_pdb, output_pdb_fn):
     Write positions into pdb file
     """
     pdb = PDBFile(str(original_pdb))
-    with open(str(output_pdb_fn), 'w') as f:
+    with open(str(output_pdb_fn), "w") as f:
         PDBFile.writeFile(pdb.getTopology(), frame, f)
+
 
 def write_top_outliers(cfg, tmp_dir, top):
     """
@@ -178,23 +192,25 @@ def write_top_outliers(cfg, tmp_dir, top):
     velocities = top[1]
     md5s = top[2]
 
-    for p,v,m in zip(positions, velocities, md5s):
-        outlier_pdb_file = f'{tmp_dir}/{m}.pdb'
-        outlier_v_file = f'{tmp_dir}/{m}.npy'
+    for p, v, m in zip(positions, velocities, md5s):
+        outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
+        outlier_v_file = f"{tmp_dir}/{m}.npy"
         write_pdb_frame(p, cfg.init_pdb_file, outlier_pdb_file)
         np.save(outlier_v_file, v)
+
 
 def write_db(top, tmp_dir):
     """
     Create and save a database of outliers to be used by simulation
     """
-    outlier_db_fn = f'{tmp_dir}/OutlierDB.pickle'
-    outlier_files = list(map(lambda x: f'{tmp_dir}/{x}.pdb', top[2]))
+    outlier_db_fn = f"{tmp_dir}/OutlierDB.pickle"
+    outlier_files = list(map(lambda x: f"{tmp_dir}/{x}.pdb", top[2]))
     rmsds = top[3]
     db = OutlierDB(tmp_dir, list(zip(rmsds, outlier_files)))
-    with open(outlier_db_fn, 'wb') as f:
-        pickle.dump(db, f)    
+    with open(outlier_db_fn, "wb") as f:
+        pickle.dump(db, f)
     return db
+
 
 def publish(tmp_dir, published_dir):
     """
@@ -206,11 +222,16 @@ def publish(tmp_dir, published_dir):
     mylock = LockFile(dbfn)
 
     mylock.acquire()
-    print(subprocess.getstatusoutput(f"rm -rf {published_dir}/*.pdb {published_dir}/*.npy"))
+    print(
+        subprocess.getstatusoutput(
+            f"rm -rf {published_dir}/*.pdb {published_dir}/*.npy"
+        )
+    )
     print(subprocess.getstatusoutput(f"mv {tmp_dir}/* {published_dir}/"))
     mylock.release()
 
     return
+
 
 def top_outliers(cfg, cvae_input, outlier_list):
     """
@@ -222,16 +243,18 @@ def top_outliers(cfg, cvae_input, outlier_list):
     velocities = cvae_input[3][outlier_list]
     md5s = cvae_input[2][outlier_list]
     rmsds = cvae_input[4][outlier_list]
-    
+
     z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
-    z.sort(key = lambda x: x[3])
+    z.sort(key=lambda x: x[3])
     z = z[:N]
     z = list(zip(*z))
 
     return z
 
+
 def main(cfg: OutlierDetectionConfig):
-    print(subprocess.getstatusoutput("hostname")[1]); sys.stdout.flush()
+    print(subprocess.getstatusoutput("hostname")[1])
+    sys.stdout.flush()
 
     print(cfg)
     with Timer("wait_for_input"):
@@ -239,7 +262,13 @@ def main(cfg: OutlierDetectionConfig):
     with Timer("wait_for_model"):
         model_path = str(wait_for_model(cfg))
 
-    mystreams = STREAMS(adios_files_list, lastN = cfg.lastN, config = cfg.adios_xml_agg, stream_name = "AggregatorOutput", batch = cfg.batch)
+    mystreams = STREAMS(
+        adios_files_list,
+        lastN=cfg.lastN,
+        config=cfg.adios_xml_agg,
+        stream_name="AggregatorOutput",
+        batch=cfg.batch,
+    )
 
     top_dir, tmp_dir, published_dir = dirs(cfg)
     eps = cfg.init_eps
@@ -250,7 +279,7 @@ def main(cfg: OutlierDetectionConfig):
         print(f"outlier iteration {j}")
 
         timer("outlier_search_iteration", 1)
-        
+
         with Timer("outlier_read"):
             cvae_input = mystreams.next()
 
@@ -261,7 +290,7 @@ def main(cfg: OutlierDetectionConfig):
         with Timer("outlier_cluster"):
             eps, min_samples = cluster(cfg, cm_predict, outlier_list, eps, min_samples)
 
-            if(len(outlier_list) == 0 or len(outlier_list[0]) < cfg.num_sim):
+            if len(outlier_list) == 0 or len(outlier_list[0]) < cfg.num_sim:
                 j += 1
                 print("No outliers found")
                 time.sleep(30)
@@ -289,27 +318,36 @@ def read_lastN(adios_files_list, lastN):
     """
     variable_lists = {}
     for bp in adios_files_list:
-        with adios2.open(bp,  "r") as fh:
+        with adios2.open(bp, "r") as fh:
             steps = fh.steps()
             start_step = steps - lastN - 2
-            if(start_step < 0):
+            if start_step < 0:
                 start_step = 0
                 lastN = steps
-            for v in ['contact_map', 'rmsd']:
-                if(v == 'contact_map'):
-                    shape = list(map(int, fh.available_variables()[v]['Shape'].split(",")))
-                elif(v == 'rmsd'):
-                    print(fh.available_variables()[v]['Shape'])
+            for v in ["contact_map", "rmsd"]:
+                if v == "contact_map":
+                    shape = list(
+                        map(int, fh.available_variables()[v]["Shape"].split(","))
+                    )
+                elif v == "rmsd":
+                    print(fh.available_variables()[v]["Shape"])
                     sys.stdout.flush()
-                if(v == 'contact_map'):
-                    start = [0]*len(shape)
-                    var = fh.read(v, start = start, count = shape, step_start = start_step, step_count = lastN)
-                elif(v == 'rmsd'):
-                    var = fh.read(v, [], [], step_start = start_step, step_count = lastN)
+                if v == "contact_map":
+                    start = [0] * len(shape)
+                    var = fh.read(
+                        v,
+                        start=start,
+                        count=shape,
+                        step_start=start_step,
+                        step_count=lastN,
+                    )
+                elif v == "rmsd":
+                    var = fh.read(v, [], [], step_start=start_step, step_count=lastN)
                 print("v = ", v, " var.shape = ", var.shape)
                 try:
                     variable_lists[v].append(var)
-                except:
+                except Exception as e:
+                    print("Exception ", e)
                     variable_lists[v] = [var]
 
     for vl in variable_lists:
@@ -318,20 +356,26 @@ def read_lastN(adios_files_list, lastN):
         variable_lists[vl] = np.vstack(variable_lists[vl])
         print(len(variable_lists[vl]))
 
+    variable_lists["contact_map"] = np.array(
+        list(
+            map(
+                lambda x: t1Dto2D(np.unpackbits(x.astype("uint8"))),
+                list(variable_lists["contact_map"]),
+            )
+        )
+    )
 
-    variable_lists['contact_map'] = np.array(list(map(lambda x: t1Dto2D(np.unpackbits(x.astype('uint8'))), list(variable_lists['contact_map']))))
-
-
-    print(variable_lists['contact_map'].shape)
-    print(variable_lists['rmsd'].shape)
+    print(variable_lists["contact_map"].shape)
+    print(variable_lists["rmsd"].shape)
     sys.stdout.flush()
-    return variable_lists['contact_map'], np.concatenate(variable_lists['rmsd'])
+    return variable_lists["contact_map"], np.concatenate(variable_lists["rmsd"])
+
 
 def project(cfg):
     """
     Postproduction: compute TSNE embeddings
     """
-    if(cfg.project_gpu):
+    if cfg.project_gpu:
         from cuml import TSNE
     else:
         from sklearn.manifold import TSNE
@@ -353,33 +397,34 @@ def project(cfg):
 
     rmsds = cvae_input[1]
 
-    with open(f'{dir}/rmsd.npy', 'wb') as ff:
+    with open(f"{dir}/rmsd.npy", "wb") as ff:
         np.save(ff, rmsds)
 
     with Timer("project_predict"):
         embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=1024)
 
-    with open(f'{dir}/embeddings_cvae.npy', 'wb') as ff:
+    with open(f"{dir}/embeddings_cvae.npy", "wb") as ff:
         np.save(ff, embeddings_cvae)
 
     with Timer("project_TSNE_2D"):
         tsne2 = TSNE(n_components=2)
         tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
 
-    with open(f'{dir}/tsne_embeddings_2.npy', 'wb') as ff:
+    with open(f"{dir}/tsne_embeddings_2.npy", "wb") as ff:
         np.save(ff, tsne_embeddings2)
 
     with Timer("project_TSNE_3D"):
         tsne3 = TSNE(n_components=3)
         tsne_embeddings3 = tsne3.fit_transform(embeddings_cvae)
 
-    with open(f'{dir}/tsne_embeddings_3.npy', 'wb') as ff:
+    with open(f"{dir}/tsne_embeddings_3.npy", "wb") as ff:
         np.save(ff, tsne_embeddings3)
+
 
 if __name__ == "__main__":
     args = parse_args()
     cfg = OutlierDetectionConfig.from_yaml(args.config)
-    if(args.project):
+    if args.project:
         project(cfg)
     else:
         main(cfg)

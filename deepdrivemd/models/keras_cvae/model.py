@@ -286,10 +286,10 @@ class conv_variational_autoencoder(object):
         data,
         batch_size,
         epochs=1,
-        validation_data = None,
-        checkpoint_path = None,
+        validation_data=None,
+        checkpoint_path=None,
         file_path=None,
-        use_model_checkpoint = False
+        use_model_checkpoint=False,
     ):
         """
         train network on given data
@@ -315,12 +315,14 @@ class conv_variational_autoencoder(object):
         #    raise Exception("Please enter a path to save the network")
         # tensorflow.config.experimental_run_functions_eagerly(False)
 
-
         callbacks = [self.history]
         if use_model_checkpoint:
             callbacks.append(
                 ModelCheckpoint(
-                    f"{checkpoint_path}/best.h5", monitor="val_loss", save_best_only=True, verbose=1
+                    f"{checkpoint_path}/best.h5",
+                    monitor="val_loss",
+                    save_best_only=True,
+                    verbose=1,
                 )
             )
 

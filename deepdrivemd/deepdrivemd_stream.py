@@ -8,6 +8,7 @@ from deepdrivemd.config import StreamingExperimentConfig, BaseStageConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.utils import parse_args
 
+
 def generate_task(cfg: BaseStageConfig) -> Task:
     task = Task()
     task.cpu_reqs = cfg.cpu_reqs.dict().copy()
@@ -16,6 +17,7 @@ def generate_task(cfg: BaseStageConfig) -> Task:
     task.executable = cfg.executable
     task.arguments = cfg.arguments.copy()
     return task
+
 
 class PipelineManager:
     MOLECULAR_DYNAMICS_STAGE_NAME = "MolecularDynamics"
@@ -27,19 +29,19 @@ class PipelineManager:
     AGGREGATION_PIPELINE_NAME = "AggregatingPipeline"
     MACHINE_LEARNING_PIPELINE_NAME = "MachineLearningPipeline"
     AGENT_PIPELINE_NAME = "AgentPipeline"
-    
+
     def __init__(self, cfg: StreamingExperimentConfig):
         self.cfg = cfg
         self.stage_idx = 0
         self.api = DeepDriveMD_API(cfg.experiment_directory)
-        
+
         self.pipelines = {}
 
         p_md = Pipeline()
         p_md.name = self.MOLECULAR_DYNAMICS_PIPELINE_NAME
-        
+
         self.pipelines[p_md.name] = p_md
-        
+
         p_aggregate = Pipeline()
         p_aggregate.name = self.AGGREGATION_PIPELINE_NAME
 
@@ -48,11 +50,11 @@ class PipelineManager:
         p_ml = Pipeline()
         p_ml.name = self.MACHINE_LEARNING_PIPELINE_NAME
         self.pipelines[p_ml.name] = p_ml
-            
+
         p_outliers = Pipeline()
         p_outliers.name = self.AGENT_PIPELINE_NAME
         self.pipelines[p_outliers.name] = p_outliers
-            
+
         self._init_experiment_dir()
 
     def _init_experiment_dir(self):
@@ -63,12 +65,17 @@ class PipelineManager:
         self.api.machine_learning_stage.runs_dir.mkdir()
         self.api.agent_stage.runs_dir.mkdir()
 
-
     def _generate_pipeline_iteration(self):
 
-        self.pipelines[self.MOLECULAR_DYNAMICS_PIPELINE_NAME].add_stages(self.generate_molecular_dynamics_stage())
-        self.pipelines[self.AGGREGATION_PIPELINE_NAME].add_stages(self.generate_aggregating_stage())
-        self.pipelines[self.MACHINE_LEARNING_PIPELINE_NAME].add_stages(self.generate_machine_learning_stage())
+        self.pipelines[self.MOLECULAR_DYNAMICS_PIPELINE_NAME].add_stages(
+            self.generate_molecular_dynamics_stage()
+        )
+        self.pipelines[self.AGGREGATION_PIPELINE_NAME].add_stages(
+            self.generate_aggregating_stage()
+        )
+        self.pipelines[self.MACHINE_LEARNING_PIPELINE_NAME].add_stages(
+            self.generate_machine_learning_stage()
+        )
         self.pipelines[self.AGENT_PIPELINE_NAME].add_stages(self.generate_agent_stage())
 
         self.stage_idx += 1
@@ -83,7 +90,7 @@ class PipelineManager:
         cfg = self.cfg.molecular_dynamics_stage
         stage_api = self.api.molecular_dynamics_stage
 
-        init_file = glob.glob(str(cfg.task_config.initial_pdb_dir) +"/*.pdb")[0]
+        init_file = glob.glob(str(cfg.task_config.initial_pdb_dir) + "/*.pdb")[0]
 
         for task_idx in range(cfg.num_tasks):
 
@@ -132,7 +139,6 @@ class PipelineManager:
 
         return stage
 
-
     def generate_machine_learning_stage(self) -> Stage:
         stage = Stage()
         stage.name = self.MACHINE_LEARNING_STAGE_NAME
@@ -162,7 +168,6 @@ class PipelineManager:
         stage.add_tasks(task)
 
         return stage
-    
 
     def generate_agent_stage(self) -> Stage:
         stage = Stage()
@@ -189,6 +194,7 @@ class PipelineManager:
         stage.add_tasks(task)
 
         return stage
+
 
 if __name__ == "__main__":
 

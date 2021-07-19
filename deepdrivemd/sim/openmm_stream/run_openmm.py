@@ -7,7 +7,6 @@ from deepdrivemd.sim.openmm.config import OpenMMConfig
 from openmm_reporter import ContactMapReporter
 import sys
 import os
-from OutlierDB import OutlierDB
 import time
 import random
 from lockfile import LockFile
@@ -21,11 +20,12 @@ from deepdrivemd.sim.openmm.run_openmm import SimulationContext
 
 
 def configure_reporters(
-        sim: omm.app.Simulation,
-        ctx: SimulationContext,
-        cfg: OpenMMConfig,
-        report_steps: int):
-    
+    sim: omm.app.Simulation,
+    ctx: SimulationContext,
+    cfg: OpenMMConfig,
+    report_steps: int,
+):
+
     sim.reporters.append(ContactMapReporter(report_steps, cfg))
 
 
@@ -38,19 +38,19 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
     Only one outlier selection policy is currently implemented:
     sort the outliers by rmsd and use simulation task id as
     an index into this sorted array.
-    
+
     """
-    if(cfg.next_outlier_policy == 1):
+    if cfg.next_outlier_policy == 1:
         cfg.pickle_db = cfg.outliers_dir + "/OutlierDB.pickle"
 
-        if(not os.path.exists(cfg.pickle_db)):
+        if not os.path.exists(cfg.pickle_db):
             return None
 
-        if(cfg.lock == "set_by_deepdrivemd"):
+        if cfg.lock == "set_by_deepdrivemd":
             cfg.lock = LockFile(cfg.pickle_db)
 
         cfg.lock.acquire()
-        with open(cfg.pickle_db, 'rb') as f:
+        with open(cfg.pickle_db, "rb") as f:
             db = pickle.load(f)
         md5 = db.sorted_index[cfg.task_idx]
         rmsd = db.dictionary[md5]
@@ -61,52 +61,56 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
         shutil.copy(cfg.pickle_db, cfg.current_dir)
         cfg.lock.release()
 
-        with open(cfg.current_dir + "/rmsd.txt","w") as f:
+        with open(cfg.current_dir + "/rmsd.txt", "w") as f:
             f.write(f"{rmsd}\n")
 
         positions_pdb = cfg.current_dir + f"/{md5}.pdb"
         velocities_npy = cfg.current_dir + f"/{md5}.npy"
 
         return positions_pdb, velocities_npy, rmsd, md5
-        
-    elif(cfg.next_outlier_policy == 0):
+
+    elif cfg.next_outlier_policy == 0:
         "To implement"
         return None
+
 
 def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulation):
     """
     Replace positions and, with cfg.copy_velocities_p probability, velocities
     of the current simulation state from an outlier
     """
-    sim_dir = cfg.output_path/str(iteration)
-    sim_dir.mkdir(exist_ok = True)
+    sim_dir = cfg.output_path / str(iteration)
+    sim_dir.mkdir(exist_ok=True)
     cfg.current_dir = str(sim_dir)
 
     outlier = next_outlier(cfg, sim)
-    if(outlier is not None):
+    if outlier is not None:
         print("There are outliers")
         positions_pdb, velocities_npy, rmsd, md5 = outlier
-        while(True):
+        while True:
             try:
                 positions = pmd.load_file(positions_pdb).positions
                 velocities = np.load(velocities_npy)
                 break
             except Exception as e:
                 print("Exception ", e)
-                print(f"Waiting for {positions_pdb} and {velocities_npy}") 
+                print(f"Waiting for {positions_pdb} and {velocities_npy}")
                 time.sleep(5)
 
         sim.context.setPositions(positions)
-        if(random.random() < cfg.copy_velocities_p):
+        if random.random() < cfg.copy_velocities_p:
             print("Copying velocities from outliers")
             sim.context.setVelocities(velocities)
         else:
             print("Generating velocities randomly")
-            sim.context.setVelocitiesToTemperature(cfg.temperature_kelvin*u.kelvin, random.randint(1, 10000))
+            sim.context.setVelocitiesToTemperature(
+                cfg.temperature_kelvin * u.kelvin, random.randint(1, 10000)
+            )
         return True
     else:
         print("There are no outliers")
         return False
+
 
 def init_input(cfg):
     """
@@ -114,12 +118,13 @@ def init_input(cfg):
     files in cfg.initial_pdb_dir. For the given simulation the pdb file is
     selected using simulation task_id in a round robin fashion.
     """
-    pdb_files = glob.glob(str(cfg.initial_pdb_dir/"*.pdb"))
+    pdb_files = glob.glob(str(cfg.initial_pdb_dir / "*.pdb"))
     pdb_files.sort()
     n = len(pdb_files)
     i = int(cfg.task_idx) % n
     cfg.pdb_file = pdb_files[i]
     print(f"init_input: n = {n}, i = {i}, pdb_file = {cfg.pdb_file}")
+
 
 def run_simulation(cfg: OpenMMConfig):
     init_input(cfg)
@@ -129,7 +134,6 @@ def run_simulation(cfg: OpenMMConfig):
     report_interval_ps = cfg.report_interval_ps * u.picoseconds
     simulation_length_ns = cfg.simulation_length_ns * u.nanoseconds
     temperature_kelvin = cfg.temperature_kelvin * u.kelvin
-
 
     # Handle files
     with Timer("molecular_dynamics_SimulationContext"):
@@ -150,7 +154,7 @@ def run_simulation(cfg: OpenMMConfig):
     # Number of steps to run each simulation
     nsteps = int(simulation_length_ns / dt_ps)
 
-    report_steps = int(report_interval_ps/dt_ps)
+    report_steps = int(report_interval_ps / dt_ps)
     print("report_steps = ", report_steps)
 
     # Configure reporters to write output files
@@ -160,33 +164,37 @@ def run_simulation(cfg: OpenMMConfig):
     # Infinite simulation loop
     for iteration in itertools.count(0):
         # Run simulation for nsteps
-        print(f"Simulation iteration {iteration}"); sys.stdout.flush()
+        print(f"Simulation iteration {iteration}")
+        sys.stdout.flush()
         with Timer("molecular_dynamics_step"):
             sim.step(nsteps)
         prepare_simulation(cfg, iteration, sim)
 
-def adios_configuration(cfg: OpenMMConfig ):
+
+def adios_configuration(cfg: OpenMMConfig):
     """
     Read a template adios.xml file, replace "SimulationOutput"
     stream name with the simulation taskid and write the resulting
     configuration file into simulation directory.
     """
-    adios_cfg = cfg.output_path/"adios.xml"
+    adios_cfg = cfg.output_path / "adios.xml"
     shutil.copy(cfg.adios_xml_sim, adios_cfg)
     cfg.adios_cfg = adios_cfg
     taskdir = os.path.basename(cfg.output_path)
-    f = open(cfg.adios_cfg,'r')
+    f = open(cfg.adios_cfg, "r")
     textxml = f.read()
     f.close()
     textxml = textxml.replace("SimulationOutput", taskdir)
-    f = open(cfg.adios_cfg, 'w')
+    f = open(cfg.adios_cfg, "w")
     f.write(textxml)
     f.close()
 
+
 if __name__ == "__main__":
-    print(subprocess.getstatusoutput("hostname")[1]); sys.stdout.flush()
+    print(subprocess.getstatusoutput("hostname")[1])
+    sys.stdout.flush()
     args = parse_args()
     cfg = OpenMMConfig.from_yaml(args.config)
     adios_configuration(cfg)
-    cfg.bp_file = cfg.output_path/"md.bp"
+    cfg.bp_file = cfg.output_path / "md.bp"
     run_simulation(cfg)
