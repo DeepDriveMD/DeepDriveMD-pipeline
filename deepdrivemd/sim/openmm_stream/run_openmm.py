@@ -1,12 +1,8 @@
 import shutil
-#from pathlib import Path
-#from typing import Optional
 import simtk.unit as u
 import simtk.openmm as omm
-#import simtk.openmm.app as app
 from mdtools.openmm.sim import configure_simulation
 from deepdrivemd.utils import Timer, parse_args
-#from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.sim.openmm.config import OpenMMConfig
 from openmm_reporter import ContactMapReporter
 import sys

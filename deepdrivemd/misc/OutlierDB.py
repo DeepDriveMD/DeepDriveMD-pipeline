@@ -1,13 +1,5 @@
-import subprocess
-import time
 import os
-import sys
 import random
-import math
-
-import MDAnalysis as mda
-from  MDAnalysis.analysis.rms import RMSD
-
 
 class OutlierDB:
     def __init__(self, dir, restarts):

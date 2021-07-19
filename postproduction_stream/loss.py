@@ -1,5 +1,5 @@
 import numpy as np
-import sys, os
+import sys
 import pandas as pd
 
 log = sys.argv[1]

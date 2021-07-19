@@ -1,7 +1,6 @@
 import adios2
 import numpy as np
-import sys
-from deepdrivemd.utils import t1Dto2D, t2Dto1D
+from deepdrivemd.utils import t1Dto2D
 
 class ADIOS_READER:
     def __init__(self, fn, config, stream_name):

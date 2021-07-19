@@ -1,5 +1,4 @@
 import glob
-import subprocess
 import pandas as pd
 import os
 import sys
@@ -7,9 +6,6 @@ import sys
 dir = sys.argv[1]
 
 session = os.path.basename(os.path.dirname(dir))
-
-#session = subprocess.getstatusoutput('ls -d ../re.* | cut -d "/" -f2')[1]
-#dir = f'/p/gpfs1/yakushin/radical.pilot.sandbox/{session}/pilot.0000'
 
 stdouts = glob.glob(f'{dir}/task*/*.out')
 

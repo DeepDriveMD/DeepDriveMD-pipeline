@@ -1,4 +1,3 @@
-from typing import Optional
 from deepdrivemd.config import AggregationTaskConfig
 from pathlib import Path
 

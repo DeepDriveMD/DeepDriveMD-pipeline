@@ -1,10 +1,10 @@
 import numpy as np
-from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.aggregation.stream.config import StreamAggregation
 from deepdrivemd.utils import Timer, timer, parse_args, intarray2hash
 import glob
 import time
-import os, sys
+import os 
+import sys
 import adios2
 import math
 import queue

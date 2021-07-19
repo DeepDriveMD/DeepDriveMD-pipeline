@@ -1,16 +1,12 @@
 import os
 import glob
-import sys
 import shutil
-import itertools
 from typing import List
 import radical.utils as ru
 from radical.entk import AppManager, Pipeline, Stage, Task
 from deepdrivemd.config import StreamingExperimentConfig, BaseStageConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.utils import parse_args
-import subprocess
-
 
 def generate_task(cfg: BaseStageConfig) -> Task:
     task = Task()
@@ -20,7 +16,6 @@ def generate_task(cfg: BaseStageConfig) -> Task:
     task.executable = cfg.executable
     task.arguments = cfg.arguments.copy()
     return task
-
 
 class PipelineManager:
     MOLECULAR_DYNAMICS_STAGE_NAME = "MolecularDynamics"

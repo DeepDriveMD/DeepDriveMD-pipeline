@@ -8,14 +8,13 @@ import os
 import itertools
 
 from deepdrivemd.utils import Timer, timer, t1Dto2D, parse_args
-from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 import tensorflow.keras.backend as K
 
 import pickle
-from OutlierDB import *
+from OutlierDB import OutlierDB
 from lockfile import LockFile
-from aggregator_reader import *
+from aggregator_reader import STREAMS
 
 import cupy as cp
 from cuml import DBSCAN as DBSCAN
@@ -23,6 +22,7 @@ from cuml import DBSCAN as DBSCAN
 from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
 from simtk.openmm.app.pdbfile import PDBFile
 
+import adios2
 
 def build_model(cfg, model_path):
     cvae = conv_variational_autoencoder(

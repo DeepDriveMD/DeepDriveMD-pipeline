@@ -1,13 +1,13 @@
 import time
-from typing import Optional
 import numpy as np
 from deepdrivemd.utils import Timer, timer, parse_args
 from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
 from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
 import subprocess
 import glob
-from aggregator_reader import *
-import os, sys
+from aggregator_reader import STREAMS
+import os 
+import sys
 import itertools
 
 def wait_for_input(cfg):

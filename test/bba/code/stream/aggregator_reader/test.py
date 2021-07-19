@@ -1,6 +1,6 @@
-from aggregator_reader import *
+from aggregator_reader import ADIOS_READER, STREAMS
 
-def test1(ar):
+def test1(ar, n):
     for j in range(20):
         print('='*30)
         i, steps, md5s, cms, positions, velocities = ar.next_all(n)
@@ -17,7 +17,7 @@ def test1(ar):
     print(cms[0].shape)
     print(velocities[0].shape)
 
-def test2(ar):
+def test2(ar, n):
     for j in range(7):
         print('*'*30)
         i, cms = ar.next_cm(n)
@@ -50,9 +50,9 @@ if(__name__ == '__main__'):
 
     ar = ADIOS_READER('aggregator0.bp', 'adios.xml', 'AggregatorOutput')
 
-    test1(ar)
+    test1(ar, 10)
     print("&"*30)
-    test2(ar)
+    test2(ar, 10)
     print("&"*30)
     test3()
     print("&"*30)

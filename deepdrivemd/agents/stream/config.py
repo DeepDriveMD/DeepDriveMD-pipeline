@@ -1,5 +1,4 @@
-from typing import Optional, List, Tuple
-from pydantic import root_validator, validator
+from typing import List, Tuple
 from deepdrivemd.config import AgentTaskConfig
 from pathlib import Path
 

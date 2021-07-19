@@ -1,10 +1,9 @@
-import simtk.openmm.app as app
 import simtk.unit as u 
 import os
 from MDAnalysis.analysis import distances, rms
 import MDAnalysis
 import numpy as np 
-from deepdrivemd.utils import t1Dto2D, t2Dto1D, hash2intarray
+from deepdrivemd.utils import t2Dto1D, hash2intarray
 
 import adios2
 import hashlib
