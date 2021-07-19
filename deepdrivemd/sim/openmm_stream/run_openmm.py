@@ -83,7 +83,7 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
     cfg.current_dir = str(sim_dir)
 
     outlier = next_outlier(cfg, sim)
-    if(outlier != None):
+    if(outlier is not None):
         print("There are outliers")
         positions_pdb, velocities_npy, rmsd, md5 = outlier
         while(True):
