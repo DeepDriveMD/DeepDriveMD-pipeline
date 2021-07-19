@@ -91,7 +91,8 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
                 positions = pmd.load_file(positions_pdb).positions
                 velocities = np.load(velocities_npy)
                 break
-            except:
+            except Exception as e:
+                print("Exception ", e)
                 print(f"Waiting for {positions_pdb} and {velocities_npy}") 
                 time.sleep(5)
 

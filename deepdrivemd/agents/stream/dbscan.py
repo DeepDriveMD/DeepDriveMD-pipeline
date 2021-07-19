@@ -77,7 +77,8 @@ def wait_for_input(cfg):
                 break
             try:
                 steps = int(a[1].split("\n")[0].split("*")[0].split(" ")[-1])
-            except:
+            except Exception as e:
+                print("Exception ", e)
                 steps = 0
                 enough = False
             if(steps < cfg.min_step_increment):
