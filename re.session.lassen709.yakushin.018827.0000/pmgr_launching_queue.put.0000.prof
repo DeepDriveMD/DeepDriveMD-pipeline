@@ -1,6 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1626658889.2936478,sync_abs,pmgr_launching_queue.put.0000,MainThread,,,lassen709:192.168.66.201:1626658889.2908316:1626658889.2908316:sys
-#time,event,comp,thread,uid,state,msg
-1626658889.2936478,sync_abs,pmgr_launching_queue.put.0000,MainThread,,,lassen709:192.168.66.201:1626658889.2908316:1626658889.2908316:sys
-#time,event,comp,thread,uid,state,msg
-1626658889.2936478,sync_abs,pmgr_launching_queue.put.0000,MainThread,,,lassen709:192.168.66.201:1626658889.2908316:1626658889.2908316:sys

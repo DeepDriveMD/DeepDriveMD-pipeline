@@ -1,3 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1626661873.6722553,sync_abs,tmgr_staging_input_queue,MainThread,,,lassen709:192.168.66.201:1626661873.6689615:1626661873.6689615:sys
-1626661873.6741409,bridge_start,tmgr_staging_input_queue,MainThread,tmgr_staging_input_queue,,
