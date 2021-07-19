@@ -1,3 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1626658863.3529642,sync_abs,control_pubsub,MainThread,,,lassen709:192.168.66.201:1626658863.3496282:1626658863.3496282:sys
-1626658863.3544068,bridge_start,control_pubsub,MainThread,control_pubsub,,

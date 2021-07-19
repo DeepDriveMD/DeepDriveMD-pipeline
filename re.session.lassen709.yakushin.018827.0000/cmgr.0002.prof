@@ -1,3 +1,0 @@
-#time,event,comp,thread,uid,state,msg
-1626661870.8022203,sync_abs,cmgr.0002,Thread-13,,,lassen709:192.168.66.201:1626661870.7479596:1626661870.7479596:sys
-1626661870.8506556,init2,cmgr.0002,Thread-13,cmgr.0002,,/usr/WS2/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/re.session.lassen709.yakushin.018827.0000
