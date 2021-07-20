@@ -4,6 +4,13 @@ import random
 
 class OutlierDB:
     def __init__(self, dir, restarts):
+        """
+        dir - directory with published outliers
+        restarts - a list of tuples with rmsd and pdb file name (md5sum of positions), sorted in ascending order by rmsd
+
+        sorted_index - a list md5sums (sorted by the corresponding rmsd)
+        dictionary - md5sum -> rmsd
+        """
         self.dir = dir
         self.sorted_index = list(
             map(lambda x: os.path.basename(x[1]).replace(".pdb", ""), restarts)
@@ -24,6 +31,9 @@ class OutlierDB:
         print("=" * 30)
 
     def next_random(self, m=None):
+        """
+        Return next outlier using beta distribution that prefers smaller rmsds
+        """
         if len(self.sorted_index) == 0:
             print("Bug")
             return None
