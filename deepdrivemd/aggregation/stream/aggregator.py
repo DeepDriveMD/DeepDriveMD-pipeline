@@ -1,7 +1,6 @@
 import numpy as np
 from deepdrivemd.aggregation.stream.config import StreamAggregation
 from deepdrivemd.utils import Timer, timer, parse_args, intarray2hash
-import glob
 import time
 import os
 import sys
@@ -19,8 +18,7 @@ def find_input(cfg: StreamAggregation):
     Returns the list of *.sst files associated with the corresponding adios streams.
     """
     while True:
-        bpfiles = glob.glob(str(cfg.experiment_directory) + "/*/*/*/md.bp*")
-
+        bpfiles = list(map(str, list(cfg.experiment_directory.glob("*/*/*/md.bp*"))))
         if len(bpfiles) == cfg.n_sim:
             break
         print("In find_input: waiting for input")
