@@ -236,8 +236,8 @@ if __name__ == "__main__":
     }
 
     pipeline_manager = PipelineManager(cfg)
-    # Back up configuration file (PipelineManager must create cfg.experiment_dir)
-    shutil.copytree(cfg.config_directory, str(cfg.experiment_directory) + "/etc/")
+    # Back up configuration directory
+    shutil.copytree(cfg.config_directory, cfg.experiment_directory / "etc")
 
     pipelines = pipeline_manager.generate_pipelines()
     appman.workflow = pipelines
