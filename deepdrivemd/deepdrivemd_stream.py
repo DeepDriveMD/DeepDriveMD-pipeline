@@ -1,5 +1,4 @@
 import os
-import glob
 import shutil
 from typing import List
 import radical.utils as ru
@@ -90,8 +89,6 @@ class PipelineManager:
         cfg = self.cfg.molecular_dynamics_stage
         stage_api = self.api.molecular_dynamics_stage
 
-        init_file = glob.glob(str(cfg.task_config.initial_pdb_dir) + "/*.pdb")[0]
-
         for task_idx in range(cfg.num_tasks):
 
             output_path = stage_api.task_dir(self.stage_idx, task_idx, mkdir=True)
@@ -103,7 +100,6 @@ class PipelineManager:
             cfg.task_config.task_idx = task_idx
             cfg.task_config.node_local_path = self.cfg.node_local_path
             cfg.task_config.output_path = output_path
-            cfg.task_config.pdb_file = init_file
 
             cfg_path = stage_api.config_path(self.stage_idx, task_idx)
             cfg.task_config.dump_yaml(cfg_path)
