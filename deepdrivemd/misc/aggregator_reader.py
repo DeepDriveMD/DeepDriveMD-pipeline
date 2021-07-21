@@ -1,10 +1,19 @@
 import adios2
 import numpy as np
 from deepdrivemd.utils import t1Dto2D
+from pathlib import Path  # noqa
+from typing import List, Tuple  # noqa
 
 
 class ADIOS_READER:
-    def __init__(self, fn, config, stream_name):
+    """
+    This class is used to read the next N steps from an adios file
+    """
+
+    def __init__(self, fn: str, config: Path, stream_name: str):
+        """
+        fn - adios file name, config - adios.xml, stream_name - name of the stream in adios.xml
+        """
         self.adios = adios2.ADIOS(str(config), True)
         self.io = self.adios.DeclareIO(stream_name)
         self.stream = self.io.Open(fn, adios2.Mode.Read)
@@ -14,7 +23,21 @@ class ADIOS_READER:
         self.io.RemoveAllVariables()
         self.adios.RemoveAllIOs()
 
-    def next_all(self, N):
+    def next_all(
+        self, N: int
+    ) -> Tuple[
+        int,
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+    ]:
+        """
+        Read the next N steps of all variables.
+        Returns a tuple consisting of the number of actually read steps, and lists of numpy variables for each variable, each time step
+        """
         CMs = []
         POSITIONs = []
         MD5s = []
@@ -83,7 +106,10 @@ class ADIOS_READER:
 
         return i, STEPs, MD5s, CMs, POSITIONs, VELOCITYs, RMSDs
 
-    def next_cm(self, N):
+    def next_cm(self, N: int) -> Tuple[int, List[np.ndarray]]:
+        """
+        Mini version of next_all where only contact maps are returned
+        """
         CMs = []
         for i in range(N):
             status = self.stream.BeginStep(adios2.StepMode.Read, 0.0)
@@ -109,14 +135,25 @@ class ADIOS_READER:
 
 
 class STREAMS:
+    """
+    The class gets lastN time steps from each aggregator
+    """
+
     def __init__(
         self,
-        file_list,
-        config="../aggregate/adios.xml",
-        stream_name="AdiosOutput",
-        lastN=2000,
-        batch=10000,
+        file_list: List,
+        config: str = "../aggregate/adios.xml",
+        stream_name: str = "AdiosOutput",
+        lastN: int = 2000,
+        batch: int = 10000,
     ):
+        """
+        file_list - adios files from each aggregator,
+        config - adios xml file for the files,
+        stream_name - corresponding stream name in adios.xml,
+        lastN - number of last steps to take from each adios file,
+        batch - up to how many steps to read from each adios file at a time (call of next())
+        """
         self.readers = {}
         self.positions = {}
         self.md5 = {}
@@ -135,7 +172,20 @@ class STREAMS:
             self.cm[fn] = []
             self.velocities[fn] = []
 
-    def next(self):
+    def next(
+        self,
+    ) -> Tuple[
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+    ]:
+        """
+        Return a tuple of lists.
+        Lists: contact maps, positions, md5s, steps, velocities, rmsds
+        Each element of a list is a numpy array of the variable for the corresponding time step
+        """
         cm = []
         positions = []
         md5 = []
@@ -177,7 +227,10 @@ class STREAMS:
         )
         return z[0], z[1], z[2], z[4], z[5]
 
-    def next_cm(self):
+    def next_cm(self) -> List[np.ndarray]:
+        """
+        Mini version of next(): only contact maps are returned
+        """
         cm = []
         lastN = self.lastN
         batch = self.batch

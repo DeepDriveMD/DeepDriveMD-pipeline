@@ -1,9 +1,10 @@
 import os
 import random
+from typing import List, Tuple  # noqa
 
 
 class OutlierDB:
-    def __init__(self, dir, restarts):
+    def __init__(self, dir: str, restarts: List):
         """
         dir - directory with published outliers
         restarts - a list of tuples with rmsd and pdb file name (md5sum of positions), sorted in ascending order by rmsd
@@ -30,9 +31,10 @@ class OutlierDB:
             print(f"{md5}: {self.dictionary[md5]}")
         print("=" * 30)
 
-    def next_random(self, m=None):
+    def next_random(self, m: int = None) -> str:
         """
         Return next outlier using beta distribution that prefers smaller rmsds
+        If m is given, it restricts the random selection to the first m elements of sorted_index
         """
         if len(self.sorted_index) == 0:
             print("Bug")
