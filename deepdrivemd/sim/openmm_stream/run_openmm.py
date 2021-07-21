@@ -14,7 +14,6 @@ import pickle
 import parmed as pmd
 import numpy as np
 import subprocess
-import glob
 import itertools
 from deepdrivemd.sim.openmm.run_openmm import SimulationContext
 
@@ -118,7 +117,7 @@ def init_input(cfg):
     files in cfg.initial_pdb_dir. For the given simulation the pdb file is
     selected using simulation task_id in a round robin fashion.
     """
-    pdb_files = glob.glob(str(cfg.initial_pdb_dir / "*.pdb"))
+    pdb_files = list(cfg.initial_pdb_dir.glob("*.pdb"))
     pdb_files.sort()
     n = len(pdb_files)
     i = int(cfg.task_idx) % n
