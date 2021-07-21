@@ -180,9 +180,8 @@ def adios_configuration(cfg: OpenMMConfig):
     shutil.copy(cfg.adios_xml_sim, adios_cfg)
     cfg.adios_cfg = adios_cfg
     taskdir = os.path.basename(cfg.output_path)
-    f = open(cfg.adios_cfg, "r")
-    textxml = f.read()
-    f.close()
+    with open(cfg.adios_cfg, "r") as f:
+        textxml = f.read()
     textxml = textxml.replace("SimulationOutput", taskdir)
     f = open(cfg.adios_cfg, "w")
     f.write(textxml)
