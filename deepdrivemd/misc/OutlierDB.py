@@ -1,6 +1,6 @@
 import os
 import random
-from typing import List, Tuple  # noqa
+from typing import List
 
 
 class OutlierDB:
