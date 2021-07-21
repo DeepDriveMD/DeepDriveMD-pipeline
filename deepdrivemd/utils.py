@@ -128,9 +128,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def hash2intarray(h):
-    b = []
-    for i in range(len(h) // 4):
-        b.append(int(h[4 * i : 4 * (i + 1)], 16))
+    b = [int(h[4 * i : 4 * (i + 1)], 16) for i in range(len(h) // 4)]
     return np.asarray(b, dtype=np.int64)
 
 
