@@ -1,10 +1,10 @@
 import os
 import random
-from typing import List
+from typing import List, Tuple
 
 
 class OutlierDB:
-    def __init__(self, dir: str, restarts: List):
+    def __init__(self, dir: str, restarts: List[Tuple[float, str]]):
         """
         dir - directory with published outliers
         restarts - a list of tuples with rmsd and pdb file name (md5sum of positions), sorted in ascending order by rmsd
