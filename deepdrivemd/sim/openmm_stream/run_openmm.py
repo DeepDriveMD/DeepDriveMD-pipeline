@@ -70,7 +70,7 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
         return positions_pdb, velocities_npy, rmsd, md5
 
     elif cfg.next_outlier_policy == 0:
-        "To implement"
+        # TODO
         return None
 
 
