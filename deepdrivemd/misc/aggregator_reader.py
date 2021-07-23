@@ -3,29 +3,7 @@ import numpy as np
 from deepdrivemd.utils import t1Dto2D
 from pathlib import Path  # noqa
 from typing import List, Tuple  # noqa
-
-"""
-class StreamVariable:
-    def __init__(self, io, stream, name: str, dtype: type, structure_type:int):
-
-        self.var = io.InquireVariable(name)
-
-        if(structure_type == 0): # scalar
-            self._data = np.zeros(1, dtype=dtype)
-            stream.Get(self.var, self._data)
-        elif(structure_type == 1): # array
-            shape = self.var.Shape()
-            start = [0] * len(shape) # ndim
-            self.var.SetSelection([start, shape])
-            self._data = np.zeros(shape, dtype=dtype)
-            stream.Get(self.var, self._data)
-        else: # string
-            self._data = stream.Get(self.var)
-
-    @property
-    def data(self) -> np.ndarray:
-        return self._data
-"""
+from deepdrivemd.misc.adios_utils import ADIOS_RW_FULL_API
 
 
 class ADIOS_READER:
@@ -68,84 +46,33 @@ class ADIOS_READER:
         RMSDs = []
         VELOCITYs = []
         MD5s = []
+
+        variables = {
+            "step": (np.int32, 0),
+            "rmsd": (np.float32, 0),
+            "contact_map": (np.uint8, 1),
+            "positions": (np.float32, 1),
+            "velocities": (np.float32, 1),
+            "md5": (str, 2),
+        }
+
+        connections = {0: (self.adios, self.io, self.stream)}
+
+        ARW = ADIOS_RW_FULL_API(connections, variables)
+
         for i in range(N):
-            status = self.stream.BeginStep(adios2.StepMode.Read, 0.0)
-            if status != adios2.StepStatus.OK:
+            status = ARW.read_step(0)
+            if not status:
                 break
 
-            """
-            step = StreamVariable(self.io, self.stream, "step", np.int32, 0)
-            rmsd = StreamVariable(self.io, self.stream, "rmsd", np.float32, 0)
-            cm = StreamVariable(self.io, self.stream, "contact_map", np.uint8, 1)
-            positions = StreamVariable(self.io, self.stream, "positions", np.float32, 1)
-            velocities = StreamVariable(self.io, self.stream, "velocities", np.float32, 1)
-            md5 = StreamVariable(self.io, self.stream, "md5", str, 2)
-            """
-
-            step = np.zeros(1, dtype=np.int32)
-            varStep = self.io.InquireVariable("step")
-            self.stream.Get(varStep, step)
-
-            rmsd = np.zeros(1, dtype=np.float32)
-            varRMSD = self.io.InquireVariable("rmsd")
-            self.stream.Get(varRMSD, rmsd)
-
-            varCM = self.io.InquireVariable("contact_map")
-            shapeCM = varCM.Shape()
-            ndimCM = len(shapeCM)
-            start = [0] * ndimCM
-            count = shapeCM
-            varCM.SetSelection([start, count])
-            cm = np.zeros(shapeCM, dtype=np.uint8)
-            self.stream.Get(varCM, cm)
-
-            varPositions = self.io.InquireVariable("positions")
-            shapePositions = varPositions.Shape()
-            ndimPositions = len(shapePositions)
-            start = [0] * ndimPositions
-            count = shapePositions
-            varPositions.SetSelection([start, count])
-            positions = np.zeros(shapePositions, dtype=np.float32)
-            self.stream.Get(varPositions, positions)
-
-            varVelocities = self.io.InquireVariable("velocities")
-            shapeVelocities = varVelocities.Shape()
-            ndimVelocities = len(shapeVelocities)
-            start = [0] * ndimVelocities
-            count = shapeVelocities
-            varVelocities.SetSelection([start, count])
-            velocities = np.zeros(shapeVelocities, dtype=np.float32)
-            self.stream.Get(varVelocities, velocities)
-
-            varMD5 = self.io.InquireVariable("md5")
-            shapeMD5 = varMD5.Shape()
-            ndimMD5 = len(shapeMD5)
-            start = [0] * ndimMD5
-            count = shapeMD5
-            md5 = self.stream.Get(varMD5)
-
-            self.stream.EndStep()
-
-            """
-            cm = np.unpackbits(cm.data)
-            cm = t1Dto2D(cm)
-
-            MD5s.append(md5.data)
-            CMs.append(cm)
-            STEPs.append(step.data[0])
-            RMSDs.append(rmsd.data[0])
-            POSITIONs.append(positions.data)
-            VELOCITYs.append(velocities.data)
-            """
-
-            cm = np.unpackbits(cm)
-            cm = t1Dto2D(cm)
-            MD5s.append(md5)
-            CMs.append(cm)
-            STEPs.append(step[0])
-            RMSDs.append(rmsd[0])
-            POSITIONs.append(positions)
-            VELOCITYs.append(velocities)
+            ARW.d_contact_map = np.unpackbits(ARW.d_contact_map)
+            ARW.d_contact_map = t1Dto2D(ARW.d_contact_map)
+            MD5s.append(ARW.d_md5)
+            CMs.append(ARW.d_contact_map)
+            STEPs.append(ARW.d_step[0])
+            RMSDs.append(ARW.d_rmsd[0])
+            POSITIONs.append(ARW.d_positions)
+            VELOCITYs.append(ARW.d_velocities)
 
         return i, STEPs, MD5s, CMs, POSITIONs, VELOCITYs, RMSDs
 
@@ -154,7 +81,20 @@ class ADIOS_READER:
         Mini version of next_all where only contact maps are returned
         """
         CMs = []
+
+        variables = {
+            "contact_map": (np.uint8, 1),
+        }
+
+        connections = {0: (self.adios, self.io, self.stream)}
+        ARW = ADIOS_RW_FULL_API(connections, variables)
+
         for i in range(N):
+            status = ARW.read_step(0)
+            if not status:
+                break
+
+            """
             status = self.stream.BeginStep(adios2.StepMode.Read, 0.0)
             if status != adios2.StepStatus.OK:
                 break
@@ -173,6 +113,11 @@ class ADIOS_READER:
             cm = np.unpackbits(cm)
             cm = t1Dto2D(cm)
             CMs.append(cm)
+            """
+
+            ARW.d_contact_map = np.unpackbits(ARW.d_contact_map)
+            ARW.d_contact_map = t1Dto2D(ARW.d_contact_map)
+            CMs.append(ARW.d_contact_map)
 
         return i, CMs
 
