@@ -183,9 +183,8 @@ def adios_configuration(cfg: OpenMMConfig):
     with open(cfg.adios_cfg, "r") as f:
         textxml = f.read()
     textxml = textxml.replace("SimulationOutput", taskdir)
-    f = open(cfg.adios_cfg, "w")
-    f.write(textxml)
-    f.close()
+    with open(cfg.adios_cfg, "w") as f:
+        f.write(textxml)
 
 
 if __name__ == "__main__":
