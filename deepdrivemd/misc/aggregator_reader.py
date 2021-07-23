@@ -94,27 +94,6 @@ class ADIOS_READER:
             if not status:
                 break
 
-            """
-            status = self.stream.BeginStep(adios2.StepMode.Read, 0.0)
-            if status != adios2.StepStatus.OK:
-                break
-
-            varCM = self.io.InquireVariable("contact_map")
-            shapeCM = varCM.Shape()
-            ndimCM = len(shapeCM)
-            start = [0] * ndimCM
-            count = shapeCM
-            varCM.SetSelection([start, count])
-            cm = np.zeros(shapeCM, dtype=np.uint8)
-            self.stream.Get(varCM, cm)
-
-            self.stream.EndStep()
-
-            cm = np.unpackbits(cm)
-            cm = t1Dto2D(cm)
-            CMs.append(cm)
-            """
-
             ARW.d_contact_map = np.unpackbits(ARW.d_contact_map)
             ARW.d_contact_map = t1Dto2D(ARW.d_contact_map)
             CMs.append(ARW.d_contact_map)
