@@ -37,8 +37,8 @@ def connect_to_input(cfg: StreamAggregation, bpfiles):
     connections = {}
     bp_slice = math.ceil(cfg.n_sim / cfg.num_tasks)
     print("bp_slice = ", bp_slice)
-    i = 0
-    for bp in bpfiles:
+
+    for i, bp in enumerate(bpfiles):
         bp = bp.replace(".sst", "")
         dir = os.path.dirname(bp)
         task_md = os.path.basename(dir)
@@ -55,8 +55,6 @@ def connect_to_input(cfg: StreamAggregation, bpfiles):
             io.SetParameters({"ControlModule": "epoll"})
             stream = io.Open(bp, adios2.Mode.Read)
             connections[taskid_md] = (adios, io, stream)
-
-        i += 1
 
     return connections
 
