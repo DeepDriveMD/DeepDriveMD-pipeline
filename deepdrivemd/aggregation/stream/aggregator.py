@@ -9,7 +9,7 @@ import math
 import queue
 import subprocess
 import itertools
-from deepdrivemd.misc.adios_utils import ADIOS_RW_FULL_API
+from deepdrivemd.data.stream.adios_utils import ADIOS_RW_FULL_API
 
 
 def find_input(cfg: StreamAggregation):

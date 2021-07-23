@@ -3,7 +3,7 @@ import numpy as np
 from deepdrivemd.utils import t1Dto2D
 from pathlib import Path
 from typing import List, Tuple
-from deepdrivemd.misc.adios_utils import ADIOS_RW_FULL_API
+from deepdrivemd.data.stream.adios_utils import ADIOS_RW_FULL_API
 
 
 class ADIOS_READER:

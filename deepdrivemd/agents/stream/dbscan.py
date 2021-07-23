@@ -12,9 +12,9 @@ from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 import tensorflow.keras.backend as K
 
 import pickle
-from OutlierDB import OutlierDB
+from deepdrivemd.data.stream.OutlierDB import OutlierDB
 from lockfile import LockFile
-from aggregator_reader import STREAMS
+from deepdrivemd.data.stream.aggregator_reader import STREAMS
 
 import cupy as cp
 from cuml import DBSCAN as DBSCAN

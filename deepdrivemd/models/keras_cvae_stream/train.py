@@ -5,7 +5,7 @@ from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
 from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
 import subprocess
 import glob
-from aggregator_reader import STREAMS
+from deepdrivemd.data.stream.aggregator_reader import STREAMS
 import os
 import sys
 import itertools
