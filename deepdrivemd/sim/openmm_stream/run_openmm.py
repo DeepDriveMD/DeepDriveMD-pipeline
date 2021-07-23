@@ -176,9 +176,8 @@ def adios_configuration(cfg: OpenMMConfig):
     stream name with the simulation taskid and write the resulting
     configuration file into simulation directory.
     """
-    adios_cfg = cfg.output_path / "adios.xml"
-    shutil.copy(cfg.adios_xml_sim, adios_cfg)
-    cfg.adios_cfg = adios_cfg
+    cfg.adios_cfg = cfg.output_path / "adios.xml"
+    shutil.copy(cfg.adios_xml_sim, cfg.adios_cfg)
     taskdir = os.path.basename(cfg.output_path)
     with open(cfg.adios_cfg, "r") as f:
         textxml = f.read()
