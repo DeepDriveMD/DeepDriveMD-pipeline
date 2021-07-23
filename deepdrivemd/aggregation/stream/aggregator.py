@@ -1,5 +1,7 @@
 import numpy as np
 from deepdrivemd.aggregation.stream.config import StreamAggregation
+
+# from deepdrivemd.misc.aggregator_reader import StreamVariable
 from deepdrivemd.utils import Timer, timer, parse_args, intarray2hash
 import time
 import os
@@ -60,12 +62,87 @@ def connect_to_input(cfg: StreamAggregation, bpfiles):
     return connections
 
 
+class ADIOS_RW_FULL_API:
+    def __init__(self, connections, variables):
+        self.connections = connections
+        self.variables = variables
+
+    def read_step(self, sim_task_id):
+        adios, io, stream = self.connections[sim_task_id]
+
+        status = stream.BeginStep(adios2.StepMode.Read, 0.0)
+
+        if not (status == adios2.StepStatus.OK):
+            return False
+
+        for v in self.variables:
+            vname = "var_" + v
+            dname = "d_" + v
+            dtype = self.variables[v][0]
+            structure_type = self.variables[v][1]
+            setattr(self, vname, io.InquireVariable(v))
+            if structure_type == 0:  # scalar
+                setattr(self, dname, np.zeros(1, dtype=dtype))
+                stream.Get(getattr(self, vname), getattr(self, dname))
+            elif structure_type == 1:  # np.array
+                shape = getattr(self, vname).Shape()
+                start = [0] * len(shape)  # ndim
+                getattr(self, vname).SetSelection([start, shape])
+                setattr(self, dname, np.zeros(shape, dtype=dtype))
+                stream.Get(getattr(self, vname), getattr(self, dname))
+            else:  # string
+                setattr(self, dname, stream.Get(getattr(self, vname)))
+        stream.EndStep()
+        return True
+
+    def write_step(self, wstream, variables, end_step=False):
+        for v in variables:
+            dname = "d_" + v
+            structure_type = variables[v][1]
+            data = getattr(self, dname)
+            end = False
+            if end_step and v == variables[-1]:
+                end = True
+
+            if structure_type == 0:  # scalar
+                wstream.write(v, data, end_step=end)
+            elif structure_type == 1:  # np.array
+                wstream.write(
+                    v,
+                    data,
+                    list(data.shape),
+                    [0] * len(data.shape),
+                    list(data.shape),
+                    end_step=end,
+                )
+
+
 def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
     """
     Read adios streams from a subset of simulations handled by this aggregator and write them to adios file to be used
     by machine learning and outlier search. If we do not need to save the data for postproduction, we can get rid of the aggregated
     adios file and replace it by SST stream.
     """
+
+    variablesR = {
+        "step": (np.int32, 0),
+        "rmsd": (np.float32, 0),
+        "contact_map": (np.uint8, 1),
+        "positions": (np.float32, 1),
+        "velocities": (np.float32, 1),
+        "md5": (np.int64, 1),
+    }
+
+    variablesW = {
+        "step": (np.int32, 0),
+        "rmsd": (np.float32, 0),
+        "contact_map": (np.uint8, 1),
+        "positions": (np.float32, 1),
+        "velocities": (np.float32, 1),
+        "md5": (str, 0),
+    }
+
+    ARW = ADIOS_RW_FULL_API(connections, variablesR)
 
     # infinite loop over simulation reporting steps
     for iteration in itertools.count(0):
@@ -80,6 +157,18 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
         # If the data is not ready yet, go to the next simulation and revisit the current one later
         while not q.empty():
             sim_task_id = q.get()
+
+            status = ARW.read_step(sim_task_id)
+            if status:
+                ARW.d_md5 = intarray2hash(ARW.d_md5)
+                ARW.write_step(aggregator_stream, variablesW, end_step=False)
+                aggregator_stream.write("dir", str(sim_task_id), end_step=True)
+            else:
+                print(f"NotReady in simulation {sim_task_id}")
+                q.put(sim_task_id)
+                continue
+
+            """
             adios, io, stream = connections[sim_task_id]
 
             status = stream.BeginStep(adios2.StepMode.Read, 0.0)
@@ -111,7 +200,7 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
             start = [0] * ndimCM
             count = shapeCM
             varCM.SetSelection([start, count])
-            cm = np.zeros(shapeCM, dtype=np.int8)
+            cm = np.zeros(shapeCM, dtype=np.uint8)
             stream.Get(varCM, cm)
 
             varPositions = io.InquireVariable("positions")
@@ -171,6 +260,7 @@ def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
                 list(cm.shape),
                 end_step=True,
             )
+            """
 
         timer("aggregator_iteration", -1)
 

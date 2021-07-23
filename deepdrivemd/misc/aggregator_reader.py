@@ -4,6 +4,29 @@ from deepdrivemd.utils import t1Dto2D
 from pathlib import Path  # noqa
 from typing import List, Tuple  # noqa
 
+"""
+class StreamVariable:
+    def __init__(self, io, stream, name: str, dtype: type, structure_type:int):
+
+        self.var = io.InquireVariable(name)
+
+        if(structure_type == 0): # scalar
+            self._data = np.zeros(1, dtype=dtype)
+            stream.Get(self.var, self._data)
+        elif(structure_type == 1): # array
+            shape = self.var.Shape()
+            start = [0] * len(shape) # ndim
+            self.var.SetSelection([start, shape])
+            self._data = np.zeros(shape, dtype=dtype)
+            stream.Get(self.var, self._data)
+        else: # string
+            self._data = stream.Get(self.var)
+
+    @property
+    def data(self) -> np.ndarray:
+        return self._data
+"""
+
 
 class ADIOS_READER:
     """
@@ -50,6 +73,15 @@ class ADIOS_READER:
             if status != adios2.StepStatus.OK:
                 break
 
+            """
+            step = StreamVariable(self.io, self.stream, "step", np.int32, 0)
+            rmsd = StreamVariable(self.io, self.stream, "rmsd", np.float32, 0)
+            cm = StreamVariable(self.io, self.stream, "contact_map", np.uint8, 1)
+            positions = StreamVariable(self.io, self.stream, "positions", np.float32, 1)
+            velocities = StreamVariable(self.io, self.stream, "velocities", np.float32, 1)
+            md5 = StreamVariable(self.io, self.stream, "md5", str, 2)
+            """
+
             step = np.zeros(1, dtype=np.int32)
             varStep = self.io.InquireVariable("step")
             self.stream.Get(varStep, step)
@@ -94,9 +126,20 @@ class ADIOS_READER:
 
             self.stream.EndStep()
 
-            cm = np.unpackbits(cm)
+            """
+            cm = np.unpackbits(cm.data)
             cm = t1Dto2D(cm)
 
+            MD5s.append(md5.data)
+            CMs.append(cm)
+            STEPs.append(step.data[0])
+            RMSDs.append(rmsd.data[0])
+            POSITIONs.append(positions.data)
+            VELOCITYs.append(velocities.data)
+            """
+
+            cm = np.unpackbits(cm)
+            cm = t1Dto2D(cm)
             MD5s.append(md5)
             CMs.append(cm)
             STEPs.append(step[0])
