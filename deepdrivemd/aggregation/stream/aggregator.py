@@ -45,11 +45,9 @@ def connect_to_input(cfg: StreamAggregation, bpfiles):
         taskid_md = int(task_md.replace("task", ""))
         adios_md = dir + "/adios.xml"
 
-        taskid_agg = cfg.task_idx
-
         print(f"taskid_md = {taskid_md}, i = {i}, {i*bp_slice}, {(i+1)*bp_slice}")
 
-        if taskid_md // bp_slice == taskid_agg:
+        if taskid_md // bp_slice == cfg.task_idx:
             adios = adios2.ADIOS(adios_md, True)
             io = adios.DeclareIO(task_md)
             io.SetParameters({"ControlModule": "epoll"})
