@@ -4,6 +4,7 @@ from MDAnalysis.analysis import distances, rms
 import MDAnalysis
 import numpy as np
 from deepdrivemd.utils import t2Dto1D, hash2intarray
+from typing import Dict
 
 import adios2
 import hashlib
@@ -32,9 +33,7 @@ class ContactMapReporter(object):
         return (steps, True, False, False, False, None)
 
     def report(self, simulation, state):
-        """
-        Computes contact maps, md5 sum of positions, rmsd to the reference state and records them into self._adios_stream
-        """
+        r"""Computes contact maps, md5 sum of positions, rmsd to the reference state and records them into self._adios_stream"""
         step = self.step
         stateA = simulation.context.getState(getPositions=True, getVelocities=True)
         ca_indices = []
@@ -82,10 +81,13 @@ class ContactMapReporter(object):
         self.write_adios_step(output)
         self.step += 1
 
-    def write_adios_step(self, output):
-        """
-        output is a dictionary: adios column name, variable name
-        The function writes a row into self._adios_stream.
+    def write_adios_step(self, output: Dict[str, np.ndarray]):
+        r"""Write a step into `_adios_stream`
+
+        Parameters:
+        --------
+        output : Dict[str, np.ndarray]
+             dictionary: adios column name, variable
         """
         for k in output:
             v = output[k]
