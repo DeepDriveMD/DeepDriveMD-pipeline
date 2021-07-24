@@ -4,8 +4,27 @@ from typing import Dict, Tuple
 
 
 class ADIOS_RW_FULL_API:
-    """
-    Read/Write step by step adios stream using Full API
+    r"""Read/Write step by step adios stream using Full API
+
+    Attributes:
+    --------
+    connections : Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]
+         dictionary of adios connections; key - integer, in aggregator it is simulation task id;
+         value - a tuple of adios objects
+    variables : Dict[str, Tuple[type, int]],
+         dictionary describing variables; key - adios column name, value - a tuple of variable type and
+         enumeration describing the structure type: 0 - scalar, 1 - numpy array, 2 - string;
+         other class attributes are created on the fly using `setattr`: for each key two attributes
+         are created: `var_<key>` - adios variable, `d_<key>` - data which stores the result of reading
+         a particular variable `key` from a step of adios stream.
+
+    Methods:
+    --------
+    read_step(sim_task_id:int) -> bool
+         read one step of all the variables into the corresponding `d_<key>` attributes
+    write_step(wstream:adios2.adios2.Engine, variables: Dict[str, Tuple[type, int]], end_step: bool = False)
+         write one step of `variables` stored in `d_<key>` to `wstream` - adios stream
+
     """
 
     def __init__(
@@ -15,21 +34,32 @@ class ADIOS_RW_FULL_API:
         ],
         variables: Dict[str, Tuple[type, int]],
     ):
-        """
-        connections is a dictionary of adios connections; when reading adios SST network streams in aggregator, key is task id;
-        when reading BP file in machine learning or outlier search, key is 0.
-        variables - a dictionary of variables to read/write to/from adios stream; key - variable name in the stream, value - a tuple of data type and structure type (0 - scalar, 1 - np.array, 2 - string)
+        r"""Constructor.
+
+        Parameters:
+        --------
+        connections : Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]
+             dictionary of adios connections; key - integer, in aggregator it is simulation task id,
+             value - a tuple of adios objects
+        variables : Dict[str, Tuple[type, int]]
+             dictionary describing variables; key - adios column name, value - a tuple of variable type and
+             enumeration describing the structure type: 0 - scalar, 1 - numpy array, 2 - string.
         """
         self.connections = connections
         self.variables = variables
 
     def read_step(self, sim_task_id: int) -> bool:
-        """
-        Read the next step from adios stream given by self.connections[sim_task_id]
-        Adios variables are named "var_" + variable name in adios stream and stored in class.
-        Data variables that hold the results are named "d_" + variable name in adios stream and stored in class.
-        The variables are created on the fly with setattr from the keys of self.variables.
-        If BeginStep() reports OK status, read data into self.d_-variable and return True. Otherwise, return False.
+        """Read the next step from adios stream given by `connections[sim_task_id]`.
+
+        Parameters:
+        --------
+        sim_task_id : int
+             is used as a key to get the corresponding adios objects from `connections`
+
+        Returns:
+        -------
+        bool
+             `True` if reading a step succeeded, `False` - otherwise.
         """
         adios, io, stream = self.connections[sim_task_id]
 
@@ -59,13 +89,24 @@ class ADIOS_RW_FULL_API:
         return True
 
     def write_step(
-        self, wstream, variables: Dict[str, Tuple[type, int]], end_step: bool = False
+        self,
+        wstream: adios2.adios2.Engine,
+        variables: Dict[str, Tuple[type, int]],
+        end_step: bool = False,
     ):
-        """
-        Write the next step from class "d_" variables into wstream adios stream.
-        A different variable dictionary is given because, for example, md5 might change its datatype from
-        np.array to a string.
-        If end_step=True, set end_step=True for the last write, otherwise - set it to False.
+        r"""Write the next step from class "d_" variables into wstream adios stream.
+
+        Parameters:
+        ---------
+        wstream : adios2.adios2.Engine
+             adios stream to which the data is written
+        variables : Dict[str, Tuple[type, int]]
+             a dictionary indexed by adios column names, value is a tuple - data type, structure type;
+             structure type can be 0 - scalar, 1 - np.array, 2 - str
+        end_step : bool, default = False
+             if this is `True`, the write of the last variable would be marked by `end_step = True`
+             meaning that the step writing is done; otherwise, terminating the step should be done
+             outside of the method
         """
         for v in variables:
             dname = "d_" + v
