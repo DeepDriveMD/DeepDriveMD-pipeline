@@ -4,13 +4,36 @@ from typing import List, Tuple
 
 
 class OutlierDB:
-    def __init__(self, dir: str, restarts: List[Tuple[float, str]]):
-        """
-        dir - directory with published outliers
-        restarts - a list of tuples with rmsd and pdb file name (md5sum of positions), sorted in ascending order by rmsd
+    r"""Stores the metadata for outliers to be used by simulations.
 
-        sorted_index - a list md5sums (sorted by the corresponding rmsd)
-        dictionary - md5sum -> rmsd
+    Attributes
+    ----------
+    dir : str
+          directory with published outliers
+    sorted_index: List[str]
+          list of md5sums of outlier positions (used as a name of
+          an outlier pdb or numpy file) sorted by the corresponding rmsd
+    dictionary: Dict
+          maps md5sum to rmsd
+
+    Methods
+    ----------
+    print(n=100)
+          prints `n` outliers with smallest rmsd
+    next_random(m: int = None) -> str
+          returns the next outlier randomly selected using beta distribution
+
+    """
+
+    def __init__(self, dir: str, restarts: List[Tuple[float, str]]):
+        r"""Constructor
+
+        Parameters:
+        ----------
+        dir : str
+              directory with published outliers
+        restarts : List[Tuple[float, str]]
+              list of outliers given as tuples of rmsd and md5sum of positions (used as a file name)
         """
         self.dir = dir
         self.sorted_index = list(
@@ -32,9 +55,14 @@ class OutlierDB:
         print("=" * 30)
 
     def next_random(self, m: int = None) -> str:
-        """
-        Return next outlier using beta distribution that prefers smaller rmsds
-        If m is given, it restricts the random selection to the first m elements of sorted_index
+        r"""Return next outlier using beta distribution that prefers smaller rmsds
+
+        Parameters:
+        ----------
+        m : int, default = None
+            if `m` is not `None`, restrict the random selection to the first
+            `m` elements of `softed_index`, otherwise - any element can be chosen.
+
         """
         if len(self.sorted_index) == 0:
             print("Bug")
