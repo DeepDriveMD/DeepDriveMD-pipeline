@@ -4,7 +4,7 @@ from typing import Dict, Tuple
 
 
 class ADIOS_RW_FULL_API:
-    r"""Read/Write step by step adios stream using Full API
+    """Read/Write step by step adios stream using Full API
 
     Attributes:
     --------
@@ -34,7 +34,7 @@ class ADIOS_RW_FULL_API:
         ],
         variables: Dict[str, Tuple[type, int]],
     ):
-        r"""Constructor.
+        """Constructor.
 
         Parameters:
         --------
@@ -94,7 +94,7 @@ class ADIOS_RW_FULL_API:
         variables: Dict[str, Tuple[type, int]],
         end_step: bool = False,
     ):
-        r"""Write the next step from class "d_" variables into wstream adios stream.
+        """Write the next step from class "d_" variables into wstream adios stream.
 
         Parameters:
         ---------

@@ -6,6 +6,7 @@ import time
 import sys
 import os
 import itertools
+from typing import List, Tuple
 
 from deepdrivemd.utils import Timer, timer, t1Dto2D, parse_args
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
@@ -25,7 +26,7 @@ from simtk.openmm.app.pdbfile import PDBFile
 import adios2
 
 
-def build_model(cfg, model_path):
+def build_model(cfg: OutlierDetectionConfig, model_path: str):
     cvae = conv_variational_autoencoder(
         image_size=cfg.final_shape,
         channels=cfg.final_shape[-1],
@@ -42,9 +43,13 @@ def build_model(cfg, model_path):
     return cvae
 
 
-def wait_for_model(cfg):
-    """
-    Wait for the trained model to be published by machine learning pipeline
+def wait_for_model(cfg: OutlierDetectionConfig) -> str:
+    """Wait for the trained model to be published by machine learning pipeline.
+
+    Returns:
+    -------
+    str
+         path to the model
     """
 
     while True:
@@ -56,9 +61,13 @@ def wait_for_model(cfg):
     return cfg.best_model
 
 
-def wait_for_input(cfg):
-    """
-    Wait for enough data to be produced by simulations
+def wait_for_input(cfg: OutlierDetectionConfig) -> List[str]:
+    """Wait for enough data to be produced by simulations.
+
+    Returns:
+    -------
+    List[str]
+         a list of aggregated bp file
     """
     while True:
         bpfiles = glob.glob(str(cfg.agg_dir / "*/*/agg.bp"))
@@ -97,9 +106,13 @@ def wait_for_input(cfg):
     return bpfiles
 
 
-def dirs(cfg):
-    """
-    Create tmp_dir and published_dir into which outliers are written
+def dirs(cfg: OutlierDetectionConfig) -> Tuple[str, str, str]:
+    """Create tmp_dir and published_dir into which outliers are written
+
+    Returns:
+    -------
+    Tuple[str, str, str]
+         paths to top, tmp and published directories
     """
     top_dir = cfg.output_path
     tmp_dir = f"{top_dir}/tmp"
@@ -112,9 +125,24 @@ def dirs(cfg):
     return top_dir, tmp_dir, published_dir
 
 
-def predict(cfg, model_path, cvae_input, batch_size=32):
-    """
-    Project contact maps into the middle layer of CVAE
+def predict(
+    cfg: OutlierDetectionConfig,
+    model_path: str,
+    cvae_input: np.ndarray,
+    batch_size: int = 32,
+) -> np.ndarray:
+    """Project contact maps into the middle layer of CVAE
+
+    Parameters:
+    -------
+    cfg : OutlierDetectionConfig
+    model_path : str
+    cvae_input : np.ndarray[np.uint8]
+    batch_size : int
+
+    Returns:
+    np.ndarray[np.float32]
+
     """
     cvae = build_model(cfg, model_path)
     input = np.expand_dims(cvae_input[0], axis=-1)
@@ -125,9 +153,26 @@ def predict(cfg, model_path, cvae_input, batch_size=32):
     return cm_predict
 
 
-def outliers_from_latent(cm_predict, eps=0.35, min_samples=10):
-    """
-    Cluster the elements in the middle layer of CVAE.
+def outliers_from_latent(
+    cm_predict: np.ndarray, eps: float = 0.35, min_samples: int = 10
+) -> np.ndarray:
+    """Cluster the elements in the middle layer of CVAE.
+
+    Parameters:
+    --------
+    cm_predict : np.ndarray[np.float32]
+          projections of contact maps to the middle layer of CVAE
+    eps : float
+          DBSCAN's eps
+    min_samples : int
+          DBSCAN's min_samples
+
+
+    Returns:
+    -------
+    np.ndarray[np.int32]
+          indices of outliers
+
     """
     cm_predict = cp.asarray(cm_predict)
     db = DBSCAN(eps=eps, min_samples=min_samples, max_mbytes_per_batch=100).fit(
@@ -140,10 +185,29 @@ def outliers_from_latent(cm_predict, eps=0.35, min_samples=10):
     return outlier_list
 
 
-def cluster(cfg, cm_predict, outlier_list, eps, min_samples):
-    """
-    Run outliers_from_latent changing parameters of DBSCAN until
-    the desired number of outliers is obtained
+def cluster(
+    cfg: OutlierDetectionConfig,
+    cm_predict: np.ndarray,
+    outlier_list: np.ndarray,
+    eps: float,
+    min_samples: int,
+) -> Tuple[float, int]:
+    """Run `outliers_from_latent` changing parameters of DBSCAN until
+    the desired number of outliers is obtained.
+
+    Parameters:
+    ------
+    cfg : OutlierDetectionConfig
+    cm_predict : np.ndarray[np.float32]
+    outlier_list : np.ndaray[np.int32]
+    eps: float
+    min_samples : int
+
+    Returns:
+    ------
+    Tuple[float, int]
+        eps, min_samples which give the number of outliers in the desired range.
+
     """
     outlier_count = cfg.outlier_count
     while outlier_count > 0:
@@ -175,18 +239,40 @@ def cluster(cfg, cm_predict, outlier_list, eps, min_samples):
     return eps, min_samples
 
 
-def write_pdb_frame(frame, original_pdb, output_pdb_fn):
-    """
-    Write positions into pdb file
+def write_pdb_frame(frame: np.ndarray, original_pdb: str, output_pdb_fn: str):
+    """Write positions into pdb file
+
+    Parameters:
+    --------
+    frame : np.ndarray[np.float32]
+         positions of atoms
+    original_pdb : str
+         pdb file with initial condition to be used for topology
+    output_pdb_fn : str
+         where to write an outlier
+
     """
     pdb = PDBFile(str(original_pdb))
     with open(str(output_pdb_fn), "w") as f:
         PDBFile.writeFile(pdb.getTopology(), frame, f)
 
 
-def write_top_outliers(cfg, tmp_dir, top):
-    """
-    Save to pdb files top outliers
+def write_top_outliers(
+    cfg: OutlierDetectionConfig,
+    tmp_dir: str,
+    top: Tuple[np.ndarray, np.ndarray, np.ndarray],
+):
+    """Save to pdb files top outliers
+
+    Parameters:
+    -------
+    cfg: OutlierDetectionConfig
+    tmp_dir: str
+             Temporary directory to write outliers to
+    top: Tuple[np.ndarray, np.ndarray, np.ndarray]
+         top `N` positions, velocities, md5sums where
+         `N` is equal to the number of the simulations.
+
     """
     positions = top[0]
     velocities = top[1]
@@ -233,9 +319,28 @@ def publish(tmp_dir, published_dir):
     return
 
 
-def top_outliers(cfg, cvae_input, outlier_list):
+def top_outliers(
+    cfg: OutlierDetectionConfig,
+    cvae_input: Tuple[np.array, np.array, np.array, np.array, np.array],
+    outlier_list: np.array,
+) -> Tuple[np.array, np.array, np.array, np.array, np.array]:
     """
-    Find top num_sim outliers sorted by rmsd
+    Find top num_sim outliers sorted by rmsd.
+
+    Parameters:
+    --------
+    cfg : OutlierDetectionConfig
+    cvae_input: Tuple[np.array, np.array, np.array, np.array, np.array]
+            steps, positions, velocities, md5sums, rmsds
+    outlier_list: np.array
+            indices corresponding to outliers
+
+    Returns:
+    -------
+    Tuple[np.array, np.array, np.array, np.array, np.array]
+         Positions, velocities, md5sums, rmsds, outlier
+         indices of outliers, sorted in ascending order by rmsd
+
     """
     N = cfg.num_sim
     outlier_list = list(outlier_list[0])
@@ -312,9 +417,24 @@ def main(cfg: OutlierDetectionConfig):
         timer("outlier_search_iteration", -1)
 
 
-def read_lastN(adios_files_list, lastN):
+def read_lastN(
+    adios_files_list: List[str], lastN: int
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Read lastN steps from each aggregated file. Used by project()
+
+    Parameters:
+    -------
+    adios_files_list: List[str]
+        A list of aggregated adios files.
+    lastN:int
+        How many last entries to get from each file
+
+    Returns:
+    ------
+    Tuple[np.ndarray, np.ndarray]
+        `lastN` contact maps from each aggregated file and
+        `lastN` corresponding rmsds
     """
     variable_lists = {}
     for bp in adios_files_list:
@@ -371,7 +491,7 @@ def read_lastN(adios_files_list, lastN):
     return variable_lists["contact_map"], np.concatenate(variable_lists["rmsd"])
 
 
-def project(cfg):
+def project(cfg: OutlierDetectionConfig):
     """
     Postproduction: compute TSNE embeddings
     """

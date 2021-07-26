@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 
 class OutlierDB:
-    r"""Stores the metadata for outliers to be used by simulations.
+    """Stores the metadata for outliers to be used by simulations.
 
     Attributes
     ----------
@@ -26,7 +26,7 @@ class OutlierDB:
     """
 
     def __init__(self, dir: str, restarts: List[Tuple[float, str]]):
-        r"""Constructor
+        """Constructor
 
         Parameters:
         ----------
@@ -55,7 +55,7 @@ class OutlierDB:
         print("=" * 30)
 
     def next_random(self, m: int = None) -> str:
-        r"""Return next outlier using beta distribution that prefers smaller rmsds
+        """Return next outlier using beta distribution that prefers smaller rmsds
 
         Parameters:
         ----------

@@ -29,14 +29,17 @@ def configure_reporters(
 
 
 def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
-    """
-    Get the next outlier to use as an initial state.
-    Copy the corresponding pdb file with positions and numpy
-    file with velocities into the simulation directory.
-    return the coresponding file names, rmsd, md5.
-    Only one outlier selection policy is currently implemented:
-    sort the outliers by rmsd and use simulation task id as
-    an index into this sorted array.
+    """Get the next outlier to use as an initial state.
+
+    Parameters:
+    --------
+    cfg : OpenMMConfig
+    sim : omm.app.Simulation
+
+    Returns:
+    -------
+    Tuple[str, str, float, str]
+        path to pdb file with positions, path to numpy file with velocities, rmsd, md5sum
 
     """
     if cfg.next_outlier_policy == 1:
@@ -74,9 +77,18 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
 
 
 def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulation):
-    """
-    Replace positions and, with cfg.copy_velocities_p probability, velocities
+    """Replace positions and, with cfg.copy_velocities_p probability, velocities
     of the current simulation state from an outlier
+
+    Parameters:
+    ------
+    cfg : OpenMMConfig
+    iteration : int
+    sim: omm.app.Simulation
+
+    Returns:
+    bool
+         True if there is an outlier, False - otherwise
     """
     sim_dir = cfg.output_path / str(iteration)
     sim_dir.mkdir(exist_ok=True)
@@ -112,10 +124,9 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
 
 
 def init_input(cfg):
-    """
-    The first iteration of the simulation is initialized from pdb
-    files in cfg.initial_pdb_dir. For the given simulation the pdb file is
-    selected using simulation task_id in a round robin fashion.
+    """The first iteration of the simulation is initialized from pdb
+    files in `cfg.initial_pdb_dir`. For the given simulation the pdb file is
+    selected using simulation `task_id` in a round robin fashion.
     """
     pdb_files = list(cfg.initial_pdb_dir.glob("*.pdb"))
     pdb_files.sort()
@@ -171,9 +182,8 @@ def run_simulation(cfg: OpenMMConfig):
 
 
 def adios_configuration(cfg: OpenMMConfig):
-    """
-    Read a template adios.xml file, replace "SimulationOutput"
-    stream name with the simulation taskid and write the resulting
+    """Read a template `adios.xml` file, replace `SimulationOutput`
+    stream name with the simulation directory and write the resulting
     configuration file into simulation directory.
     """
     cfg.adios_cfg = cfg.output_path / "adios.xml"

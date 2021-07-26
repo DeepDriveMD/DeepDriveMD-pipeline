@@ -17,7 +17,7 @@ class HEADER(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/9"
+    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/10"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
@@ -167,7 +167,7 @@ class CVAE(BaseModel):
     conv_strides = [[1, 1], [2, 2], [1, 1], [1, 1]]
     dense_layers = 1
     dense_neurons = [128]
-    dense_dropouts = [0.35]
+    dense_dropouts = [0.4]
 
 
 class TASK_CONFIG_ML(CVAE):

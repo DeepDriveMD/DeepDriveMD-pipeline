@@ -10,13 +10,21 @@ import queue
 import subprocess
 import itertools
 from deepdrivemd.data.stream.adios_utils import ADIOS_RW_FULL_API
+from typing import List, Dict, Tuple
+from pathlib import Path
 
 
-def find_input(cfg: StreamAggregation):
-    """
-    Find and return simulation adios streams.
-    Wait until those are created by simulations.
-    Returns the list of *.sst files associated with the corresponding adios streams.
+def find_input(cfg: StreamAggregation) -> List[Path]:
+    """Find adios streams to which simulations write.
+
+    Parameters:
+    ----------
+    cfg : StreamAggregation
+
+    Returns:
+    ----------
+    List[Path]
+           a list of sst files associated with simulations
     """
     while True:
         bpfiles = list(map(str, list(cfg.experiment_directory.glob("*/*/*/md.bp*"))))
@@ -29,10 +37,21 @@ def find_input(cfg: StreamAggregation):
     return bpfiles
 
 
-def connect_to_input(cfg: StreamAggregation, bpfiles):
-    """
-    Open adios streams for reading and return a dictionary: key - simulation task id,
-    value - tuple of the corresponding adios objects
+def connect_to_input(
+    cfg: StreamAggregation, bpfiles: List[Path]
+) -> Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]:
+    """Open adios streams for reading.
+
+    Parameters:
+    ----------
+    cfg : StreamAggregation
+    bpfiles : List[Path]
+
+    Returns
+    ---------
+    Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]
+           key - simulation task id, value - tuple of the corresponding adios objects.
+
     """
     connections = {}
     bp_slice = math.ceil(cfg.n_sim / cfg.num_tasks)
@@ -57,10 +76,27 @@ def connect_to_input(cfg: StreamAggregation, bpfiles):
     return connections
 
 
-def aggregate(cfg: StreamAggregation, connections, aggregator_stream):
-    """
-    Read adios streams from a subset of simulations handled by this aggregator and write them to adios file to be used
-    by machine learning and outlier search. If we do not need to save the data for postproduction, we can get rid of the aggregated
+def aggregate(
+    cfg: StreamAggregation,
+    connections: Dict[
+        int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]
+    ],
+    aggregator_stream: adios2.adios2.Engine,
+):
+    """Read adios streams from a subset of simulations handled by this
+    aggregator and write them to adios file to be used by machine learning and outlier search.
+
+    Parameters:
+    ----------
+    cfg : StreamAggregation
+    connections : Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]
+          key - task id, value - a tuple of adios objects
+    aggregator_stream : adios2.adios2.Engine
+          an adios stream of aggregated file to write to.
+
+    Note:
+    --------
+    If we do not need to save the data for postproduction, we can get rid of the aggregated
     adios file and replace it by SST stream.
     """
 

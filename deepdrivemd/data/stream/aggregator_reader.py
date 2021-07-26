@@ -7,7 +7,7 @@ from deepdrivemd.data.stream.adios_utils import ADIOS_RW_FULL_API
 
 
 class ADIOS_READER:
-    r"""This class is used to read the next `N` steps from an adios stream.
+    """This class is used to read the next `N` steps from an adios stream.
 
     Attributes:
     -------
@@ -18,7 +18,7 @@ class ADIOS_READER:
     """
 
     def __init__(self, fn: str, config: Path, stream_name: str):
-        r"""Constructor
+        """Constructor
 
         Parameters:
         fn: str
@@ -49,7 +49,7 @@ class ADIOS_READER:
         List[np.ndarray],
         List[np.ndarray],
     ]:
-        r"""Read the next `N` steps of all variables.
+        """Read the next `N` steps of all variables.
 
         Parameters:
         ---------
@@ -106,7 +106,7 @@ class ADIOS_READER:
         return i, STEPs, MD5s, CMs, POSITIONs, VELOCITYs, RMSDs
 
     def next_cm(self, N: int) -> Tuple[int, List[np.ndarray]]:
-        r"""Mini version of `next_all` where only contact maps are returned
+        """Mini version of `next_all` where only contact maps are returned
 
         Parameters:
         --------
@@ -142,7 +142,7 @@ class ADIOS_READER:
 
 
 class STREAMS:
-    r"""The class keeps `lastN` steps from each aggregator
+    """The class keeps `lastN` steps from each aggregator
 
     Attributes:
     ---------
@@ -169,7 +169,7 @@ class STREAMS:
         lastN: int = 2000,
         batch: int = 10000,
     ):
-        r"""Constructor
+        """Constructor
 
         Parameters:
         -------
@@ -211,7 +211,7 @@ class STREAMS:
         List[np.ndarray],
         List[np.ndarray],
     ]:
-        r"""Provide `lastN` steps from each aggregator
+        """Provide `lastN` steps from each aggregator
 
         Returns:
         ----------
@@ -260,7 +260,7 @@ class STREAMS:
         return z[0], z[1], z[2], z[4], z[5]
 
     def next_cm(self) -> List[np.ndarray]:
-        r"""Mini version of next(): only contact maps are returned"""
+        """Mini version of next(): only contact maps are returned"""
         cm = []
         lastN = self.lastN
         batch = self.batch

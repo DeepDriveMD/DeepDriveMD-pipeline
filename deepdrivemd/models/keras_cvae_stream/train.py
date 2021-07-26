@@ -9,12 +9,15 @@ from deepdrivemd.data.stream.aggregator_reader import STREAMS
 import os
 import sys
 import itertools
+from typing import List, Tuple
 
 
-def wait_for_input(cfg):
-    """
-    Wait for the expected number of sufficiently large agg.bp files to be produced.
-    Return the list of their paths.
+def wait_for_input(cfg) -> List[str]:
+    """Wait for the expected number of sufficiently large agg.bp files to be produced.
+
+    Returns:
+    List[str]
+         List of paths to aggregated files.
     """
 
     # Wait for enough bpfiles
@@ -55,10 +58,13 @@ def wait_for_input(cfg):
     return bpfiles
 
 
-def next_input(cfg, streams):
-    """
-    Read the next batch of contact maps from aggregated files
-    Return training and validation sets.
+def next_input(cfg, streams: STREAMS) -> Tuple[np.ndarray, np.ndarray]:
+    """Read the next batch of contact maps from aggregated files.
+
+    Returns:
+    ---------
+    Tuple[np.ndarray, np.ndarray]
+          Training and validation sets.
     """
 
     with Timer("ml_read"):

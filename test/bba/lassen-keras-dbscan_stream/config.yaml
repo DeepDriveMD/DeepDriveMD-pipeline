@@ -2,7 +2,7 @@ adios_xml_agg: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline
 adios_xml_sim: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/test/bba/test1_stream/adios_sim.xml
 config_directory: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/test/bba/test1_stream
 cpus_per_node: 40
-experiment_directory: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/9
+experiment_directory: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/10
 gpus_per_node: 4
 hardware_threads_per_cpu: 4
 init_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb
@@ -42,9 +42,9 @@ agent_stage:
   - export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
   task_config:
     adios_xml_agg: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/test/bba/test1_stream/adios_agg.xml
-    agg_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/9/aggregation_runs
+    agg_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/10/aggregation_runs
     batch: 10000
-    best_model: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/9/machine_learning_runs/stage0000/task0000/published_model/best.h5
+    best_model: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/10/machine_learning_runs/stage0000/task0000/published_model/best.h5
     conv_filter_shapes:
     - - 3
       - 3
@@ -70,7 +70,7 @@ agent_stage:
     - - 1
       - 1
     dense_dropouts:
-    - 0.35
+    - 0.4
     dense_layers: 1
     dense_neurons:
     - 128
@@ -163,7 +163,7 @@ machine_learning_stage:
   - export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
   task_config:
     adios_xml_agg: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/test/bba/test1_stream/adios_agg.xml
-    agg_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/9/aggregation_runs/
+    agg_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/10/aggregation_runs/
     batch_size: 32
     checkpoint_dir: set_by_deepdrivemd
     conv_filter_shapes:
@@ -191,7 +191,7 @@ machine_learning_stage:
     - - 1
       - 1
     dense_dropouts:
-    - 0.35
+    - 0.4
     dense_layers: 1
     dense_neurons:
     - 128
@@ -258,7 +258,7 @@ molecular_dynamics_stage:
     node_local_path: set_by_deepdrivemd
     openmm_selection:
     - CA
-    outliers_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/9/agent_runs/stage0000/task0000/published_outliers
+    outliers_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/10/agent_runs/stage0000/task0000/published_outliers
     output_path: set_by_deepdrivemd
     pdb_file: set_by_deepdrivemd
     reference_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb
