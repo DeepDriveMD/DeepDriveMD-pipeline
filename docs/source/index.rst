@@ -54,7 +54,7 @@ DeepDriveMD-S - streaming implementation
    :maxdepth: 4
 
    ./documentation_pages/streaming/data_index
-
+   ./documentation_pages/streaming/sim_index
 
 Indices and tables
 ==================

@@ -11,6 +11,8 @@ import hashlib
 
 
 class ContactMapReporter(object):
+    """Periodically reports the results of the openmm simulation"""
+
     def __init__(self, reportInterval, cfg):
         self._reportInterval = reportInterval
         print(cfg)
@@ -84,8 +86,8 @@ class ContactMapReporter(object):
     def write_adios_step(self, output: Dict[str, np.ndarray]):
         """Write a step into `_adios_stream`
 
-        Parameters:
-        --------
+        Parameters
+        ------------
         output : Dict[str, np.ndarray]
              key - adios column name to which to write a value of the dictionary
              representing one step

@@ -4,7 +4,7 @@ import simtk.openmm as omm
 from mdtools.openmm.sim import configure_simulation
 from deepdrivemd.utils import Timer, parse_args
 from deepdrivemd.sim.openmm.config import OpenMMConfig
-from openmm_reporter import ContactMapReporter
+from deepdrivemd.sim.openmm_stream.openmm_reporter import ContactMapReporter
 import sys
 import os
 import time
@@ -31,13 +31,13 @@ def configure_reporters(
 def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
     """Get the next outlier to use as an initial state.
 
-    Parameters:
-    --------
+    Parameters
+    -------------
     cfg : OpenMMConfig
     sim : omm.app.Simulation
 
-    Returns:
-    -------
+    Returns
+    -------------
     Tuple[str, str, float, str]
         path to pdb file with positions, path to numpy file with velocities, rmsd, md5sum
 
@@ -80,13 +80,14 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
     """Replace positions and, with `cfg.copy_velocities_p` probability, velocities
     of the current simulation state from an outlier
 
-    Parameters:
-    ------
+    Parameters
+    ----------------
     cfg : OpenMMConfig
     iteration : int
     sim: omm.app.Simulation
 
-    Returns:
+    Returns
+    ---------------
     bool
          True if there is an outlier, False - otherwise
     """
