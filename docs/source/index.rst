@@ -53,10 +53,7 @@ DeepDriveMD-S - streaming implementation
 .. toctree::
    :maxdepth: 4
 
-   ./documentation_pages/streaming/data/OutlierDB
-   ./documentation_pages/streaming/data/adios_utils
-   ./documentation_pages/streaming/data/aggregator_reader
-
+   ./documentation_pages/streaming/data_index
 
 
 Indices and tables
