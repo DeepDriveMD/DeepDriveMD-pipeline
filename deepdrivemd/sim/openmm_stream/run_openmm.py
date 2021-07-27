@@ -77,7 +77,7 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
 
 
 def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulation):
-    """Replace positions and, with cfg.copy_velocities_p probability, velocities
+    """Replace positions and, with `cfg.copy_velocities_p` probability, velocities
     of the current simulation state from an outlier
 
     Parameters:

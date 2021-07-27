@@ -33,7 +33,7 @@ class ContactMapReporter(object):
         return (steps, True, False, False, False, None)
 
     def report(self, simulation, state):
-        """Computes contact maps, md5 sum of positions, rmsd to the reference state and records them into self._adios_stream"""
+        """Computes contact maps, md5 sum of positions, rmsd to the reference state and records them into `_adios_stream`"""
         step = self.step
         stateA = simulation.context.getState(getPositions=True, getVelocities=True)
         ca_indices = []

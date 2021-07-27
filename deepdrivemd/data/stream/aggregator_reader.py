@@ -14,7 +14,6 @@ class ADIOS_READER:
     adios : adios2.adios2.ADIOS
     io : adios2.adios2.IO
     stream : adios2.adios2.Engine
-
     """
 
     def __init__(self, fn: str, config: Path, stream_name: str):
@@ -33,7 +32,7 @@ class ADIOS_READER:
         self.stream = self.io.Open(fn, adios2.Mode.Read)
 
     def __del__(self):
-        r"""Destructor: clean the adios resources"""
+        """Destructor: clean the adios resources"""
         self.stream.Close()
         self.io.RemoveAllVariables()
         self.adios.RemoveAllIOs()
@@ -110,7 +109,7 @@ class ADIOS_READER:
 
         Parameters:
         --------
-        N: int
+        N : int
             read that many steps
 
         Returns:
@@ -148,12 +147,12 @@ class STREAMS:
     ---------
     readers : Dict[str, ADIOS_READER]
           a dictionary of `ADIOS_READER`s indexed by the corresponding adios file name
-    positions : Dict[str, np.ndarray[np.float32]]
+    positions : Dict[str, np.ndarray]
     md5 : Dict[str, str]
-    steps : Dict[str, np.ndarray[np.int32]]
-    rmsds : Dict[str, np.ndarray[np.float32]]
-    cm : Dict[str, np.ndarray[np.uint8]]
-    velocities : Dict[str, np.ndarray[np.float32]]
+    steps : Dict[str, np.ndarray]
+    rmsds : Dict[str, np.ndarray]
+    cm : Dict[str, np.ndarray]
+    velocities : Dict[str, np.ndarray]
     lastN : int
          keep that many last steps from each aggregator
     batch : int
@@ -182,7 +181,7 @@ class STREAMS:
         lastN : int
              number of last steps to keep from each adios file
         batch : int
-             up to how many steps to read from each adios file at a time (call of next())
+             up to how many steps to read from each adios file at a time (call of `next()`)
         """
         self.readers = {}
         self.positions = {}
@@ -260,7 +259,7 @@ class STREAMS:
         return z[0], z[1], z[2], z[4], z[5]
 
     def next_cm(self) -> List[np.ndarray]:
-        """Mini version of next(): only contact maps are returned"""
+        """Mini version of `next()`: only contact maps are returned"""
         cm = []
         lastN = self.lastN
         batch = self.batch

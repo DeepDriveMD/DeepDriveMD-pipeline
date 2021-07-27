@@ -137,11 +137,12 @@ def predict(
     -------
     cfg : OutlierDetectionConfig
     model_path : str
-    cvae_input : np.ndarray[np.uint8]
+    cvae_input : np.ndarray
     batch_size : int
 
     Returns:
-    np.ndarray[np.float32]
+    -------
+    np.ndarray
 
     """
     cvae = build_model(cfg, model_path)
@@ -170,7 +171,7 @@ def outliers_from_latent(
 
     Returns:
     -------
-    np.ndarray[np.int32]
+    np.ndarray
           indices of outliers
 
     """
@@ -198,9 +199,9 @@ def cluster(
     Parameters:
     ------
     cfg : OutlierDetectionConfig
-    cm_predict : np.ndarray[np.float32]
-    outlier_list : np.ndaray[np.int32]
-    eps: float
+    cm_predict : np.ndarray
+    outlier_list : np.ndaray
+    eps : float
     min_samples : int
 
     Returns:
@@ -244,7 +245,7 @@ def write_pdb_frame(frame: np.ndarray, original_pdb: str, output_pdb_fn: str):
 
     Parameters:
     --------
-    frame : np.ndarray[np.float32]
+    frame : np.ndarray
          positions of atoms
     original_pdb : str
          pdb file with initial condition to be used for topology
@@ -266,12 +267,12 @@ def write_top_outliers(
 
     Parameters:
     -------
-    cfg: OutlierDetectionConfig
-    tmp_dir: str
-             Temporary directory to write outliers to
-    top: Tuple[np.ndarray, np.ndarray, np.ndarray]
-         top `N` positions, velocities, md5sums where
-         `N` is equal to the number of the simulations.
+    cfg : OutlierDetectionConfig
+    tmp_dir : str
+          Temporary directory to write outliers to
+    top : Tuple[np.ndarray, np.ndarray, np.ndarray]
+          top `N` positions, velocities, md5sums where
+          `N` is equal to the number of the simulations.
 
     """
     positions = top[0]
@@ -286,9 +287,7 @@ def write_top_outliers(
 
 
 def write_db(top, tmp_dir):
-    """
-    Create and save a database of outliers to be used by simulation
-    """
+    """Create and save a database of outliers to be used by simulation"""
     outlier_db_fn = f"{tmp_dir}/OutlierDB.pickle"
     outlier_files = list(map(lambda x: f"{tmp_dir}/{x}.pdb", top[2]))
     rmsds = top[3]
@@ -299,9 +298,7 @@ def write_db(top, tmp_dir):
 
 
 def publish(tmp_dir, published_dir):
-    """
-    Publish outliers and the corresponding database for simulations to pick up
-    """
+    """Publish outliers and the corresponding database for simulations to pick up"""
     dbfn = f"{published_dir}/OutlierDB.pickle"
     subprocess.getstatusoutput(f"touch {dbfn}")
 
@@ -330,9 +327,9 @@ def top_outliers(
     Parameters:
     --------
     cfg : OutlierDetectionConfig
-    cvae_input: Tuple[np.array, np.array, np.array, np.array, np.array]
+    cvae_input : Tuple[np.array, np.array, np.array, np.array, np.array]
             steps, positions, velocities, md5sums, rmsds
-    outlier_list: np.array
+    outlier_list : np.array
             indices corresponding to outliers
 
     Returns:
@@ -420,14 +417,13 @@ def main(cfg: OutlierDetectionConfig):
 def read_lastN(
     adios_files_list: List[str], lastN: int
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Read lastN steps from each aggregated file. Used by project()
+    """Read `lastN` steps from each aggregated file. Used `by project()`
 
     Parameters:
     -------
-    adios_files_list: List[str]
+    adios_files_list : List[str]
         A list of aggregated adios files.
-    lastN:int
+    lastN :int
         How many last entries to get from each file
 
     Returns:

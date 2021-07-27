@@ -16,6 +16,7 @@ def wait_for_input(cfg) -> List[str]:
     """Wait for the expected number of sufficiently large agg.bp files to be produced.
 
     Returns:
+    ------
     List[str]
          List of paths to aggregated files.
     """
