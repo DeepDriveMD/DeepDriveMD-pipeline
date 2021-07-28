@@ -6,8 +6,8 @@ from typing import Dict, Tuple
 class ADIOS_RW_FULL_API:
     """Read/Write step by step adios stream using Full API
 
-    Attributes:
-    --------
+    Attributes
+    ---------------
     connections : Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]
          dictionary of adios connections; key - integer, in aggregator it is simulation task id;
          value - a tuple of adios objects
@@ -17,14 +17,6 @@ class ADIOS_RW_FULL_API:
          other class attributes are created on the fly using `setattr`: for each key two attributes
          are created: `var_<key>` - adios variable, `d_<key>` - data which stores the result of reading
          a particular variable `key` from a step of adios stream.
-
-    Methods:
-    --------
-    read_step(sim_task_id:int) -> bool
-         read one step of all the variables into the corresponding `d_<key>` attributes
-    write_step(wstream:adios2.adios2.Engine, variables: Dict[str, Tuple[type, int]], end_step: bool = False)
-         write one step of `variables` stored in `d_<key>` to `wstream` - adios stream
-
     """
 
     def __init__(
@@ -36,8 +28,8 @@ class ADIOS_RW_FULL_API:
     ):
         """Constructor.
 
-        Parameters:
-        --------
+        Parameters
+        ------------
         connections : Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]
              dictionary of adios connections; key - integer, in aggregator it is simulation task id,
              value - a tuple of adios objects
@@ -51,13 +43,13 @@ class ADIOS_RW_FULL_API:
     def read_step(self, sim_task_id: int) -> bool:
         """Read the next step from adios stream given by `connections[sim_task_id]`.
 
-        Parameters:
-        --------
+        Parameters
+        ------------
         sim_task_id : int
              is used as a key to get the corresponding adios objects from `connections`
 
-        Returns:
-        -------
+        Returns
+        ----------
         bool
              `True` if reading a step succeeded, `False` - otherwise.
         """
@@ -94,10 +86,10 @@ class ADIOS_RW_FULL_API:
         variables: Dict[str, Tuple[type, int]],
         end_step: bool = False,
     ):
-        """Write the next step from class "d_" variables into wstream adios stream.
+        """Write the next step from class `d_...` variables into `wstream` adios stream.
 
-        Parameters:
-        ---------
+        Parameters
+        ----------------
         wstream : adios2.adios2.Engine
              adios stream to which the data is written
         variables : Dict[str, Tuple[type, int]]

@@ -9,8 +9,8 @@ from deepdrivemd.data.stream.adios_utils import ADIOS_RW_FULL_API
 class ADIOS_READER:
     """This class is used to read the next `N` steps from an adios stream.
 
-    Attributes:
-    -------
+    Attributes
+    --------------
     adios : adios2.adios2.ADIOS
     io : adios2.adios2.IO
     stream : adios2.adios2.Engine
@@ -19,12 +19,13 @@ class ADIOS_READER:
     def __init__(self, fn: str, config: Path, stream_name: str):
         """Constructor
 
-        Parameters:
+        Parameters
+        ------------
         fn: str
             file name of bp file or sst socket (without sst extension)
-        config: Path
+        config : Path
             path to `adios.xml` file
-        stream_name: str
+        stream_name : str
             name of a stream in `adios.xml` file
         """
         self.adios = adios2.ADIOS(str(config), True)
@@ -50,13 +51,13 @@ class ADIOS_READER:
     ]:
         """Read the next `N` steps of all variables.
 
-        Parameters:
-        ---------
+        Parameters
+        ------------
         N : int
             read that many steps
 
-        Returns:
-        --------
+        Returns
+        -----------
         Tuple[int, List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray]]
              a tuple consisting of:
              actual number of steps read,
@@ -107,13 +108,13 @@ class ADIOS_READER:
     def next_cm(self, N: int) -> Tuple[int, List[np.ndarray]]:
         """Mini version of `next_all` where only contact maps are returned
 
-        Parameters:
-        --------
+        Parameters
+        ---------------
         N : int
             read that many steps
 
-        Returns:
-        --------
+        Returns
+        --------------
         Tuple[int, List[np.ndarray]]
              a tuple of two values:
              how many steps were actually read,
@@ -143,10 +144,10 @@ class ADIOS_READER:
 class STREAMS:
     """The class keeps `lastN` steps from each aggregator
 
-    Attributes:
-    ---------
+    Attributes
+    ------------------
     readers : Dict[str, ADIOS_READER]
-          a dictionary of `ADIOS_READER`s indexed by the corresponding adios file name
+          a dictionary of `ADIOS_READER` indexed by the corresponding adios file name
     positions : Dict[str, np.ndarray]
     md5 : Dict[str, str]
     steps : Dict[str, np.ndarray]
@@ -170,8 +171,8 @@ class STREAMS:
     ):
         """Constructor
 
-        Parameters:
-        -------
+        Parameters
+        --------------
         file_list : List[fn]
              adios files from each aggregator,
         config : str
@@ -212,7 +213,7 @@ class STREAMS:
     ]:
         """Provide `lastN` steps from each aggregator
 
-        Returns:
+        Returns
         ----------
         Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray]]
             contact maps, positions, md5s, steps, velocities, rmsds

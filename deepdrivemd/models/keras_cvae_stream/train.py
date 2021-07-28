@@ -15,8 +15,8 @@ from typing import List, Tuple
 def wait_for_input(cfg) -> List[str]:
     """Wait for the expected number of sufficiently large agg.bp files to be produced.
 
-    Returns:
-    ------
+    Returns
+    ---------
     List[str]
          List of paths to aggregated files.
     """
@@ -62,7 +62,7 @@ def wait_for_input(cfg) -> List[str]:
 def next_input(cfg, streams: STREAMS) -> Tuple[np.ndarray, np.ndarray]:
     """Read the next batch of contact maps from aggregated files.
 
-    Returns:
+    Returns
     ---------
     Tuple[np.ndarray, np.ndarray]
           Training and validation sets.

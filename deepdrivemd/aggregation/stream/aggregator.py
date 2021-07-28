@@ -17,11 +17,11 @@ from pathlib import Path
 def find_input(cfg: StreamAggregation) -> List[Path]:
     """Find adios streams to which simulations write.
 
-    Parameters:
-    ----------
+    Parameters
+    ------------
     cfg : StreamAggregation
 
-    Returns:
+    Returns
     ----------
     List[Path]
            a list of sst files associated with simulations
@@ -42,8 +42,8 @@ def connect_to_input(
 ) -> Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]:
     """Open adios streams for reading.
 
-    Parameters:
-    ----------
+    Parameters
+    ------------
     cfg : StreamAggregation
     bpfiles : List[Path]
 
@@ -86,15 +86,15 @@ def aggregate(
     """Read adios streams from a subset of simulations handled by this
     aggregator and write them to adios file to be used by machine learning and outlier search.
 
-    Parameters:
-    ----------
+    Parameters
+    ------------
     cfg : StreamAggregation
     connections : Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]
           key - task id, value - a tuple of adios objects
     aggregator_stream : adios2.adios2.Engine
           an adios stream of aggregated file to write to.
 
-    Note:
+    Note
     --------
     If we do not need to save the data for postproduction, we can get rid of the aggregated
     adios file and replace it by SST stream.
