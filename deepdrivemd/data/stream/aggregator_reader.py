@@ -10,7 +10,7 @@ class ADIOS_READER:
     """This class is used to read the next `N` steps from an adios stream.
 
     Attributes
-    --------------
+    ----------
     adios : adios2.adios2.ADIOS
     io : adios2.adios2.IO
     stream : adios2.adios2.Engine
@@ -20,7 +20,7 @@ class ADIOS_READER:
         """Constructor
 
         Parameters
-        ------------
+        ----------
         fn: str
             file name of bp file or sst socket (without sst extension)
         config : Path
@@ -52,12 +52,12 @@ class ADIOS_READER:
         """Read the next `N` steps of all variables.
 
         Parameters
-        ------------
+        ----------
         N : int
             read that many steps
 
         Returns
-        -----------
+        -------
         Tuple[int, List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray]]
              a tuple consisting of:
              actual number of steps read,
@@ -109,12 +109,12 @@ class ADIOS_READER:
         """Mini version of `next_all` where only contact maps are returned
 
         Parameters
-        ---------------
+        ----------
         N : int
             read that many steps
 
         Returns
-        --------------
+        -------
         Tuple[int, List[np.ndarray]]
              a tuple of two values:
              how many steps were actually read,
@@ -145,7 +145,7 @@ class STREAMS:
     """The class keeps `lastN` steps from each aggregator
 
     Attributes
-    ------------------
+    ----------
     readers : Dict[str, ADIOS_READER]
           a dictionary of `ADIOS_READER` indexed by the corresponding adios file name
     positions : Dict[str, np.ndarray]
@@ -172,7 +172,7 @@ class STREAMS:
         """Constructor
 
         Parameters
-        --------------
+        ----------
         file_list : List[fn]
              adios files from each aggregator,
         config : str
@@ -214,7 +214,7 @@ class STREAMS:
         """Provide `lastN` steps from each aggregator
 
         Returns
-        ----------
+        -------
         Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray]]
             contact maps, positions, md5s, steps, velocities, rmsds
         """

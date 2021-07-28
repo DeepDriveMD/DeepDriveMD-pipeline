@@ -7,7 +7,7 @@ class OutlierDB:
     """Stores the metadata for outliers to be used by simulations.
 
     Attributes
-    ------------
+    ----------
     dir : str
           directory with published outliers
     sorted_index: List[str]
@@ -21,7 +21,7 @@ class OutlierDB:
         """Constructor
 
         Parameters
-        -------------
+        ----------
         dir : str
               directory with published outliers
         restarts : List[Tuple[float, str]]
@@ -50,7 +50,7 @@ class OutlierDB:
         """Return next outlier using beta distribution that prefers smaller rmsds
 
         Parameters
-        ------------
+        ----------
         m : int, default = None
             if `m` is not `None`, restrict the random selection to the first
             `m` elements of `softed_index`, otherwise - any element can be chosen.

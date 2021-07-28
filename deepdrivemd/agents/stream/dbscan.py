@@ -47,7 +47,7 @@ def wait_for_model(cfg: OutlierDetectionConfig) -> str:
     """Wait for the trained model to be published by machine learning pipeline.
 
     Returns
-    ----------
+    -------
     str
          path to the model
     """
@@ -65,7 +65,7 @@ def wait_for_input(cfg: OutlierDetectionConfig) -> List[str]:
     """Wait for enough data to be produced by simulations.
 
     Returns
-    ------------
+    -------
     List[str]
          a list of aggregated bp file
     """
@@ -110,7 +110,7 @@ def dirs(cfg: OutlierDetectionConfig) -> Tuple[str, str, str]:
     """Create tmp_dir and published_dir into which outliers are written
 
     Returns
-    ----------
+    -------
     Tuple[str, str, str]
          paths to top, tmp and published directories
     """
@@ -134,14 +134,14 @@ def predict(
     """Project contact maps into the middle layer of CVAE
 
     Parameters
-    --------------
+    ----------
     cfg : OutlierDetectionConfig
     model_path : str
     cvae_input : np.ndarray
     batch_size : int
 
     Returns
-    ---------------
+    -------
     np.ndarray
 
     """
@@ -160,7 +160,7 @@ def outliers_from_latent(
     """Cluster the elements in the middle layer of CVAE.
 
     Parameters
-    --------------
+    ----------
     cm_predict : np.ndarray[np.float32]
           projections of contact maps to the middle layer of CVAE
     eps : float
@@ -170,7 +170,7 @@ def outliers_from_latent(
 
 
     Returns
-    -----------
+    -------
     np.ndarray
           indices of outliers
 
@@ -197,7 +197,7 @@ def cluster(
     the desired number of outliers is obtained.
 
     Parameters
-    ------------
+    ----------
     cfg : OutlierDetectionConfig
     cm_predict : np.ndarray
     outlier_list : np.ndaray
@@ -205,7 +205,7 @@ def cluster(
     min_samples : int
 
     Returns
-    ------------
+    -------
     Tuple[float, int]
         eps, min_samples which give the number of outliers in the desired range.
 
@@ -244,7 +244,7 @@ def write_pdb_frame(frame: np.ndarray, original_pdb: str, output_pdb_fn: str):
     """Write positions into pdb file
 
     Parameters
-    ----------------
+    ----------
     frame : np.ndarray
          positions of atoms
     original_pdb : str
@@ -266,7 +266,7 @@ def write_top_outliers(
     """Save to pdb files top outliers
 
     Parameters
-    -------------
+    ----------
     cfg : OutlierDetectionConfig
     tmp_dir : str
           Temporary directory to write outliers to
@@ -325,7 +325,7 @@ def top_outliers(
     Find top num_sim outliers sorted by rmsd.
 
     Parameters
-    ---------------
+    ----------
     cfg : OutlierDetectionConfig
     cvae_input : Tuple[np.array, np.array, np.array, np.array, np.array]
             steps, positions, velocities, md5sums, rmsds
@@ -333,7 +333,7 @@ def top_outliers(
             indices corresponding to outliers
 
     Returns
-    ---------------
+    -------
     Tuple[np.array, np.array, np.array, np.array, np.array]
          Positions, velocities, md5sums, rmsds, outlier
          indices of outliers, sorted in ascending order by rmsd
@@ -420,14 +420,14 @@ def read_lastN(
     """Read `lastN` steps from each aggregated file. Used `by project()`
 
     Parameters
-    ---------------
+    ----------
     adios_files_list : List[str]
         A list of aggregated adios files.
     lastN :int
         How many last entries to get from each file
 
     Returns
-    --------------
+    -------
     Tuple[np.ndarray, np.ndarray]
         `lastN` contact maps from each aggregated file and
         `lastN` corresponding rmsds

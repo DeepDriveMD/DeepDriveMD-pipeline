@@ -7,7 +7,7 @@ class ADIOS_RW_FULL_API:
     """Read/Write step by step adios stream using Full API
 
     Attributes
-    ---------------
+    ----------
     connections : Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]
          dictionary of adios connections; key - integer, in aggregator it is simulation task id;
          value - a tuple of adios objects
@@ -29,7 +29,7 @@ class ADIOS_RW_FULL_API:
         """Constructor.
 
         Parameters
-        ------------
+        ----------
         connections : Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]
              dictionary of adios connections; key - integer, in aggregator it is simulation task id,
              value - a tuple of adios objects
@@ -44,12 +44,12 @@ class ADIOS_RW_FULL_API:
         """Read the next step from adios stream given by `connections[sim_task_id]`.
 
         Parameters
-        ------------
+        ----------
         sim_task_id : int
              is used as a key to get the corresponding adios objects from `connections`
 
         Returns
-        ----------
+        -------
         bool
              `True` if reading a step succeeded, `False` - otherwise.
         """
@@ -89,7 +89,7 @@ class ADIOS_RW_FULL_API:
         """Write the next step from class `d_...` variables into `wstream` adios stream.
 
         Parameters
-        ----------------
+        ----------
         wstream : adios2.adios2.Engine
              adios stream to which the data is written
         variables : Dict[str, Tuple[type, int]]

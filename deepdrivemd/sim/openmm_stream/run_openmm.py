@@ -32,12 +32,12 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
     """Get the next outlier to use as an initial state.
 
     Parameters
-    -------------
+    ----------
     cfg : OpenMMConfig
     sim : omm.app.Simulation
 
     Returns
-    -------------
+    -------
     Tuple[str, str, float, str]
         path to pdb file with positions, path to numpy file with velocities, rmsd, md5sum
 
@@ -81,13 +81,13 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
     of the current simulation state from an outlier
 
     Parameters
-    ----------------
+    ----------
     cfg : OpenMMConfig
     iteration : int
     sim: omm.app.Simulation
 
     Returns
-    ---------------
+    -------
     bool
          True if there is an outlier, False - otherwise
     """

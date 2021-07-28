@@ -87,7 +87,7 @@ class ContactMapReporter(object):
         """Write a step into `_adios_stream`
 
         Parameters
-        ------------
+        ----------
         output : Dict[str, np.ndarray]
              key - adios column name to which to write a value of the dictionary
              representing one step
