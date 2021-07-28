@@ -209,6 +209,22 @@ a particular variable <cite>key</cite> from a step of adios stream.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="deepdrivemd.data.stream.adios_utils.ADIOS_RW_FULL_API.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connections</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">adios2.adios2.ADIOS</span><span class="p"><span class="pre">,</span> </span><span class="pre">adios2.adios2.IO</span><span class="p"><span class="pre">,</span> </span><span class="pre">adios2.adios2.Engine</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">type</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deepdrivemd.data.stream.adios_utils.ADIOS_RW_FULL_API.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>connections</strong> (<em>Dict</em><em>[</em><em>int</em><em>, </em><em>Tuple</em><em>[</em><em>adios2.adios2.ADIOS</em><em>, </em><em>adios2.adios2.IO</em><em>, </em><em>adios2.adios2.Engine</em><em>]</em><em>]</em>) – dictionary of adios connections; key - integer, in aggregator it is simulation task id,
+value - a tuple of adios objects</p></li>
+<li><p><strong>variables</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Tuple</em><em>[</em><em>type</em><em>, </em><em>int</em><em>]</em><em>]</em>) – dictionary describing variables; key - adios column name, value - a tuple of variable type and
+enumeration describing the structure type: 0 - scalar, 1 - numpy array, 2 - string.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="deepdrivemd.data.stream.adios_utils.ADIOS_RW_FULL_API.read_step">
 <span class="sig-name descname"><span class="pre">read_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim_task_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#deepdrivemd.data.stream.adios_utils.ADIOS_RW_FULL_API.read_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the next step from adios stream given by <cite>connections[sim_task_id]</cite>.</p>

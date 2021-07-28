@@ -1,5 +1,0 @@
-Data utilities
-------------------
-./documentation_pages/streaming/data/OutlierDB
-./documentation_pages/streaming/data/adios_utils
-./documentation_pages/streaming/data/aggregator_reader
