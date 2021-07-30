@@ -81,7 +81,7 @@ class PipelineManager:
 
     def generate_pipelines(self) -> List[Pipeline]:
         self._generate_pipeline_iteration()
-        return self.pipelines.values()
+        return list(self.pipelines.values())
 
     def generate_molecular_dynamics_stage(self) -> Stage:
         stage = Stage()
@@ -236,6 +236,8 @@ if __name__ == "__main__":
     shutil.copytree(cfg.config_directory, cfg.experiment_directory / "etc")
 
     pipelines = pipeline_manager.generate_pipelines()
+    # Assign the workflow as a list of Pipelines to the Application Manager.
+    # All the pipelines in the list will execute concurrently.
     appman.workflow = pipelines
 
     # Run the Application Manager
