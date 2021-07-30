@@ -7,9 +7,8 @@ class OutlierDetectionConfig(AgentTaskConfig):
     """Outlier detection algorithm configuration."""
 
     # top aggregation directory
-    agg_dir: Path = (
-        "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs"
-    )
+    agg_dir: Path = Path()
+
     # number of aggregators
     num_agg: int = 2
     # minimum acceptable number of steps in each aggregation file
@@ -19,7 +18,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     # sleep for timeout2 seconds if less than min_step_increment number of steps is available in each aggregated file; same timeout2 is used to wait for the model to become available
     timeout2: int = 10
     # path to the best model
-    best_model: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/machine_learning_runs/stage0000/task0000/published_model/best.h5"
+    best_model: Path = Path()
     # use up to lastN last steps from each aggregated file to cluster and find outliers
     lastN: int = 8000
 
@@ -48,13 +47,11 @@ class OutlierDetectionConfig(AgentTaskConfig):
     # minimum number of outliers
     outlier_min: int = 3000
     # path to the intial pdb file
-    init_pdb_file: Path = (
-        "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb"
-    )
+    init_pdb_file: Path = Path()
+
     # path to the reference pdb file
-    ref_pdb_file: Path = (
-        "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb"
-    )
+    ref_pdb_file: Path = Path()
+
     # initial value for eps for dbscan
     init_eps: float = 1.3
     # initial value for min_samples for dbscan
@@ -67,6 +64,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     project_gpu: bool = False
     # use project_lastN last samples from each aggregator to search for outliers
     project_lastN: int = 8000
+    num_sim: int = 120
 
 
 if __name__ == "__main__":

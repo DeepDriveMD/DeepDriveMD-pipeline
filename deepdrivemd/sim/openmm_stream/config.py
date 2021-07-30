@@ -34,9 +34,7 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     # a template file for a simulation adios file (stream name should be replaced to be unique for each simulation)
     adios_xml_sim: Path = "adios.xml"
     # a directory with initial pdb files
-    initial_pdb_dir: Path = (
-        "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input"
-    )
+    initial_pdb_dir: Path = Path()
 
     @root_validator()
     def explicit_solvent_requires_top_suffix(cls, values: dict):

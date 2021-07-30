@@ -46,7 +46,7 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     # if less than min_step_increment is available in each aggregated file, sleep for timeout2 before trying again
     timeout2: int = 10
     # directory with aggregated tasks subdirectories
-    agg_dir: Path = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/1/aggregation_runs/stage0000/"
+    agg_dir: Path = Path()
     # where to publish a trained model for the outlier search to pick up
     published_model_dir: Path
     # temporary directory with model checkpoints
