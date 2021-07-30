@@ -1,7 +1,7 @@
 :github_url: https://github.com/DeepDriveMD/DeepDriveMD-pipeline
 
 DeepDriveMD Documentation
-=======================================
+=========================
 
 DeepDriveMD: Deep-Learning Driven Adaptive Molecular Simulations.
 
@@ -39,25 +39,14 @@ Installation with `pip` and a *minimal set of dependencies*:
    :numbered:		
    :hidden:
    
-   ./documentation_pages/overview
-   ./documentation_pages/deepdrivemd_api
+   documentation_pages/overview
+   documentation_pages/deepdrivemd_api
+   documentation_pages/streaming_overview
 
 .. toctree::
    :maxdepth: 2
    :caption: Tutorials:
 
-
-DeepDriveMD-S - streaming implementation
-==========================================
-
-.. toctree::
-   :maxdepth: 4
-
-   ./documentation_pages/streaming/data_index
-   ./documentation_pages/streaming/sim_index
-   ./documentation_pages/streaming/aggregation_index
-   ./documentation_pages/streaming/models_index
-   ./documentation_pages/streaming/agents_index
 
 Indices and tables
 ==================
