@@ -5,10 +5,11 @@ import subprocess
 import time
 import sys
 import os
+import argparse
 import itertools
 from typing import List, Tuple
 
-from deepdrivemd.utils import Timer, timer, t1Dto2D, parse_args
+from deepdrivemd.utils import Timer, timer, t1Dto2D
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 import tensorflow.keras.backend as K
 
@@ -535,6 +536,16 @@ def project(cfg: OutlierDetectionConfig):
 
     with open(f"{dir}/tsne_embeddings_3.npy", "wb") as ff:
         np.save(ff, tsne_embeddings3)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c", "--config", help="YAML config file", type=str, required=True
+    )
+    parser.add_argument("-p", "--project", action="store_true", help="compute tsne")
+    args = parser.parse_args()
+    return args
 
 
 if __name__ == "__main__":
