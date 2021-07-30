@@ -129,7 +129,13 @@ def dirs(cfg: OutlierDetectionConfig) -> Tuple[str, str, str]:
 def predict(
     cfg: OutlierDetectionConfig,
     model_path: str,
-    cvae_input: np.ndarray,
+    cvae_input: Tuple[
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+    ],
     batch_size: int = 32,
 ) -> np.ndarray:
     """Project contact maps into the middle layer of CVAE
@@ -138,7 +144,7 @@ def predict(
     ----------
     cfg : OutlierDetectionConfig
     model_path : str
-    cvae_input : np.ndarray
+    cvae_input : Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray]]
     batch_size : int
 
     Returns
