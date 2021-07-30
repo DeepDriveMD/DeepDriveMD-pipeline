@@ -178,7 +178,7 @@ class TASK_CONFIG_ML(CVAE):
     epochs = 50
     batch_size = 32
     min_step_increment = 1000
-    max_steps = 4000
+    max_steps = 2000
     max_loss = 100
     num_agg = agg.num_tasks
     timeout1 = 30

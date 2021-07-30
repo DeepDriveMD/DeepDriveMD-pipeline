@@ -93,8 +93,7 @@ class ContactMapReporter(object):
              representing one step
 
         """
-        for k in output:
-            v = output[k]
+        for k, v in output.items():
             self._adios_stream.write(
                 k, v, list(v.shape), [0] * len(v.shape), list(v.shape)
             )

@@ -206,7 +206,7 @@ machine_learning_stage:
     - 28
     latent_dim: 10
     max_loss: 100
-    max_steps: 4000
+    max_steps: 2000
     min_step_increment: 1000
     num_agg: 10
     output_path: set_by_deepdrivemd
