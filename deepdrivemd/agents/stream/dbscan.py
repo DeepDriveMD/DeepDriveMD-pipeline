@@ -5,10 +5,11 @@ import subprocess
 import time
 import sys
 import os
+import argparse
 import itertools
 from typing import List, Tuple
 
-from deepdrivemd.utils import Timer, timer, t1Dto2D, parse_args
+from deepdrivemd.utils import Timer, timer, t1Dto2D
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 import tensorflow.keras.backend as K
 
@@ -318,23 +319,23 @@ def publish(tmp_dir, published_dir):
 
 def top_outliers(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[np.array, np.array, np.array, np.array, np.array],
-    outlier_list: np.array,
-) -> Tuple[np.array, np.array, np.array, np.array, np.array]:
+    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    outlier_list: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Find top num_sim outliers sorted by rmsd.
 
     Parameters
     ----------
     cfg : OutlierDetectionConfig
-    cvae_input : Tuple[np.array, np.array, np.array, np.array, np.array]
+    cvae_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
             steps, positions, velocities, md5sums, rmsds
-    outlier_list : np.array
+    outlier_list : np.ndarray
             indices corresponding to outliers
 
     Returns
     -------
-    Tuple[np.array, np.array, np.array, np.array, np.array]
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
          Positions, velocities, md5sums, rmsds, outlier
          indices of outliers, sorted in ascending order by rmsd
 
@@ -504,37 +505,46 @@ def project(cfg: OutlierDetectionConfig):
 
     lastN = cfg.project_lastN
 
-    top_dir, tmp_dir, published_dir = dirs(cfg)
-
-    dir = cfg.output_path
+    # Create output directories
+    dirs(cfg)
 
     with Timer("project_next"):
         cvae_input = read_lastN(adios_files_list, lastN)
 
     rmsds = cvae_input[1]
 
-    with open(f"{dir}/rmsd.npy", "wb") as ff:
-        np.save(ff, rmsds)
+    with open(cfg.output_path / "rmsd.npy", "wb") as f:
+        np.save(f, rmsds)
 
     with Timer("project_predict"):
         embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=1024)
 
-    with open(f"{dir}/embeddings_cvae.npy", "wb") as ff:
-        np.save(ff, embeddings_cvae)
+    with open(cfg.output_path / "embeddings_cvae.npy", "wb") as f:
+        np.save(f, embeddings_cvae)
 
     with Timer("project_TSNE_2D"):
         tsne2 = TSNE(n_components=2)
         tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
 
-    with open(f"{dir}/tsne_embeddings_2.npy", "wb") as ff:
-        np.save(ff, tsne_embeddings2)
+    with open(cfg.output_path / "tsne_embeddings_2.npy", "wb") as f:
+        np.save(f, tsne_embeddings2)
 
     with Timer("project_TSNE_3D"):
         tsne3 = TSNE(n_components=3)
         tsne_embeddings3 = tsne3.fit_transform(embeddings_cvae)
 
-    with open(f"{dir}/tsne_embeddings_3.npy", "wb") as ff:
-        np.save(ff, tsne_embeddings3)
+    with open(cfg.output_path / "tsne_embeddings_3.npy", "wb") as f:
+        np.save(f, tsne_embeddings3)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c", "--config", help="YAML config file", type=str, required=True
+    )
+    parser.add_argument("-p", "--project", action="store_true", help="compute tsne")
+    args = parser.parse_args()
+    return args
 
 
 if __name__ == "__main__":
