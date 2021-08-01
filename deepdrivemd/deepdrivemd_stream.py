@@ -196,6 +196,8 @@ if __name__ == "__main__":
 
     args = parse_args()
     cfg = StreamingExperimentConfig.from_yaml(args.config)
+    config_directory = os.path.dirname(os.path.abspath(args.config))
+    print("config_directory = ", config_directory)
 
     reporter = ru.Reporter(name="radical.entk")
     reporter.title(cfg.title)

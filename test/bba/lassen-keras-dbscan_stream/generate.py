@@ -17,7 +17,7 @@ class HEADER(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/12"
+    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/13"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
@@ -28,7 +28,7 @@ class HEADER(BaseModel):
     ref_pdb_file = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb"
     )
-    config_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/test/bba/test1_stream"
+    config_directory = "set_by_deepdrivemd"
     adios_xml_sim = f"{config_directory}/adios_sim.xml"
     adios_xml_agg = f"{config_directory}/adios_agg.xml"
 
