@@ -87,6 +87,7 @@ class ADIOS_READER:
         vvv = {}
         for v in self.variables:
             vvv[v.name] = (v.dtype, v.structure)
+            v.total = []
 
         ARW = ADIOS_RW_FULL_API(self.connections, vvv)
 
@@ -98,7 +99,7 @@ class ADIOS_READER:
                 v.next(ARW)
         output = [i]
         for v in self.variables:
-            output.append(v.total)
+            output.append(v.total.copy())
 
         return output
 
@@ -187,6 +188,9 @@ class STREAMS:
             nextbatch = self.readers[fn].next(batch)
 
             i = nextbatch[0]
+            print(
+                f"lastN = {lastN}, batch = {batch}, nextbatch[0] = {i}, len(nextbatch[1]) = {len(nextbatch[1])}"
+            )
             if i >= lastN:
                 for j, v in enumerate(self.vnames):
                     cname = "c_" + v
