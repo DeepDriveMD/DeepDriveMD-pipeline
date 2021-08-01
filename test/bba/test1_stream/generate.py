@@ -28,9 +28,9 @@ class HEADER(BaseModel):
     ref_pdb_file = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb"
     )
-    config_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/test/bba/test1_stream"
-    adios_xml_sim = f"{config_directory}/adios_sim.xml"
-    adios_xml_agg = f"{config_directory}/adios_agg.xml"
+    config_directory = "set_by_deepdrivemd"
+    adios_xml_sim = "set_by_deepdrivemd"
+    adios_xml_agg = "set_by_deepdrivemd"
 
 
 header = HEADER()
