@@ -5,7 +5,10 @@ from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
 from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
 import subprocess
 import glob
-from deepdrivemd.data.stream.aggregator_reader import STREAMS
+from deepdrivemd.data.stream.aggregator_reader import (
+    STREAMS,
+    CM_StreamVariable,
+)
 import os
 import sys
 import itertools
@@ -69,9 +72,11 @@ def next_input(cfg, streams: STREAMS) -> Tuple[np.ndarray, np.ndarray]:
     """
 
     with Timer("ml_read"):
-        cm_data_input = streams.next_cm()
+        cm_data_input = streams.next()[0]
     cm_data_input = np.expand_dims(cm_data_input, axis=-1)
-    print(f"in next_input: cm_data_input.shape = {cm_data_input.shape}")
+    print(
+        f"in next_input: cm_data_input.shape = {cm_data_input.shape}"
+    )  # (2000, 28, 28, 1)
     np.random.shuffle(cm_data_input)
     train_val_split = int(0.8 * len(cm_data_input))
     print(f"train_val_split = {train_val_split}")
@@ -110,7 +115,12 @@ def main(cfg):
     with Timer("ml_wait_for_input"):
         cfg.bpfiles = wait_for_input(cfg)
 
-    streams = STREAMS(cfg.bpfiles, lastN=cfg.max_steps, config=cfg.adios_xml_agg)
+    streams = STREAMS(
+        cfg.bpfiles,
+        [CM_StreamVariable("contact_map", np.uint8, 1)],
+        lastN=cfg.max_steps,
+        config=cfg.adios_xml_agg,
+    )
 
     cvae = build_model(cfg)
 

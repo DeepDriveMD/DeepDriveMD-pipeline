@@ -16,7 +16,12 @@ import tensorflow.keras.backend as K
 import pickle
 from deepdrivemd.data.stream.OutlierDB import OutlierDB
 from lockfile import LockFile
-from deepdrivemd.data.stream.aggregator_reader import STREAMS
+from deepdrivemd.data.stream.aggregator_reader import (
+    STREAMS,
+    StreamVariable,
+    CM_StreamVariable,
+    scalar_StreamVariable,
+)
 
 import cupy as cp
 from cuml import DBSCAN as DBSCAN
@@ -371,8 +376,17 @@ def main(cfg: OutlierDetectionConfig):
     with Timer("wait_for_model"):
         model_path = str(wait_for_model(cfg))
 
+    variable_list = [
+        CM_StreamVariable("contact_map", np.uint8, 1),
+        StreamVariable("positions", np.float32, 1),
+        StreamVariable("md5", str, 2),
+        StreamVariable("velocities", np.float32, 1),
+        scalar_StreamVariable("rmsd", np.float32, 0),
+    ]
+
     mystreams = STREAMS(
         adios_files_list,
+        variable_list,
         lastN=cfg.lastN,
         config=cfg.adios_xml_agg,
         stream_name="AggregatorOutput",
@@ -391,6 +405,14 @@ def main(cfg: OutlierDetectionConfig):
 
         with Timer("outlier_read"):
             cvae_input = mystreams.next()
+            print("=" * 10)
+            print("cvae_input")
+            print(type(cvae_input))
+            print(len(cvae_input))
+            for zzz in range(len(cvae_input)):
+                print(cvae_input[zzz].shape)
+            print("=" * 10)
+            sys.stdout.flush()
 
         with Timer("outlier_predict"):
             cm_predict = predict(cfg, model_path, cvae_input)
