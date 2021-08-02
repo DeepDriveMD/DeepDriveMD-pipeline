@@ -120,6 +120,7 @@ def main(cfg):
         [CM_StreamVariable("contact_map", np.uint8, 1)],
         lastN=cfg.max_steps,
         config=cfg.adios_xml_agg,
+        batch=cfg.read_batch,
     )
 
     cvae = build_model(cfg)

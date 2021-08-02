@@ -43,7 +43,6 @@ agent_stage:
   task_config:
     adios_xml_agg: set_by_deepdrivemd
     agg_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/3/aggregation_runs
-    batch: 10000
     best_model: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/3/machine_learning_runs/stage0000/task0000/published_model/best.h5
     conv_filter_shapes:
     - - 3
@@ -96,6 +95,7 @@ agent_stage:
     output_path: set_by_deepdrivemd
     project_gpu: false
     project_lastN: 50000
+    read_batch: 2000
     ref_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb
     shuffle: true
     split_pct: 0.8
@@ -211,6 +211,7 @@ machine_learning_stage:
     num_agg: 1
     output_path: set_by_deepdrivemd
     published_model_dir: set_by_deepdrivemd
+    read_batch: 2000
     reinit: true
     shuffle: true
     split_pct: 0.8

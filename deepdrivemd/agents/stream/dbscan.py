@@ -390,7 +390,7 @@ def main(cfg: OutlierDetectionConfig):
         lastN=cfg.lastN,
         config=cfg.adios_xml_agg,
         stream_name="AggregatorOutput",
-        batch=cfg.batch,
+        batch=cfg.read_batch,
     )
 
     top_dir, tmp_dir, published_dir = dirs(cfg)

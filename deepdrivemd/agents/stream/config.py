@@ -59,7 +59,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     # adios xml configuration file for aggregated data
     adios_xml_agg: Path = ""
     # batch file for reading data from adios file
-    batch: int = 10000
+    read_batch: int = 10000
     # use rapids version of TSNE or scikit-learn version in postproduction when computing embeddings
     project_gpu: bool = False
     # use project_lastN last samples from each aggregator to search for outliers

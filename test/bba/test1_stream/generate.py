@@ -189,6 +189,7 @@ class TASK_CONFIG_ML(CVAE):
     adios_xml_agg = header.adios_xml_agg
     reinit = True
     use_model_checkpoint = True
+    read_batch = 2000
 
 
 task_config_ml = TASK_CONFIG_ML()
@@ -227,7 +228,7 @@ class TASK_CONFIG_AGENT(CVAE):
     ref_pdb_file = f"{header.ref_pdb_file}"
     init_eps = 1.3
     init_min_samples = 10
-    batch = 10000
+    read_batch = 2000
     num_sim = md.num_tasks
     project_lastN = 50 * 1000
     project_gpu = False

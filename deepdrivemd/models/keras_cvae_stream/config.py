@@ -56,6 +56,7 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     # retrain the model from scratch at each iteration or start with the previously trained model
     reinit: bool = True
     use_model_checkpoint = True
+    read_batch: int = 10000
 
 
 if __name__ == "__main__":
