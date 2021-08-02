@@ -19,8 +19,8 @@ from lockfile import LockFile
 from deepdrivemd.data.stream.aggregator_reader import (
     STREAMS,
     StreamVariable,
-    CM_StreamVariable,
-    scalar_StreamVariable,
+    StreamContactMapVariable,
+    StreamScalarVariable,
 )
 
 import cupy as cp
@@ -404,11 +404,11 @@ def main(cfg: OutlierDetectionConfig):
         model_path = str(wait_for_model(cfg))
 
     variable_list = [
-        CM_StreamVariable("contact_map", np.uint8, 1),
+        StreamContactMapVariable("contact_map", np.uint8, 1),
         StreamVariable("positions", np.float32, 1),
         StreamVariable("md5", str, 2),
         StreamVariable("velocities", np.float32, 1),
-        scalar_StreamVariable("rmsd", np.float32, 0),
+        StreamScalarVariable("rmsd", np.float32, 0),
     ]
 
     mystreams = STREAMS(

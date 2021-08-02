@@ -7,7 +7,7 @@ import subprocess
 import glob
 from deepdrivemd.data.stream.aggregator_reader import (
     STREAMS,
-    CM_StreamVariable,
+    StreamContactMapVariable,
 )
 import os
 import sys
@@ -117,7 +117,7 @@ def main(cfg):
 
     streams = STREAMS(
         cfg.bpfiles,
-        [CM_StreamVariable("contact_map", np.uint8, 1)],
+        [StreamContactMapVariable("contact_map", np.uint8, 1)],
         lastN=cfg.max_steps,
         config=cfg.adios_xml_agg,
         batch=cfg.read_batch,

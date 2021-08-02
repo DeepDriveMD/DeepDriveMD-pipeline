@@ -56,7 +56,7 @@ class StreamVariable:
         self.total.append(var)
 
 
-class CM_StreamVariable(StreamVariable):
+class StreamContactMapVariable(StreamVariable):
     """
     Implementation of `StreamVariable` that handles contact maps: unpack bits to 1D array, convert 1D array to 2D array.
     """
@@ -68,7 +68,7 @@ class CM_StreamVariable(StreamVariable):
         self.total.append(var)
 
 
-class scalar_StreamVariable(StreamVariable):
+class StreamScalarVariable(StreamVariable):
     """
     Implementation of `StreamVariable` that handles scalar variables.
     """
