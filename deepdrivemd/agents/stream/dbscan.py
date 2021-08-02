@@ -366,6 +366,33 @@ def top_outliers(
     return z
 
 
+def select_best_random(
+    cfg: OutlierDetectionConfig,
+    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+) -> List[int]:
+    """
+    Sort cvae_input by rmsd, selects `2*cfg.num_sim` best entries, out of them randomly select `cfg.num_sim`, return the corresponding indices.
+
+    This is used when no outliers are found.
+
+    Parameters
+    ----------
+    cfg : OutlierDetectionConfig
+    cvae_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+            steps, positions, velocities, md5sums, rmsds
+
+    Returns
+    -------
+    List[int]
+            list of `cfg.num_sim` indices randomly selected from a list of `2*cfg.num_sim` entries with smallest rmsd
+    """
+    rmsds = cvae_input[4]
+    z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])
+    sorted_index = list(map(lambda x: x[1], z))[2 * cfg.num_sim :]
+    sorted_index = random.sample(sorted_index, cfg.num_sim)
+    return sorted_index
+
+
 def main(cfg: OutlierDetectionConfig):
     print(subprocess.getstatusoutput("hostname")[1])
     sys.stdout.flush()
@@ -422,11 +449,13 @@ def main(cfg: OutlierDetectionConfig):
             eps, min_samples = cluster(cfg, cm_predict, outlier_list, eps, min_samples)
 
             if len(outlier_list) == 0 or len(outlier_list[0]) < cfg.num_sim:
-                j += 1
-                print("No outliers found")
-                time.sleep(30)
-                timer("outlier_search_iteration", -1)
-                continue
+                print(
+                    f"No outliers found, selecting {cfg.num_sim} random states out of the best {2*cfg.num_sim} ones"
+                )
+                K.clear_session()
+                outlier_list = select_best_random(cfg, cvae_input)
+                eps = cfg.init_eps
+                min_samples = cfg.init_min_samples
 
         top = top_outliers(cfg, cvae_input, outlier_list)
         print("top outliers = ", top[3])
