@@ -7,18 +7,60 @@ from deepdrivemd.data.stream.adios_utils import ADIOS_RW_FULL_API
 
 
 class StreamVariable:
-    def __init__(self, name, dtype, structure):
+    """
+    This class is used to read a variable from BP file
+
+    Attributes
+    ----------
+    name : str
+         variable name in adios file
+    dtype : type
+         variable type, for example, np.uint8
+    structure : int
+         structure type: 0 - np.array, 1 - scalar, 2 - string
+    total : List
+         list of variable values for different steps
+    """
+
+    def __init__(self, name: str, dtype: type, structure: int):
+        """
+        Constructor.
+
+        Parameters
+        ----------
+        name : str
+             variable name in adios file
+        dtype : type
+             variable type, for example, np.uint8
+        structure : int
+             structure type: 0 - np.array, 1 - scalar, 2 - string
+
+        """
         self.name = name
         self.dtype = dtype
         self.structure = structure
         self.total = []
 
-    def next(self, ARW):
+    def next(self, ARW: ADIOS_RW_FULL_API):
+        """
+        Get the variable value for the next time step and append it to `total`
+
+        Parameters
+        ----------
+        ARW : ADIOS_RW_FULL_API
+             low level object for reading data from ADIOS stream (BP file or SST stream)
+
+        """
+
         var = getattr(ARW, "d_" + self.name)
         self.total.append(var)
 
 
 class CM_StreamVariable(StreamVariable):
+    """
+    Implementation of `StreamVariable` that handles contact maps: unpack bits to 1D array, convert 1D array to 2D array.
+    """
+
     def next(self, ARW):
         var = getattr(ARW, "d_" + self.name)
         var = np.unpackbits(var)
@@ -27,6 +69,10 @@ class CM_StreamVariable(StreamVariable):
 
 
 class scalar_StreamVariable(StreamVariable):
+    """
+    Implementation of `StreamVariable` that handles scalar variables.
+    """
+
     def next(self, ARW):
         var = getattr(ARW, "d_" + self.name)
         self.total.append(var[0])
