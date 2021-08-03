@@ -17,7 +17,7 @@ import pickle
 from deepdrivemd.data.stream.OutlierDB import OutlierDB
 from lockfile import LockFile
 from deepdrivemd.data.stream.aggregator_reader import (
-    STREAMS,
+    Streams,
     StreamVariable,
     StreamContactMapVariable,
     StreamScalarVariable,
@@ -26,14 +26,14 @@ from deepdrivemd.data.stream.aggregator_reader import (
 import cupy as cp
 from cuml import DBSCAN as DBSCAN
 
-from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
+from deepdrivemd.models.keras_cvae.model import CVAE
 from simtk.openmm.app.pdbfile import PDBFile
 
 import adios2
 
 
 def build_model(cfg: OutlierDetectionConfig, model_path: str):
-    cvae = conv_variational_autoencoder(
+    cvae = CVAE(
         image_size=cfg.final_shape,
         channels=cfg.final_shape[-1],
         conv_layers=cfg.conv_layers,
@@ -411,7 +411,7 @@ def main(cfg: OutlierDetectionConfig):
         StreamScalarVariable("rmsd", np.float32, 0),
     ]
 
-    mystreams = STREAMS(
+    mystreams = Streams(
         adios_files_list,
         variable_list,
         lastN=cfg.lastN,

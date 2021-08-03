@@ -51,17 +51,17 @@ class CPU_REQ_MD(BaseModel):
 cpu_req_md = CPU_REQ_MD()
 
 
-class GPU_REQ_MD(BaseModel):
+class GPUReqMD(BaseModel):
     processes = 1
     process_type: str = None
     threads_per_process = 1
     thread_type = "CUDA"
 
 
-gpu_req_md = GPU_REQ_MD()
+gpu_req_md = GPUReqMD()
 
 
-class TASK_CONFIG_MD(BaseModel):
+class TaskConfigMD(BaseModel):
     experiment_directory = "set_by_deepdrivemd"
     stage_idx = 0
     task_idx = 0
@@ -89,7 +89,7 @@ class TASK_CONFIG_MD(BaseModel):
     adios_xml_sim = header.adios_xml_sim
 
 
-task_config_md = TASK_CONFIG_MD()
+task_config_md = TaskConfigMD()
 
 pre_exec_md = [
     "unset PYTHONPATH",
@@ -116,17 +116,17 @@ class MD(BaseModel):
 md = MD()
 
 
-class GPU_REQ_AGG(BaseModel):
+class GPUReqAgg(BaseModel):
     processes = 0
     process_type: str = None
     threads_per_process = 0
     thread_type: str = None
 
 
-gpu_req_agg = GPU_REQ_AGG()
+gpu_req_agg = GPUReqAgg()
 
 
-class TASK_CONFIG_AGG(BaseModel):
+class TaskConfigAgg(BaseModel):
     experiment_directory = "set_by_deepdrivemd"
     stage_idx = 0
     task_idx = 0
@@ -138,10 +138,10 @@ class TASK_CONFIG_AGG(BaseModel):
     adios_xml_agg = header.adios_xml_agg
 
 
-task_config_agg = TASK_CONFIG_AGG()
+task_config_agg = TaskConfigAgg()
 
 
-class AGGREGATOR(BaseModel):
+class Aggregator(BaseModel):
     pre_exec = pre_exec_md
     executable = python
     arguments = [f"{header.software_directory}/aggregation/stream/aggregator.py"]
@@ -152,7 +152,7 @@ class AGGREGATOR(BaseModel):
     task_config = task_config_agg.dict()
 
 
-agg = AGGREGATOR()
+agg = Aggregator()
 
 
 class CVAE(BaseModel):
@@ -170,7 +170,7 @@ class CVAE(BaseModel):
     dense_dropouts = [0.4]
 
 
-class TASK_CONFIG_ML(CVAE):
+class TaskConfigML(CVAE):
     experiment_directory = "set_by_deepdrivemd"
     stage_idx = 0
     task_idx = 0
@@ -192,7 +192,7 @@ class TASK_CONFIG_ML(CVAE):
     read_batch = 2000
 
 
-task_config_ml = TASK_CONFIG_ML()
+task_config_ml = TaskConfigML()
 
 
 class ML(BaseModel):
@@ -208,7 +208,7 @@ cpu_req_agent = cpu_req_md.copy()
 cpu_req_agent.threads_per_process = 39
 
 
-class TASK_CONFIG_AGENT(CVAE):
+class TaskConfigAgent(CVAE):
     experiment_directory = "set_by_deepdrivemd"
     stage_idx = 0
     task_idx = 0
@@ -235,10 +235,10 @@ class TASK_CONFIG_AGENT(CVAE):
     adios_xml_agg = header.adios_xml_agg
 
 
-task_config_agent = TASK_CONFIG_AGENT()
+task_config_agent = TaskConfigAgent()
 
 
-class AGENT(BaseModel):
+class Agent(BaseModel):
     pre_exec = pre_exec_md
     executable = python
     arguments = [f"{header.software_directory}/agents/stream/dbscan.py"]
@@ -247,12 +247,12 @@ class AGENT(BaseModel):
     task_config = task_config_agent.dict()
 
 
-class COMPONENTS(BaseModel):
+class Components(BaseModel):
     molecular_dynamics_stage = MD()
-    aggregation_stage = AGGREGATOR()
+    aggregation_stage = Aggregator()
     machine_learning_stage = ML()
-    agent_stage = AGENT()
+    agent_stage = Agent()
 
 
-components = COMPONENTS()
+components = Components()
 print(yaml.dump(components.dict()))

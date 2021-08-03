@@ -3,7 +3,7 @@ import numpy as np
 from typing import Dict, Tuple
 
 
-class ADIOS_RW_FULL_API:
+class AdiosStreamStepRW:
     """Read/Write step by step adios stream using Full API
 
     Attributes

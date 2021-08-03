@@ -3,7 +3,7 @@ import numpy as np
 from deepdrivemd.utils import t1Dto2D
 from pathlib import Path
 from typing import List
-from deepdrivemd.data.stream.adios_utils import ADIOS_RW_FULL_API
+from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
 
 
 class StreamVariable:
@@ -41,13 +41,13 @@ class StreamVariable:
         self.structure = structure
         self.total = []
 
-    def next(self, ARW: ADIOS_RW_FULL_API):
+    def next(self, ARW: AdiosStreamStepRW):
         """
         Get the variable value for the next time step and append it to `total`
 
         Parameters
         ----------
-        ARW : ADIOS_RW_FULL_API
+        ARW : AdiosStreamStepRW
              low level object for reading data from ADIOS stream (BP file or SST stream)
 
         """
@@ -78,7 +78,7 @@ class StreamScalarVariable(StreamVariable):
         self.total.append(var[0])
 
 
-class ADIOS_READER:
+class AdiosReader:
     """This class is used to read the next `N` steps from an adios stream.
 
     Attributes
@@ -135,7 +135,7 @@ class ADIOS_READER:
             vvv[v.name] = (v.dtype, v.structure)
             v.total = []
 
-        ARW = ADIOS_RW_FULL_API(self.connections, vvv)
+        ARW = AdiosStreamStepRW(self.connections, vvv)
 
         for i in range(N):
             status = ARW.read_step(0)
@@ -150,13 +150,13 @@ class ADIOS_READER:
         return output
 
 
-class STREAMS:
+class Streams:
     """The class keeps `lastN` steps from each aggregator
 
     Attributes
     ----------
-    readers : Dict[str, ADIOS_READER]
-          a dictionary of `ADIOS_READER` indexed by the corresponding adios file name
+    readers : Dict[str, AdiosReader]
+          a dictionary of `AdiosReader` indexed by the corresponding adios file name
     positions : Dict[str, np.ndarray]
     md5 : Dict[str, str]
     steps : Dict[str, np.ndarray]
@@ -210,7 +210,7 @@ class STREAMS:
         self.batch = batch
 
         for fn in file_list:
-            self.readers[fn] = ADIOS_READER(fn, config, stream_name, variables)
+            self.readers[fn] = AdiosReader(fn, config, stream_name, variables)
             for v in self.vnames:
                 cname = "c_" + v
                 cache = getattr(self, cname)

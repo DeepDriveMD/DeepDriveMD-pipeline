@@ -9,7 +9,7 @@ import math
 import queue
 import subprocess
 import itertools
-from deepdrivemd.data.stream.adios_utils import ADIOS_RW_FULL_API
+from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
 from typing import List, Dict, Tuple
 from pathlib import Path
 
@@ -118,7 +118,7 @@ def aggregate(
         "md5": (str, 0),
     }
 
-    ARW = ADIOS_RW_FULL_API(connections, variablesR)
+    ARW = AdiosStreamStepRW(connections, variablesR)
 
     # infinite loop over simulation reporting steps
     for iteration in itertools.count(0):

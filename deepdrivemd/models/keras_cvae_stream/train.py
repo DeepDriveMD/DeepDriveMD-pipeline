@@ -2,11 +2,11 @@ import time
 import numpy as np
 from deepdrivemd.utils import Timer, timer, parse_args
 from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
-from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
+from deepdrivemd.models.keras_cvae.model import CVAE
 import subprocess
 import glob
 from deepdrivemd.data.stream.aggregator_reader import (
-    STREAMS,
+    Streams,
     StreamContactMapVariable,
 )
 import os
@@ -62,7 +62,7 @@ def wait_for_input(cfg) -> List[str]:
     return bpfiles
 
 
-def next_input(cfg, streams: STREAMS) -> Tuple[np.ndarray, np.ndarray]:
+def next_input(cfg, streams: Streams) -> Tuple[np.ndarray, np.ndarray]:
     """Read the next batch of contact maps from aggregated files.
 
     Returns
@@ -86,7 +86,7 @@ def next_input(cfg, streams: STREAMS) -> Tuple[np.ndarray, np.ndarray]:
 
 def build_model(cfg):
     with Timer("ml_conv_variational_autoencoder"):
-        cvae = conv_variational_autoencoder(
+        cvae = CVAE(
             image_size=cfg.final_shape,
             channels=cfg.final_shape[-1],
             conv_layers=cfg.conv_layers,
@@ -115,7 +115,7 @@ def main(cfg):
     with Timer("ml_wait_for_input"):
         cfg.bpfiles = wait_for_input(cfg)
 
-    streams = STREAMS(
+    streams = Streams(
         cfg.bpfiles,
         [StreamContactMapVariable("contact_map", np.uint8, 1)],
         lastN=cfg.max_steps,

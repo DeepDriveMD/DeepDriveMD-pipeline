@@ -29,7 +29,7 @@ class LossHistory(Callback):
         df.to_csv(path, index_label="epoch")
 
 
-class conv_variational_autoencoder(object):
+class CVAE(object):
     """
     variational autoencoder class
 

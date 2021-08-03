@@ -1,0 +1,9 @@
+perl -i.bak -pe 's/GPU_REQ_MD/GPUReqMD/g' generate.py 
+perl -i.bak -pe 's/TASK_CONFIG_MD/TaskConfigMD/g' generate.py
+perl -i.bak -pe 's/GPU_REQ_AGG/GPUReqAgg/g' generate.py
+perl -i.bak -pe 's/TASK_CONFIG_AGG/TaskConfigAgg/g' generate.py
+perl -i.bak -pe 's/AGGREGATOR/Aggregator/g' generate.py
+perl -i.bak -pe 's/TASK_CONFIG_ML/TaskConfigML/g' generate.py
+perl -i.bak -pe 's/TASK_CONFIG_AGENT/TaskConfigAgent/g' generate.py
+perl -i.bak -pe 's/AGENT/Agent/g' generate.py
+perl -i.bak -pe 's/COMPONENTS/Components/g' generate.py
