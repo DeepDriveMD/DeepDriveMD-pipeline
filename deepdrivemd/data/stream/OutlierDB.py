@@ -37,7 +37,7 @@ class OutlierDB:
             self.dictionary[md5] = rmsd
         self.print()
 
-    def print(self, n=5):
+    def print(self, n: int = 5):
         print("=" * 30)
         print("In OutlierDB")
         n = min(n, len(self.sorted_index))

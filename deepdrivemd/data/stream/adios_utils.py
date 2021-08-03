@@ -104,9 +104,7 @@ class AdiosStreamStepRW:
             dname = "d_" + v
             structure_type = variables[v][1]
             data = getattr(self, dname)
-            end = False
-            if end_step and v == variables[-1]:
-                end = True
+            end = end_step and v == variables[-1]
 
             if structure_type == 0:  # scalar
                 wstream.write(v, data, end_step=end)
