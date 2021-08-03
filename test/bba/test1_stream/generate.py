@@ -233,6 +233,7 @@ class TaskConfigAgent(CVAE):
     project_lastN = 50 * 1000
     project_gpu = False
     adios_xml_agg = header.adios_xml_agg
+    use_outliers = True
 
 
 task_config_agent = TaskConfigAgent()

@@ -65,6 +65,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     # use project_lastN last samples from each aggregator to search for outliers
     project_lastN: int = 8000
     num_sim: int = 120
+    use_outliers: bool = True
 
 
 if __name__ == "__main__":

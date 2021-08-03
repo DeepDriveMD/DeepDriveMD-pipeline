@@ -447,13 +447,16 @@ def main(cfg: OutlierDetectionConfig):
         outlier_list = []
         with Timer("outlier_cluster"):
             eps, min_samples = cluster(cfg, cm_predict, outlier_list, eps, min_samples)
-
-            if len(outlier_list) == 0 or len(outlier_list[0]) < cfg.num_sim:
+            if (
+                cfg.use_outliers is False
+                or len(outlier_list) == 0
+                or len(outlier_list[0]) < cfg.num_sim
+            ):
                 print(
-                    f"No outliers found, selecting {cfg.num_sim} random states out of the best {2*cfg.num_sim} ones"
+                    f"Selecting {cfg.num_sim} random states out of the best {2*cfg.num_sim} ones"
                 )
                 K.clear_session()
-                outlier_list = select_best_random(cfg, cvae_input)
+                outlier_list = [select_best_random(cfg, cvae_input)]
                 eps = cfg.init_eps
                 min_samples = cfg.init_min_samples
 
