@@ -41,14 +41,14 @@ pythonpath = f"{header.software_directory}/misc/:" + os.getenv("PYTHONPATH")
 python = "/usr/workspace/cv_ddmd/conda1/powerai/bin/python"
 
 
-class CPUReqMD(BaseModel):
+class CPU_REQ_MD(BaseModel):
     processes = 1
     process_type: str = None
     threads_per_process = 4
     thread_type = "OpenMP"
 
 
-cpu_req_md = CPUReqMD()
+cpu_req_md = CPU_REQ_MD()
 
 
 class GPUReqMD(BaseModel):
