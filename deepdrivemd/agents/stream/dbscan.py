@@ -8,6 +8,7 @@ import os
 import argparse
 import itertools
 from typing import List, Tuple
+from numba import cuda
 
 from deepdrivemd.utils import Timer, timer, t1Dto2D
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
@@ -30,6 +31,17 @@ from deepdrivemd.models.keras_cvae.model import CVAE
 from simtk.openmm.app.pdbfile import PDBFile
 
 import adios2
+
+
+def clear_gpu():
+    K.clear_session()
+    try:
+        device = int(os.environ["CUDA_VISIBLE_DEVICES"])
+        print("device = ", device)
+        cuda.select_device(device)
+        cuda.close()
+    except Exception as e:
+        print(e)
 
 
 def build_model(cfg: OutlierDetectionConfig, model_path: str):
@@ -162,7 +174,7 @@ def predict(
 
     cm_predict = cvae.return_embeddings(input, batch_size)
     del cvae
-    K.clear_session()
+    clear_gpu()
     return cm_predict
 
 
@@ -194,7 +206,7 @@ def outliers_from_latent(
     db_label = db.labels_.to_array()
     print("unique labels = ", np.unique(db_label))
     outlier_list = np.where(db_label == -1)
-    K.clear_session()
+    clear_gpu()
     return outlier_list
 
 
@@ -455,7 +467,7 @@ def main(cfg: OutlierDetectionConfig):
                 print(
                     f"Selecting {cfg.num_sim} random states out of the best {2*cfg.num_sim} ones"
                 )
-                K.clear_session()
+                clear_gpu()
                 outlier_list = [select_best_random(cfg, cvae_input)]
                 eps = cfg.init_eps
                 min_samples = cfg.init_min_samples
