@@ -4,6 +4,8 @@ run1:
 	bin/run.sh test1_stream
 run2:
 	bin/run.sh lassen-keras-dbscan_stream
+run3:	
+	bin/run.sh lassen-keras-dbscan_stream_noutliers
 watch1:
 	watch bpls ../Outputs/${d}/aggregation_runs/stage0000/task0000/agg.bp
 watch2:

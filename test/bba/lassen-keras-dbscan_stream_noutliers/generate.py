@@ -17,7 +17,7 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/14"
+    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/13"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
@@ -233,7 +233,7 @@ class TaskConfigAgent(CVAE):
     project_lastN = 50 * 1000
     project_gpu = False
     adios_xml_agg = header.adios_xml_agg
-    use_outliers = True
+    use_outliers = False
 
 
 task_config_agent = TaskConfigAgent()
