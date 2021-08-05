@@ -66,6 +66,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     project_lastN: int = 8000
     num_sim: int = 120
     use_outliers: bool = True
+    use_random_outliers: bool = False
 
 
 if __name__ == "__main__":

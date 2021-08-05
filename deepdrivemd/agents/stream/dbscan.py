@@ -346,7 +346,7 @@ def top_outliers(
     outlier_list: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Find top num_sim outliers sorted by rmsd.
+    Find top `num_sim` outliers sorted by `rmsd`.
 
     Parameters
     ----------
@@ -373,6 +373,46 @@ def top_outliers(
     z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
     z.sort(key=lambda x: x[3])
     z = z[:N]
+    z = list(zip(*z))
+
+    return z
+
+
+def random_outliers(
+    cfg: OutlierDetectionConfig,
+    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    outlier_list: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Find `num_sim` outliers in a random order. Can be used in the absense of `rmsd`.
+
+    Parameters
+    ----------
+    cfg : OutlierDetectionConfig
+    cvae_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+            steps, positions, velocities, md5sums, rmsds
+    outlier_list : np.ndarray
+            indices corresponding to outliers
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+         Positions, velocities, md5sums, rmsds, outlier
+         indices of outliers in a random order
+
+    """
+    N = cfg.num_sim
+    outlier_list = list(outlier_list[0])
+    positions = cvae_input[1][outlier_list]
+    velocities = cvae_input[3][outlier_list]
+    md5s = cvae_input[2][outlier_list]
+    rmsds = cvae_input[4][outlier_list]
+
+    z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
+    indices = np.arange(len(z))
+    np.random.shuffle(indices)
+    indices = indices[:N]
+    z = [z[i] for i in indices]
     z = list(zip(*z))
 
     return z
@@ -472,7 +512,13 @@ def main(cfg: OutlierDetectionConfig):
                 eps = cfg.init_eps
                 min_samples = cfg.init_min_samples
 
-        top = top_outliers(cfg, cvae_input, outlier_list)
+        if cfg.use_random_outliers:
+            print("Using random outliers")
+            top = random_outliers(cfg, cvae_input, outlier_list)
+        else:
+            print("Using top outliers sorted by rmsd")
+            top = top_outliers(cfg, cvae_input, outlier_list)
+
         print("top outliers = ", top[3])
 
         with Timer("outlier_write"):

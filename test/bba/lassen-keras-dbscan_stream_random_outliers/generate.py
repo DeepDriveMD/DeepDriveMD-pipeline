@@ -12,12 +12,12 @@ class Header(BaseModel):
     queue = "pbatch"
     schema_ = "local"
     project = "cv19-a01"
-    walltime_min = 30
+    walltime_min = 60 * 12
     max_iteration = 4
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/3"
+    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/14"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
@@ -109,7 +109,7 @@ class MD(BaseModel):
     arguments = [f"{header.software_directory}/sim/openmm_stream/run_openmm.py"]
     cpu_reqs = cpu_req_md.dict()
     gpu_reqs = gpu_req_md.dict()
-    num_tasks = 12
+    num_tasks = 120
     task_config = task_config_md.dict()
 
 
@@ -132,7 +132,7 @@ class TaskConfigAgg(BaseModel):
     task_idx = 0
     output_path = "set_by_deepdrivemd"
     node_local_path = "set_by_deepdrivemd"
-    num_tasks = 1
+    num_tasks = 10
     n_sim = md.num_tasks
     sleeptime_bpfiles = 30
     adios_xml_agg = header.adios_xml_agg
@@ -167,7 +167,7 @@ class CVAE(BaseModel):
     conv_strides = [[1, 1], [2, 2], [1, 1], [1, 1]]
     dense_layers = 1
     dense_neurons = [128]
-    dense_dropouts = [0.25]
+    dense_dropouts = [0.4]
 
 
 class TaskConfigML(CVAE):
@@ -175,11 +175,11 @@ class TaskConfigML(CVAE):
     stage_idx = 0
     task_idx = 0
     output_path = "set_by_deepdrivemd"
-    epochs = 30
+    epochs = 50
     batch_size = 32
     min_step_increment = 1000
     max_steps = 2000
-    max_loss = 1000
+    max_loss = 100
     num_agg = agg.num_tasks
     timeout1 = 30
     timeout2 = 10
@@ -222,8 +222,8 @@ class TaskConfigAgent(CVAE):
     best_model = f"{header.experiment_directory}/machine_learning_runs/stage0000/task0000/published_model/best.h5"
     lastN = 2000
     outlier_count = 120
-    outlier_max = 1000
-    outlier_min = 500
+    outlier_max = 5000
+    outlier_min = 1000
     init_pdb_file = f"{header.init_pdb_file}"
     ref_pdb_file = f"{header.ref_pdb_file}"
     init_eps = 1.3
