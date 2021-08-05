@@ -7,7 +7,7 @@ run2:
 run3:	
 	bin/run.sh lassen-keras-dbscan_stream_noutliers
 run4:	
-	bin/run.sh lassen-keras-dbscan_stream_random_utliers
+	bin/run.sh lassen-keras-dbscan_stream_random_outliers
 watch1:
 	watch bpls ../Outputs/${d}/aggregation_runs/stage0000/task0000/agg.bp
 watch2:
