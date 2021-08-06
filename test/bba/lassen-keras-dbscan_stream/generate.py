@@ -37,7 +37,7 @@ header = Header()
 
 print(yaml.dump(header.dict()))
 
-pythonpath = f"{header.software_directory}/misc/:" + os.getenv("PYTHONPATH")
+pythonpath = os.getenv("PYTHONPATH")
 python = "/usr/workspace/cv_ddmd/conda1/powerai/bin/python"
 
 
