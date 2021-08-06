@@ -39,7 +39,7 @@ agent_stage:
   - export IBM_POWERAI_LICENSE_ACCEPT=yes
   - module use /usr/workspace/cv_ddmd/software1/modules
   - module load adios2
-  - export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
+  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
   task_config:
     adios_xml_agg: set_by_deepdrivemd
     agg_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/13/aggregation_runs
@@ -127,7 +127,7 @@ aggregation_stage:
   - export IBM_POWERAI_LICENSE_ACCEPT=yes
   - module use /usr/workspace/cv_ddmd/software1/modules
   - module load adios2
-  - export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
+  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
   skip_aggregation: false
   task_config:
     adios_xml_agg: set_by_deepdrivemd
@@ -161,7 +161,7 @@ machine_learning_stage:
   - export IBM_POWERAI_LICENSE_ACCEPT=yes
   - module use /usr/workspace/cv_ddmd/software1/modules
   - module load adios2
-  - export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
+  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
   task_config:
     adios_xml_agg: set_by_deepdrivemd
     agg_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/13/aggregation_runs/
@@ -244,7 +244,7 @@ molecular_dynamics_stage:
   - export IBM_POWERAI_LICENSE_ACCEPT=yes
   - module use /usr/workspace/cv_ddmd/software1/modules
   - module load adios2
-  - export PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc/:/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
+  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
   task_config:
     adios_xml_sim: set_by_deepdrivemd
     bp_file: set_by_deepdrivemd
