@@ -64,11 +64,14 @@ class ContactMapReporter(object):
         contact_map = t2Dto1D(contact_map)
         contact_map = np.packbits(contact_map)
 
-        mda_u = MDAnalysis.Universe(str(self.cfg.reference_pdb_file))
-        reference_positions = mda_u.select_atoms(
-            self.cfg.mda_selection
-        ).positions.copy()
-        rmsd = rms.rmsd(positions_ca, reference_positions, superposition=True)
+        if self.cfg.compute_rmsd:
+            mda_u = MDAnalysis.Universe(str(self.cfg.reference_pdb_file))
+            reference_positions = mda_u.select_atoms(
+                self.cfg.mda_selection
+            ).positions.copy()
+            rmsd = rms.rmsd(positions_ca, reference_positions, superposition=True)
+        else:
+            rmsd = -1.0
         step = np.array([step], dtype=np.int32)
         rmsd = np.array([rmsd], dtype=np.float32)
 

@@ -35,6 +35,7 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     adios_xml_sim: Path = "adios.xml"
     # a directory with initial pdb files
     initial_pdb_dir: Path = Path()
+    compute_rmsd: bool = True
 
     @root_validator()
     def explicit_solvent_requires_top_suffix(cls, values: dict):

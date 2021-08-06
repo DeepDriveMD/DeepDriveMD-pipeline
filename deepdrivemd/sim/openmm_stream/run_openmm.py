@@ -3,7 +3,7 @@ import simtk.unit as u
 import simtk.openmm as omm
 from mdtools.openmm.sim import configure_simulation
 from deepdrivemd.utils import Timer, parse_args
-from deepdrivemd.sim.openmm.config import OpenMMConfig
+from deepdrivemd.sim.openmm_stream.config import OpenMMConfig
 from deepdrivemd.sim.openmm_stream.openmm_reporter import ContactMapReporter
 import sys
 import os

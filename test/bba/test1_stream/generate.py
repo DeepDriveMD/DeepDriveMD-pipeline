@@ -37,7 +37,7 @@ header = Header()
 
 print(yaml.dump(header.dict()))
 
-pythonpath = f"{header.software_directory}/misc/:" + os.getenv("PYTHONPATH")
+pythonpath = os.getenv("PYTHONPATH")
 python = "/usr/workspace/cv_ddmd/conda1/powerai/bin/python"
 
 
@@ -87,6 +87,7 @@ class TaskConfigMD(BaseModel):
     next_outlier_policy = 1
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
+    compute_rmsd = True
 
 
 task_config_md = TaskConfigMD()
