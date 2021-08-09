@@ -124,7 +124,7 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
         return False
 
 
-def init_input(cfg):
+def init_input(cfg: OpenMMConfig):
     """The first iteration of the simulation is initialized from pdb
     files in `cfg.initial_pdb_dir`. For the given simulation the pdb file is
     selected using simulation `task_id` in a round robin fashion.
