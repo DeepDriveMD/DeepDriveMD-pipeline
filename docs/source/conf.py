@@ -50,7 +50,7 @@ templates_path = ["_templates"]
 exclude_patterns = []
 
 # List of imports to mock when building the documentation.
-autodoc_mock_imports = ["adios2", "tensorflow", "simtk.openmm", "cupy", "cuml"]
+autodoc_mock_imports = ["adios2", "tensorflow", "simtk.openmm", "cupy", "cuml", "numba"]
 
 html_context = {
     "conf_py_path": "/docs/source/",  # Path in the checkout to the docs root

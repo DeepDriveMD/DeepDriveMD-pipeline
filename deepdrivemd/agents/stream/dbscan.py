@@ -67,7 +67,7 @@ def wait_for_model(cfg: OutlierDetectionConfig) -> str:
     Returns
     -------
     str
-         path to the model
+        Path to the model.
     """
 
     while True:
@@ -85,7 +85,7 @@ def wait_for_input(cfg: OutlierDetectionConfig) -> List[str]:
     Returns
     -------
     List[str]
-         a list of aggregated bp file
+        List of aggregated bp files.
     """
     while True:
         bpfiles = glob.glob(str(cfg.agg_dir / "*/*/agg.bp"))
@@ -130,7 +130,7 @@ def dirs(cfg: OutlierDetectionConfig) -> Tuple[str, str, str]:
     Returns
     -------
     Tuple[str, str, str]
-         paths to top, tmp and published directories
+        Paths to top, tmp and published directories
     """
     top_dir = cfg.output_path
     tmp_dir = f"{top_dir}/tmp"
@@ -186,17 +186,17 @@ def outliers_from_latent(
     Parameters
     ----------
     cm_predict : np.ndarray[np.float32]
-          projections of contact maps to the middle layer of CVAE
+        Projections of contact maps to the middle layer of CVAE.
     eps : float
-          DBSCAN's eps
+        DBSCAN's eps
     min_samples : int
-          DBSCAN's min_samples
+        DBSCAN's min_samples.
 
 
     Returns
     -------
     np.ndarray
-          indices of outliers
+        Indices of outliers.
 
     """
     cm_predict = cp.asarray(cm_predict)
@@ -217,7 +217,7 @@ def cluster(
     eps: float,
     min_samples: int,
 ) -> Tuple[float, int]:
-    """Run `outliers_from_latent` changing parameters of DBSCAN until
+    """Run :obj:`outliers_from_latent` changing parameters of DBSCAN until
     the desired number of outliers is obtained.
 
     Parameters
@@ -265,16 +265,16 @@ def cluster(
 
 
 def write_pdb_frame(frame: np.ndarray, original_pdb: str, output_pdb_fn: str):
-    """Write positions into pdb file
+    """Write positions into pdb file.
 
     Parameters
     ----------
     frame : np.ndarray
-         positions of atoms
+        Positions of atoms.
     original_pdb : str
-         pdb file with initial condition to be used for topology
+        PDB file with initial condition to be used for topology.
     output_pdb_fn : str
-         where to write an outlier
+        Where to write an outlier.
 
     """
     pdb = PDBFile(str(original_pdb))
@@ -287,16 +287,16 @@ def write_top_outliers(
     tmp_dir: str,
     top: Tuple[np.ndarray, np.ndarray, np.ndarray],
 ):
-    """Save to pdb files top outliers
+    """Save to PDB files top outliers.
 
     Parameters
     ----------
     cfg : OutlierDetectionConfig
     tmp_dir : str
-          Temporary directory to write outliers to
+          Temporary directory to write outliers to.
     top : Tuple[np.ndarray, np.ndarray, np.ndarray]
-          top `N` positions, velocities, md5sums where
-          `N` is equal to the number of the simulations.
+          Top :obj:`N` positions, velocities, md5sums where
+          :obj:`N` is equal to the number of the simulations.
 
     """
     positions = top[0]
@@ -311,7 +311,7 @@ def write_top_outliers(
 
 
 def write_db(top, tmp_dir):
-    """Create and save a database of outliers to be used by simulation"""
+    """Create and save a database of outliers to be used by simulation."""
     outlier_db_fn = f"{tmp_dir}/OutlierDB.pickle"
     outlier_files = list(map(lambda x: f"{tmp_dir}/{x}.pdb", top[2]))
     rmsds = top[3]
@@ -322,7 +322,7 @@ def write_db(top, tmp_dir):
 
 
 def publish(tmp_dir, published_dir):
-    """Publish outliers and the corresponding database for simulations to pick up"""
+    """Publish outliers and the corresponding database for simulations to pick up."""
     dbfn = f"{published_dir}/OutlierDB.pickle"
     subprocess.getstatusoutput(f"touch {dbfn}")
 
@@ -346,7 +346,7 @@ def top_outliers(
     outlier_list: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Find top `num_sim` outliers sorted by `rmsd`.
+    Find top :obj:num_sim` outliers sorted by :obj:`rmsd`.
 
     Parameters
     ----------
@@ -384,7 +384,7 @@ def random_outliers(
     outlier_list: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Find `num_sim` outliers in a random order. Can be used in the absense of `rmsd`.
+    Find :obj:`num_sim` outliers in a random order. Can be used in the absense of :obj:`rmsd`.
 
     Parameters
     ----------
@@ -422,21 +422,24 @@ def select_best_random(
     cfg: OutlierDetectionConfig,
     cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
 ) -> List[int]:
-    """
-    Sort cvae_input by rmsd, selects `2*cfg.num_sim` best entries, out of them randomly select `cfg.num_sim`, return the corresponding indices.
-
-    This is used when no outliers are found.
+    """Sort cvae_input by rmsd, selects :obj:`2*cfg.num_sim` best entries, out of them
+    randomly select :obj:`cfg.num_sim`, return the corresponding indices.
 
     Parameters
     ----------
     cfg : OutlierDetectionConfig
     cvae_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
-            steps, positions, velocities, md5sums, rmsds
+        steps, positions, velocities, md5sums, rmsds
 
     Returns
     -------
     List[int]
-            list of `cfg.num_sim` indices randomly selected from a list of `2*cfg.num_sim` entries with smallest rmsd
+        List of :obj:`cfg.num_sim` indices randomly selected from a list of
+        :obj:`2*cfg.num_sim` entries with smallest rmsd.
+
+    Note
+    ----
+    This is used when no outliers are found.
     """
     rmsds = cvae_input[4]
     z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])
@@ -449,19 +452,20 @@ def select_best(
     cfg: OutlierDetectionConfig,
     cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
 ) -> List[int]:
-    """
-    Sort cvae_input by rmsd, selects best `cfg.num_sim`, return the corresponding indices.
+    """Sort cvae_input by rmsd, selects best :obj:`cfg.num_sim`, return
+    the corresponding indices.
 
     Parameters
     ----------
     cfg : OutlierDetectionConfig
     cvae_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
-            steps, positions, velocities, md5sums, rmsds
+        steps, positions, velocities, md5sums, rmsds
 
     Returns
     -------
     List[int]
-            list of `cfg.num_sim` indices for best traversed states among `lastN` from each aggregator
+        List of :obj:`cfg.num_sim` indices for best traversed states among
+        :obj:`lastN` from each aggregator.
     """
     rmsds = cvae_input[4]
     z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])
@@ -560,20 +564,20 @@ def main(cfg: OutlierDetectionConfig):
 def read_lastN(
     adios_files_list: List[str], lastN: int
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """Read `lastN` steps from each aggregated file. Used `by project()`
+    """Read :obj:`lastN` steps from each aggregated file. Used by :obj:`project()`
 
     Parameters
     ----------
     adios_files_list : List[str]
         A list of aggregated adios files.
     lastN :int
-        How many last entries to get from each file
+        How many last entries to get from each file.
 
     Returns
     -------
     Tuple[np.ndarray, np.ndarray]
-        `lastN` contact maps from each aggregated file and
-        `lastN` corresponding rmsds
+        :obj:`lastN` contact maps from each aggregated file and
+        :obj:`lastN` corresponding rmsds.
     """
     variable_lists = {}
     for bp in adios_files_list:
@@ -631,9 +635,7 @@ def read_lastN(
 
 
 def project(cfg: OutlierDetectionConfig):
-    """
-    Postproduction: compute TSNE embeddings
-    """
+    """Postproduction: compute t-SNE embeddings."""
     if cfg.project_gpu:
         from cuml import TSNE
     else:
