@@ -445,6 +445,30 @@ def select_best_random(
     return sorted_index
 
 
+def select_best(
+    cfg: OutlierDetectionConfig,
+    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+) -> List[int]:
+    """
+    Sort cvae_input by rmsd, selects best `cfg.num_sim`, return the corresponding indices.
+
+    Parameters
+    ----------
+    cfg : OutlierDetectionConfig
+    cvae_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+            steps, positions, velocities, md5sums, rmsds
+
+    Returns
+    -------
+    List[int]
+            list of `cfg.num_sim` indices for best traversed states among `lastN` from each aggregator
+    """
+    rmsds = cvae_input[4]
+    z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])
+    sorted_index = list(map(lambda x: x[1], z))[cfg.num_sim :]
+    return sorted_index
+
+
 def main(cfg: OutlierDetectionConfig):
     print(subprocess.getstatusoutput("hostname")[1])
     sys.stdout.flush()
@@ -508,7 +532,7 @@ def main(cfg: OutlierDetectionConfig):
                     f"Selecting {cfg.num_sim} random states out of the best {2*cfg.num_sim} ones"
                 )
                 clear_gpu()
-                outlier_list = [select_best_random(cfg, cvae_input)]
+                outlier_list = [select_best(cfg, cvae_input)]
                 eps = cfg.init_eps
                 min_samples = cfg.init_min_samples
 

@@ -230,7 +230,7 @@ class StreamingExperimentConfig(ExperimentConfig):
     config_directory: Path
     software_directory: Path
     init_pdb_file: Path
-    ref_pdb_file: Path
+    ref_pdb_file: Optional[Path]
     model_selection_stage: Optional[ModelSelectionStageConfig]
     aggregation_stage: StreamingAggregationStageConfig
 
