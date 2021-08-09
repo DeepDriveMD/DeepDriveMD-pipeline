@@ -167,7 +167,6 @@ def predict(
     Returns
     -------
     np.ndarray
-
     """
     cvae = build_model(cfg, model_path)
     input = np.expand_dims(cvae_input[0], axis=-1)
@@ -192,12 +191,10 @@ def outliers_from_latent(
     min_samples : int
         DBSCAN's min_samples.
 
-
     Returns
     -------
     np.ndarray
         Indices of outliers.
-
     """
     cm_predict = cp.asarray(cm_predict)
     db = DBSCAN(eps=eps, min_samples=min_samples, max_mbytes_per_batch=100).fit(
@@ -232,7 +229,6 @@ def cluster(
     -------
     Tuple[float, int]
         eps, min_samples which give the number of outliers in the desired range.
-
     """
     outlier_count = cfg.outlier_count
     while outlier_count > 0:
@@ -275,7 +271,6 @@ def write_pdb_frame(frame: np.ndarray, original_pdb: str, output_pdb_fn: str):
         PDB file with initial condition to be used for topology.
     output_pdb_fn : str
         Where to write an outlier.
-
     """
     pdb = PDBFile(str(original_pdb))
     with open(str(output_pdb_fn), "w") as f:
@@ -297,7 +292,6 @@ def write_top_outliers(
     top : Tuple[np.ndarray, np.ndarray, np.ndarray]
           Top :obj:`N` positions, velocities, md5sums where
           :obj:`N` is equal to the number of the simulations.
-
     """
     positions = top[0]
     velocities = top[1]
@@ -361,7 +355,6 @@ def top_outliers(
     Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
          Positions, velocities, md5sums, rmsds, outlier
          indices of outliers, sorted in ascending order by rmsd
-
     """
     N = cfg.num_sim
     outlier_list = list(outlier_list[0])
@@ -398,8 +391,7 @@ def random_outliers(
     -------
     Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
          Positions, velocities, md5sums, rmsds, outlier
-         indices of outliers in a random order
-
+         indices of outliers in a random order.
     """
     N = cfg.num_sim
     outlier_list = list(outlier_list[0])
