@@ -15,7 +15,7 @@ import itertools
 from typing import List, Tuple
 
 
-def wait_for_input(cfg) -> List[str]:
+def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
     """Wait for the expected number of sufficiently large agg.bp files to be produced.
 
     Returns
@@ -62,7 +62,9 @@ def wait_for_input(cfg) -> List[str]:
     return bpfiles
 
 
-def next_input(cfg, streams: Streams) -> Tuple[np.ndarray, np.ndarray]:
+def next_input(
+    cfg: KerasCVAEModelConfig, streams: Streams
+) -> Tuple[np.ndarray, np.ndarray]:
     """Read the next batch of contact maps from aggregated files.
 
     Returns
@@ -84,7 +86,7 @@ def next_input(cfg, streams: Streams) -> Tuple[np.ndarray, np.ndarray]:
     return cm_data_input[:train_val_split], cm_data_input[train_val_split:]
 
 
-def build_model(cfg):
+def build_model(cfg: KerasCVAEModelConfig):
     with Timer("ml_conv_variational_autoencoder"):
         cvae = CVAE(
             image_size=cfg.final_shape,
@@ -102,7 +104,7 @@ def build_model(cfg):
     return cvae
 
 
-def main(cfg):
+def main(cfg: KerasCVAEModelConfig):
     print(subprocess.getstatusoutput("hostname")[1])
     sys.stdout.flush()
 

@@ -7,8 +7,7 @@ from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
 
 
 class StreamVariable:
-    """
-    This class is used to read a variable from BP file
+    """This class is used to read a variable from BP file.
 
     Attributes
     ----------
@@ -24,8 +23,6 @@ class StreamVariable:
 
     def __init__(self, name: str, dtype: type, structure: int):
         """
-        Constructor.
-
         Parameters
         ----------
         name : str
@@ -42,8 +39,7 @@ class StreamVariable:
         self.total = []
 
     def next(self, ARW: AdiosStreamStepRW):
-        """
-        Get the variable value for the next time step and append it to `total`
+        """Get the variable value for the next time step and append it to `total`.
 
         Parameters
         ----------
@@ -57,8 +53,8 @@ class StreamVariable:
 
 
 class StreamContactMapVariable(StreamVariable):
-    """
-    Implementation of `StreamVariable` that handles contact maps: unpack bits to 1D array, convert 1D array to 2D array.
+    """Implementation of `StreamVariable` that handles contact maps:
+    unpack bits to 1D array, convert 1D array to 2D array.
     """
 
     def next(self, ARW):
@@ -69,9 +65,7 @@ class StreamContactMapVariable(StreamVariable):
 
 
 class StreamScalarVariable(StreamVariable):
-    """
-    Implementation of `StreamVariable` that handles scalar variables.
-    """
+    """Implementation of `StreamVariable` that handles scalar variables."""
 
     def next(self, ARW):
         var = getattr(ARW, "d_" + self.name)
@@ -91,8 +85,7 @@ class AdiosReader:
     def __init__(
         self, fn: str, config: Path, stream_name: str, variables: List[StreamVariable]
     ):
-        """Constructor
-
+        """
         Parameters
         ----------
         fn: str
@@ -179,8 +172,7 @@ class Streams:
         lastN: int = 2000,
         batch: int = 10000,
     ):
-        """Constructor
-
+        """
         Parameters
         ----------
         file_list : List[fn]
