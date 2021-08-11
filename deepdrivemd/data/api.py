@@ -315,6 +315,12 @@ class DeepDriveMD_API:
         # top_file: initial_pdb_dir/<system-name>/*<suffix>
         system_name = DeepDriveMD_API.get_system_name(pdb_file)
         top_file = list(Path(initial_pdb_dir).joinpath(system_name).glob(f"*{suffix}"))
+        print(
+            f"system_name = {system_name}, initial_pdb_dir = {initial_pdb_dir}, suffix = {suffix}, pdb_file = {pdb_file}"
+        )
+        import sys
+
+        sys.stdout.flush()
         if top_file:
             return top_file[0]
         return None

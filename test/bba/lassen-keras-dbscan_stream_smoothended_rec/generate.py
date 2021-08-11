@@ -65,7 +65,7 @@ class TaskConfigMD(BaseModel):
     node_local_path = "set_by_deepdrivemd"
     pdb_file = "set_by_deepdrivemd"
     initial_pdb_dir = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/"
-    solvent_type = "implicit"
+    solvent_type = "explicit"
     top_suffix: str = ".top"
     simulation_length_ns = 10.0
     report_interval_ps = 50.0
@@ -83,6 +83,7 @@ class TaskConfigMD(BaseModel):
     next_outlier_policy = 1
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
+    compute_rmsd = False
 
 
 task_config_md = TaskConfigMD()
@@ -152,8 +153,8 @@ agg = Aggregator()
 
 
 class CVAE(BaseModel):
-    initial_shape = [460, 460]
-    final_shape = [460, 460, 1]
+    initial_shape = [459, 459]
+    final_shape = [459, 459, 1]
     split_pct = 0.8
     shuffle = True
     latent_dim = 10
@@ -173,7 +174,7 @@ class TaskConfigML(CVAE):
     output_path = "set_by_deepdrivemd"
     epochs = 50
     batch_size = 32
-    min_step_increment = 1000
+    min_step_increment = 200
     max_steps = 2000
     max_loss = 100
     num_agg = agg.num_tasks

@@ -129,7 +129,9 @@ def init_input(cfg):
     files in `cfg.initial_pdb_dir`. For the given simulation the pdb file is
     selected using simulation `task_id` in a round robin fashion.
     """
-    pdb_files = list(cfg.initial_pdb_dir.glob("*.pdb"))
+    pdb_files = list(cfg.initial_pdb_dir.glob("*.pdb")) + list(
+        cfg.initial_pdb_dir.glob("*/*.pdb")
+    )
     pdb_files.sort()
     n = len(pdb_files)
     i = int(cfg.task_idx) % n
