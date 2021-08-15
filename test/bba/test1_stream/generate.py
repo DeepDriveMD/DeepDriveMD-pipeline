@@ -237,7 +237,7 @@ class TaskConfigAgent(CVAE):
     project_gpu = False
     adios_xml_agg = header.adios_xml_agg
     use_outliers = True
-    use_random_outliers = True
+    use_random_outliers = False
     compute_rmsd = task_config_md.compute_rmsd
 
 

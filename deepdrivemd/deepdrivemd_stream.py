@@ -7,6 +7,7 @@ from deepdrivemd.config import StreamingExperimentConfig, BaseStageConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.utils import parse_args
 import math
+from pathlib import Path
 
 
 def generate_task(cfg: BaseStageConfig) -> Task:
@@ -223,8 +224,9 @@ if __name__ == "__main__":
     cfg.config_directory = os.path.dirname(os.path.abspath(args.config))
     print("config_directory = ", cfg.config_directory)
 
-    cfg.adios_xml_sim = f"{cfg.config_directory}/adios_sim.xml"
-    cfg.adios_xml_agg = f"{cfg.config_directory}/adios_agg.xml"
+    cfg.adios_xml_sim = Path(cfg.config_directory) / "adios_sim.xml"
+    cfg.adios_xml_agg = Path(cfg.config_directory) / "adios_agg.xml"
+
     cfg.agent_stage.task_config.adios_xml_agg = cfg.adios_xml_agg
     cfg.aggregation_stage.task_config.adios_xml_agg = cfg.adios_xml_agg
     cfg.machine_learning_stage.task_config.adios_xml_agg = cfg.adios_xml_agg

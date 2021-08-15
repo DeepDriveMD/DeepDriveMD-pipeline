@@ -542,7 +542,14 @@ def main(cfg: OutlierDetectionConfig):
                     f"Selecting {cfg.num_sim} random states out of the best {2*cfg.num_sim} ones"
                 )
                 clear_gpu()
-                outlier_list = [select_best(cfg, cvae_input)]
+                if cfg.compute_rmsd:
+                    outlier_list = [select_best(cfg, cvae_input)]
+                else:
+                    print(f"compute_rmsd = {cfg.compute_rmsd}")
+                    sys.stdout.flush()
+                    outlier_list = [
+                        list(np.choice(np.arange(len(cvae_input[0])), cfg.num_sim))
+                    ]
                 eps = cfg.init_eps
                 min_samples = cfg.init_min_samples
 
