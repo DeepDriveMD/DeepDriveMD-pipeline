@@ -6,6 +6,7 @@ from radical.entk import AppManager, Pipeline, Stage, Task
 from deepdrivemd.config import StreamingExperimentConfig, BaseStageConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.utils import parse_args
+import math
 
 
 def generate_task(cfg: BaseStageConfig) -> Task:
@@ -192,6 +193,29 @@ class PipelineManager:
         return stage
 
 
+def compute_number_of_nodes(cfg: StreamingExperimentConfig) -> int:
+    nodes = 0
+
+    for stage in (
+        cfg.molecular_dynamics_stage,
+        cfg.aggregation_stage,
+        cfg.machine_learning_stage,
+        cfg.agent_stage,
+    ):
+        nodes_cpu = (
+            stage.cpu_reqs.processes
+            * stage.cpu_reqs.threads_per_process
+            * stage.num_tasks
+        ) / (cfg.cpus_per_node * cfg.hardware_threads_per_cpu)
+        nodes_gpu = (
+            stage.gpu_reqs.processes
+            * stage.gpu_reqs.threads_per_process
+            * stage.num_tasks
+        ) / cfg.gpus_per_node
+        nodes += max(nodes_cpu, nodes_gpu)
+    return int(math.ceil(nodes))
+
+
 if __name__ == "__main__":
 
     args = parse_args()
@@ -222,13 +246,9 @@ if __name__ == "__main__":
             "Invalid RMQ environment. Please see README.md for configuring environment."
         )
 
-    # Calculate total number of nodes required. Assumes 1 MD job per GPU
-    # TODO: fix this assumption for NAMD
-    num_full_nodes, extra_gpus = divmod(
-        cfg.molecular_dynamics_stage.num_tasks, cfg.gpus_per_node
-    )
-    extra_node = int(extra_gpus > 0)
-    num_nodes = max(1, num_full_nodes + extra_node)
+    num_nodes = compute_number_of_nodes(cfg)
+
+    print(f"Required number of nodes: {num_nodes}")
 
     appman.resource_desc = {
         "resource": cfg.resource,
@@ -236,8 +256,8 @@ if __name__ == "__main__":
         "schema": cfg.schema_,
         "walltime": cfg.walltime_min,
         "project": cfg.project,
-        "cpus": cfg.cpus_per_node * cfg.hardware_threads_per_cpu * num_nodes + 8,
-        "gpus": cfg.gpus_per_node * num_nodes + 2,
+        "cpus": cfg.cpus_per_node * cfg.hardware_threads_per_cpu * num_nodes,
+        "gpus": cfg.gpus_per_node * num_nodes,
     }
 
     pipeline_manager = PipelineManager(cfg)

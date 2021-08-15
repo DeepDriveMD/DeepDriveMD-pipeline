@@ -31,6 +31,7 @@ agent_stage:
     processes: 1
     thread_type: CUDA
     threads_per_process: 1
+  num_tasks: 1
   pre_exec:
   - unset PYTHONPATH
   - module load gcc/7.3.1
@@ -44,6 +45,7 @@ agent_stage:
     adios_xml_agg: set_by_deepdrivemd
     agg_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/3/aggregation_runs
     best_model: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/3/machine_learning_runs/stage0000/task0000/published_model/best.h5
+    compute_rmsd: false
     conv_filter_shapes:
     - - 3
       - 3
@@ -132,6 +134,7 @@ aggregation_stage:
   skip_aggregation: false
   task_config:
     adios_xml_agg: set_by_deepdrivemd
+    compute_rmsd: false
     experiment_directory: set_by_deepdrivemd
     n_sim: 12
     node_local_path: set_by_deepdrivemd
@@ -154,6 +157,7 @@ machine_learning_stage:
     processes: 1
     thread_type: CUDA
     threads_per_process: 1
+  num_tasks: 1
   pre_exec:
   - unset PYTHONPATH
   - module load gcc/7.3.1
@@ -249,7 +253,7 @@ molecular_dynamics_stage:
   task_config:
     adios_xml_sim: set_by_deepdrivemd
     bp_file: set_by_deepdrivemd
-    compute_rmsd: true
+    compute_rmsd: false
     copy_velocities_p: 0.5
     dt_ps: 0.002
     experiment_directory: set_by_deepdrivemd

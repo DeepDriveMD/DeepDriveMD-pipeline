@@ -3,8 +3,6 @@ from pathlib import Path
 
 
 class StreamAggregation(AggregationTaskConfig):
-    # is rmsd used
-    rmsd: bool = True
     # number of simulations
     n_sim: int = 12
     # if adios streams from simulations are not available, sleep for this number of seconds before trying to find them again
@@ -13,6 +11,8 @@ class StreamAggregation(AggregationTaskConfig):
     num_tasks: int = 2
     # path to adios xml configuration file for aggregator
     adios_xml_agg: Path = ""
+    # is rmsd used
+    compute_rmsd: bool = True
 
 
 if __name__ == "__main__":

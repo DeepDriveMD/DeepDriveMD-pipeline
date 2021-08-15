@@ -69,25 +69,25 @@ class ContactMapReporter(object):
         contact_map = t2Dto1D(contact_map)
         contact_map = np.packbits(contact_map)
 
+        step = np.array([step], dtype=np.int32)
+
+        output = {
+            "md5": md5,
+            "step": step,
+            "positions": positions,
+            "velocities": velocities,
+            "contact_map": contact_map,
+        }
+
         if self.cfg.compute_rmsd:
             mda_u = MDAnalysis.Universe(str(self.cfg.reference_pdb_file))
             reference_positions = mda_u.select_atoms(
                 self.cfg.mda_selection
             ).positions.copy()
             rmsd = rms.rmsd(positions_ca, reference_positions, superposition=True)
-        else:
-            rmsd = -1.0
-        step = np.array([step], dtype=np.int32)
-        rmsd = np.array([rmsd], dtype=np.float32)
+            rmsd = np.array([rmsd], dtype=np.float32)
+            output["rmsd"] = rmsd
 
-        output = {
-            "md5": md5,
-            "step": step,
-            "rmsd": rmsd,
-            "positions": positions,
-            "velocities": velocities,
-            "contact_map": contact_map,
-        }
         self.write_adios_step(output)
         self.step += 1
 

@@ -87,7 +87,7 @@ class TaskConfigMD(BaseModel):
     next_outlier_policy = 1
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
-    compute_rmsd = True
+    compute_rmsd = False
 
 
 task_config_md = TaskConfigMD()
@@ -137,6 +137,7 @@ class TaskConfigAgg(BaseModel):
     n_sim = md.num_tasks
     sleeptime_bpfiles = 30
     adios_xml_agg = header.adios_xml_agg
+    compute_rmsd = task_config_md.compute_rmsd
 
 
 task_config_agg = TaskConfigAgg()
@@ -203,6 +204,7 @@ class ML(BaseModel):
     cpu_reqs = cpu_req_md.dict()
     gpu_reqs = gpu_req_md.dict()
     task_config = task_config_ml.dict()
+    num_tasks = 1
 
 
 cpu_req_agent = cpu_req_md.copy()
@@ -236,6 +238,7 @@ class TaskConfigAgent(CVAE):
     adios_xml_agg = header.adios_xml_agg
     use_outliers = True
     use_random_outliers = True
+    compute_rmsd = task_config_md.compute_rmsd
 
 
 task_config_agent = TaskConfigAgent()
@@ -248,6 +251,7 @@ class Agent(BaseModel):
     cpu_reqs = cpu_req_agent.dict()
     gpu_reqs = gpu_req_md.dict()
     task_config = task_config_agent.dict()
+    num_tasks = 1
 
 
 class Components(BaseModel):

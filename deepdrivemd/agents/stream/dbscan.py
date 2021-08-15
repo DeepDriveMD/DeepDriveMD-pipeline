@@ -407,7 +407,10 @@ def random_outliers(
     positions = cvae_input[1][outlier_list]
     velocities = cvae_input[3][outlier_list]
     md5s = cvae_input[2][outlier_list]
-    rmsds = cvae_input[4][outlier_list]
+    if cfg.compute_rmsd:
+        rmsds = cvae_input[4][outlier_list]
+    else:
+        rmsds = np.array([-1.0] * len(outlier_list))
 
     z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
     indices = np.arange(len(z))
@@ -489,8 +492,10 @@ def main(cfg: OutlierDetectionConfig):
         StreamVariable("positions", np.float32, 1),
         StreamVariable("md5", str, 2),
         StreamVariable("velocities", np.float32, 1),
-        StreamScalarVariable("rmsd", np.float32, 0),
     ]
+
+    if cfg.compute_rmsd:
+        variable_list.append(StreamScalarVariable("rmsd", np.float32, 0))
 
     mystreams = Streams(
         adios_files_list,
@@ -541,7 +546,7 @@ def main(cfg: OutlierDetectionConfig):
                 eps = cfg.init_eps
                 min_samples = cfg.init_min_samples
 
-        if cfg.use_random_outliers:
+        if cfg.use_random_outliers or cfg.compute_rmsd:
             print("Using random outliers")
             top = random_outliers(cfg, cvae_input, outlier_list)
         else:

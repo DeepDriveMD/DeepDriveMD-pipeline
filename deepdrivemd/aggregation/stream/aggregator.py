@@ -102,7 +102,6 @@ def aggregate(
 
     variablesR = {
         "step": (np.int32, 0),
-        "rmsd": (np.float32, 0),
         "contact_map": (np.uint8, 1),
         "positions": (np.float32, 1),
         "velocities": (np.float32, 1),
@@ -111,12 +110,15 @@ def aggregate(
 
     variablesW = {
         "step": (np.int32, 0),
-        "rmsd": (np.float32, 0),
         "contact_map": (np.uint8, 1),
         "positions": (np.float32, 1),
         "velocities": (np.float32, 1),
         "md5": (str, 0),
     }
+
+    if cfg.compute_rmsd:
+        variablesR["rmsd"] = (np.float32, 0)
+        variablesW["rmsd"] = (np.float32, 0)
 
     ARW = AdiosStreamStepRW(connections, variablesR)
 

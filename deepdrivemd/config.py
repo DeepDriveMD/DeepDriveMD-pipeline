@@ -166,6 +166,10 @@ class MachineLearningStageConfig(BaseStageConfig):
     task_config: MachineLearningTaskConfig = MachineLearningTaskConfig()
 
 
+class StreamingMachineLearningStageConfig(MachineLearningStageConfig):
+    num_tasks: int = 1
+
+
 class ModelSelectionTaskConfig(BaseTaskConfig):
     """Base class for specific model selection configs to inherit."""
 
@@ -190,6 +194,10 @@ class AgentStageConfig(BaseStageConfig):
 
     # Arbitrary job parameters
     task_config: AgentTaskConfig = AgentTaskConfig()
+
+
+class StreamingAgentStageConfig(AgentStageConfig):
+    num_tasks: int = 1
 
 
 class ExperimentConfig(BaseSettings):
@@ -233,6 +241,8 @@ class StreamingExperimentConfig(ExperimentConfig):
     ref_pdb_file: Optional[Path]
     model_selection_stage: Optional[ModelSelectionStageConfig]
     aggregation_stage: StreamingAggregationStageConfig
+    machine_learning_stage: StreamingMachineLearningStageConfig
+    agent_stage: StreamingAgentStageConfig
 
 
 def generate_sample_config():
