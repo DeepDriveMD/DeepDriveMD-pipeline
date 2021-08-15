@@ -58,6 +58,11 @@ class ContactMapReporter(object):
         md5 = hash2intarray(md5)
 
         positions_ca = positions[ca_indices].astype(np.float32)
+
+        if not (positions_ca.shape[0] % self.cfg.divisibleby == 0):
+            d = positions_ca.shape[0] // self.cfg.divisibleby * self.cfg.divisibleby
+            positions_ca = positions_ca[:d]
+
         contact_map = distances.contact_matrix(
             positions_ca, cutoff=self.cfg.threshold, returntype="numpy", box=None
         ).astype("uint8")

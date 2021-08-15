@@ -76,6 +76,10 @@ def next_input(
     with Timer("ml_read"):
         cm_data_input = streams.next()[0]
     cm_data_input = np.expand_dims(cm_data_input, axis=-1)
+
+    cfg.initial_shape = cm_data_input.shape[1:3]
+    cfg.final_shape = list(cm_data_input.shape[1:3]) + [1]
+
     print(
         f"in next_input: cm_data_input.shape = {cm_data_input.shape}"
     )  # (2000, 28, 28, 1)
@@ -125,14 +129,15 @@ def main(cfg: KerasCVAEModelConfig):
         batch=cfg.read_batch,
     )
 
-    cvae = build_model(cfg)
-
     # Infinite loop of CVAE training
     # After training iteration, publish the model in the directory from which it is picked up by outlier search
     for i in itertools.count(0):
         timer("ml_iteration", 1)
         print(f"ML iteration {i}")
         cm_data_train, cm_data_val = next_input(cfg, streams)
+
+        if "cvae" not in locals():
+            cvae = build_model(cfg)
 
         with Timer("ml_train"):
             cvae.train(
@@ -149,6 +154,7 @@ def main(cfg: KerasCVAEModelConfig):
         best_model = f"{cfg.checkpoint_dir}/best.h5"
 
         if cfg.reinit or loss > cfg.max_loss:
+            del cvae
             cvae = build_model(cfg)
         else:
             cvae.load(best_model)

@@ -35,7 +35,10 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     adios_xml_sim: Path = "adios.xml"
     # a directory with initial pdb files
     initial_pdb_dir: Path = Path()
+    # should rmsd be computed or there is no reference pdb
     compute_rmsd: bool = True
+    # if necessary, reduce the number of atoms participating in contact map computation to make this number divisible by:
+    divisibleby: int = 2
 
     @root_validator()
     def explicit_solvent_requires_top_suffix(cls, values: dict):

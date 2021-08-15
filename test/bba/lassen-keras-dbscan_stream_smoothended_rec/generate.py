@@ -17,12 +17,12 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/17"
+    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/18"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
     node_local_path: Path = None
-    init_pdb_file = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/comp.pdb"
+    init_pdb_file = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/system/comp.pdb"
     ref_pdb_file: Path = None
     config_directory = "set_by_deepdrivemd"
     adios_xml_sim = "set_by_deepdrivemd"
@@ -84,6 +84,7 @@ class TaskConfigMD(BaseModel):
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
     compute_rmsd = False
+    divisibleby = 32
 
 
 task_config_md = TaskConfigMD()
@@ -153,15 +154,15 @@ agg = Aggregator()
 
 
 class CVAE(BaseModel):
-    initial_shape = [459, 459]
-    final_shape = [459, 459, 1]
+    initial_shape = [458, 458]
+    final_shape = [458, 458, 1]
     split_pct = 0.8
     shuffle = True
     latent_dim = 10
     conv_layers = 4
     conv_filters = [64] * 4
     conv_filter_shapes = [[3, 3]] * 4
-    conv_strides = [[1, 1], [2, 2], [1, 1], [1, 1]]
+    conv_strides = [[2, 2], [2, 2], [2, 2], [2, 2]]
     dense_layers = 1
     dense_neurons = [128]
     dense_dropouts = [0.4]
@@ -172,11 +173,11 @@ class TaskConfigML(CVAE):
     stage_idx = 0
     task_idx = 0
     output_path = "set_by_deepdrivemd"
-    epochs = 50
+    epochs = 200
     batch_size = 32
     min_step_increment = 200
     max_steps = 2000
-    max_loss = 100
+    max_loss = 1500
     num_agg = agg.num_tasks
     timeout1 = 30
     timeout2 = 10
@@ -220,7 +221,7 @@ class TaskConfigAgent(CVAE):
     lastN = 2000
     outlier_count = 120
     outlier_max = 5000
-    outlier_min = 1000
+    outlier_min = 100
     init_pdb_file = f"{header.init_pdb_file}"
     ref_pdb_file = f"{header.ref_pdb_file}"
     init_eps = 1.3
