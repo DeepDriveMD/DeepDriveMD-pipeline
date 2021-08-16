@@ -84,7 +84,7 @@ def next_input(
         f"in next_input: cm_data_input.shape = {cm_data_input.shape}"
     )  # (2000, 28, 28, 1)
     np.random.shuffle(cm_data_input)
-    train_val_split = int(0.8 * len(cm_data_input))
+    train_val_split = int(cfg.split_pct * len(cm_data_input))
     print(f"train_val_split = {train_val_split}")
     sys.stdout.flush()
     return cm_data_input[:train_val_split], cm_data_input[train_val_split:]
