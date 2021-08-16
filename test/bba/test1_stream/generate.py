@@ -179,7 +179,7 @@ class TaskConfigML(CVAE):
     output_path = "set_by_deepdrivemd"
     epochs = 30
     batch_size = 32
-    min_step_increment = 1000
+    min_step_increment = 300
     max_steps = 2000
     max_loss = 1000
     num_agg = agg.num_tasks
@@ -219,7 +219,7 @@ class TaskConfigAgent(CVAE):
 
     agg_dir = f"{header.experiment_directory}/aggregation_runs"
     num_agg = agg.num_tasks
-    min_step_increment = 500
+    min_step_increment = 300
     timeout1 = 30
     timeout2 = 10
     best_model = f"{header.experiment_directory}/machine_learning_runs/stage0000/task0000/published_model/best.h5"

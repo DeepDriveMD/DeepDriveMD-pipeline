@@ -88,7 +88,7 @@ agent_stage:
     - 28
     lastN: 2000
     latent_dim: 10
-    min_step_increment: 500
+    min_step_increment: 300
     num_agg: 1
     num_sim: 12
     outlier_count: 120
@@ -106,7 +106,7 @@ agent_stage:
     timeout1: 30
     timeout2: 10
     use_outliers: true
-    use_random_outliers: true
+    use_random_outliers: false
 aggregation_stage:
   arguments:
   - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/aggregation/stream/aggregator.py
@@ -213,7 +213,7 @@ machine_learning_stage:
     latent_dim: 10
     max_loss: 1000
     max_steps: 2000
-    min_step_increment: 1000
+    min_step_increment: 300
     num_agg: 1
     output_path: set_by_deepdrivemd
     published_model_dir: set_by_deepdrivemd

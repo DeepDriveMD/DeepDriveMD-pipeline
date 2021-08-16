@@ -40,6 +40,11 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     # if necessary, reduce the number of atoms participating in contact map computation to make this number divisible by:
     divisibleby: int = 2
 
+    outliers_dir: Path = Path()
+    pickle_db: Path = Path()
+    copy_velocities_p: float = 0.5
+    current_dir: Path = Path()
+
     @root_validator()
     def explicit_solvent_requires_top_suffix(cls, values: dict):
         top_suffix = values.get("top_suffix")

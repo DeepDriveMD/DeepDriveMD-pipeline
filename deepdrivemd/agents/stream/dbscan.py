@@ -548,12 +548,18 @@ def main(cfg: OutlierDetectionConfig):
                     print(f"compute_rmsd = {cfg.compute_rmsd}")
                     sys.stdout.flush()
                     outlier_list = [
-                        list(np.choice(np.arange(len(cvae_input[0])), cfg.num_sim))
+                        list(
+                            np.random.choice(
+                                np.arange(len(cvae_input[0])),
+                                cfg.num_sim,
+                                replace=False,
+                            )
+                        )
                     ]
                 eps = cfg.init_eps
                 min_samples = cfg.init_min_samples
 
-        if cfg.use_random_outliers or cfg.compute_rmsd:
+        if cfg.use_random_outliers or (not cfg.compute_rmsd):
             print("Using random outliers")
             top = random_outliers(cfg, cvae_input, outlier_list)
         else:

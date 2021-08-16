@@ -42,38 +42,34 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
         path to pdb file with positions, path to numpy file with velocities, rmsd, md5sum
 
     """
-    if cfg.next_outlier_policy == 1:
-        cfg.pickle_db = cfg.outliers_dir + "/OutlierDB.pickle"
 
-        if not os.path.exists(cfg.pickle_db):
-            return None
+    cfg.pickle_db = cfg.outliers_dir / "OutlierDB.pickle"
 
-        if cfg.lock == "set_by_deepdrivemd":
-            cfg.lock = LockFile(cfg.pickle_db)
-
-        cfg.lock.acquire()
-        with open(cfg.pickle_db, "rb") as f:
-            db = pickle.load(f)
-        md5 = db.sorted_index[cfg.task_idx]
-        rmsd = db.dictionary[md5]
-        positions_pdb = cfg.outliers_dir + f"/{md5}.pdb"
-        velocities_npy = cfg.outliers_dir + f"/{md5}.npy"
-        shutil.copy(positions_pdb, cfg.current_dir)
-        shutil.copy(velocities_npy, cfg.current_dir)
-        shutil.copy(cfg.pickle_db, cfg.current_dir)
-        cfg.lock.release()
-
-        with open(cfg.current_dir + "/rmsd.txt", "w") as f:
-            f.write(f"{rmsd}\n")
-
-        positions_pdb = cfg.current_dir + f"/{md5}.pdb"
-        velocities_npy = cfg.current_dir + f"/{md5}.npy"
-
-        return positions_pdb, velocities_npy, rmsd, md5
-
-    elif cfg.next_outlier_policy == 0:
-        # TODO
+    if not os.path.exists(cfg.pickle_db):
         return None
+
+    if cfg.lock == "set_by_deepdrivemd":
+        cfg.lock = LockFile(cfg.pickle_db)
+
+    cfg.lock.acquire()
+    with open(cfg.pickle_db, "rb") as f:
+        db = pickle.load(f)
+    md5 = db.sorted_index[cfg.task_idx]
+    rmsd = db.dictionary[md5]
+    positions_pdb = cfg.outliers_dir / f"/{md5}.pdb"
+    velocities_npy = cfg.outliers_dir / f"/{md5}.npy"
+    shutil.copy(positions_pdb, cfg.current_dir)
+    shutil.copy(velocities_npy, cfg.current_dir)
+    shutil.copy(cfg.pickle_db, cfg.current_dir)
+    cfg.lock.release()
+
+    with open(cfg.current_dir / "rmsd.txt", "w") as f:
+        f.write(f"{rmsd}\n")
+
+    positions_pdb = cfg.current_dir / f"{md5}.pdb"
+    velocities_npy = cfg.current_dir / f"{md5}.npy"
+
+    return positions_pdb, velocities_npy, rmsd, md5
 
 
 def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulation):
