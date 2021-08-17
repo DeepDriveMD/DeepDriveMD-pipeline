@@ -46,7 +46,7 @@ class OutlierDB:
             print(f"{md5}: {self.dictionary[md5]}")
         print("=" * 30)
 
-    def next_random(self, m: int = None) -> str:
+    def next_random(self, m: int = None, alpha: int = 1, beta: int = 25) -> str:
         """Return next outlier using beta distribution that prefers smaller rmsds
 
         Parameters
@@ -54,7 +54,9 @@ class OutlierDB:
         m : int, default = None
             if `m` is not `None`, restrict the random selection to the first
             `m` elements of `softed_index`, otherwise - any element can be chosen.
-
+        alpha : int, default = 1
+        beta : int, default = 25
+            `alpha` and `beta` are parameters of beta distribution.
         """
         if len(self.sorted_index) == 0:
             raise ValueError("len(sorted_index) = 0")
@@ -62,7 +64,7 @@ class OutlierDB:
             hlimit = len(self.sorted_index) - 1
         else:
             hlimit = min(m, len(self.sorted_index) - 1)
-        i = int(random.betavariate(alpha=1, beta=25) * (hlimit))
+        i = int(random.betavariate(alpha=alpha, beta=beta) * (hlimit))
         md5 = self.sorted_index[i]
 
         selected_rmsd = self.dictionary[md5][0]
