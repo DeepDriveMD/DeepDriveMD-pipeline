@@ -59,10 +59,10 @@ def connect_to_input(
 
     for i, bp in enumerate(bpfiles):
         bp = bp.replace(".sst", "")
-        dir = os.path.dirname(bp)
-        task_md = os.path.basename(dir)
+        sim_dir = os.path.dirname(bp)
+        task_md = os.path.basename(sim_dir)
         taskid_md = int(task_md.replace("task", ""))
-        adios_md = dir + "/adios.xml"
+        adios_md = sim_dir + "/adios.xml"
 
         print(f"taskid_md = {taskid_md}, i = {i}, {i*bp_slice}, {(i+1)*bp_slice}")
 
