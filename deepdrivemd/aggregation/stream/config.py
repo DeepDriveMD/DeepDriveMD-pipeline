@@ -10,7 +10,7 @@ class StreamAggregation(AggregationTaskConfig):
     # number of aggregators
     num_tasks: int = 2
     # path to adios xml configuration file for aggregator
-    adios_xml_agg: Path = ""
+    adios_xml_agg: Path = Path()
     # is rmsd used
     compute_rmsd: bool = True
 
