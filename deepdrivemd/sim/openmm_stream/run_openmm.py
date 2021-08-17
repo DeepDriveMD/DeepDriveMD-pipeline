@@ -45,13 +45,6 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
 
     cfg.pickle_db = cfg.outliers_dir / "OutlierDB.pickle"
 
-    print(f"cfg.outliers_dir = {cfg.outliers_dir}")
-    print(f"cfg.pickle_db = {cfg.pickle_db}")
-    print(f"cfg.current_dir = {cfg.current_dir}")
-    import sys
-
-    sys.stdout.flush()
-
     if not os.path.exists(cfg.pickle_db):
         return None
 
