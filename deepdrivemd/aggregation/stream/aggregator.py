@@ -14,7 +14,7 @@ from typing import List, Dict, Tuple
 from pathlib import Path
 
 
-def find_input(cfg: StreamAggregation) -> List[Path]:
+def find_input(cfg: StreamAggregation) -> List[str]:
     """Find adios streams to which simulations write.
 
     Parameters
@@ -23,7 +23,7 @@ def find_input(cfg: StreamAggregation) -> List[Path]:
 
     Returns
     -------
-    List[Path]
+    List[str]
            a list of sst files associated with simulations
     """
     while True:
