@@ -84,10 +84,9 @@ class TaskConfigMD(BaseModel):
     bp_file = "set_by_deepdrivemd"
     outliers_dir = f"{header.experiment_directory}/agent_runs/stage0000/task0000/published_outliers"
     copy_velocities_p = 0.5
-    next_outlier_policy = 1
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
-    compute_rmsd = False
+    compute_rmsd = True
 
 
 task_config_md = TaskConfigMD()

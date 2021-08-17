@@ -119,10 +119,10 @@ def main(cfg: KerasCVAEModelConfig):
     cfg.published_model_dir.mkdir(exist_ok=True)
 
     with Timer("ml_wait_for_input"):
-        cfg.bpfiles = wait_for_input(cfg)
+        bpfiles = wait_for_input(cfg)
 
     streams = Streams(
-        cfg.bpfiles,
+        bpfiles,
         [StreamContactMapVariable("contact_map", np.uint8, 1)],
         lastN=cfg.max_steps,
         config=cfg.adios_xml_agg,

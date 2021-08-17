@@ -45,6 +45,13 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
 
     cfg.pickle_db = cfg.outliers_dir / "OutlierDB.pickle"
 
+    print(f"cfg.outliers_dir = {cfg.outliers_dir}")
+    print(f"cfg.pickle_db = {cfg.pickle_db}")
+    print(f"cfg.current_dir = {cfg.current_dir}")
+    import sys
+
+    sys.stdout.flush()
+
     if not os.path.exists(cfg.pickle_db):
         return None
 
@@ -56,8 +63,8 @@ def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
         db = pickle.load(f)
     md5 = db.sorted_index[cfg.task_idx]
     rmsd = db.dictionary[md5]
-    positions_pdb = cfg.outliers_dir / f"/{md5}.pdb"
-    velocities_npy = cfg.outliers_dir / f"/{md5}.npy"
+    positions_pdb = cfg.outliers_dir / f"{md5}.pdb"
+    velocities_npy = cfg.outliers_dir / f"{md5}.npy"
     shutil.copy(positions_pdb, cfg.current_dir)
     shutil.copy(velocities_npy, cfg.current_dir)
     shutil.copy(cfg.pickle_db, cfg.current_dir)
@@ -89,7 +96,7 @@ def prepare_simulation(cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulatio
     """
     sim_dir = cfg.output_path / str(iteration)
     sim_dir.mkdir(exist_ok=True)
-    cfg.current_dir = str(sim_dir)
+    cfg.current_dir = sim_dir
 
     outlier = next_outlier(cfg, sim)
     if outlier is not None:

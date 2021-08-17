@@ -39,10 +39,13 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     compute_rmsd: bool = True
     # if necessary, reduce the number of atoms participating in contact map computation to make this number divisible by:
     divisibleby: int = 2
-
+    # directory where outliers are published
     outliers_dir: Path = Path()
+    # pickle file with outliers database
     pickle_db: Path = Path()
+    # probability with which velocities are copied from outlier to the new state (vs generating them randomly from a distribution with the given temperature)
     copy_velocities_p: float = 0.5
+    # simulation directory
     current_dir: Path = Path()
 
     @root_validator()
