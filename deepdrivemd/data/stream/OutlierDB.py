@@ -57,8 +57,7 @@ class OutlierDB:
 
         """
         if len(self.sorted_index) == 0:
-            print("Bug")
-            return None
+            raise ValueError("len(sorted_index) = 0")
         if m is None:
             hlimit = len(self.sorted_index) - 1
         else:

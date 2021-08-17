@@ -165,9 +165,9 @@ class Streams:
 
     def __init__(
         self,
-        file_list: List[str],
+        files: List[str],
         variables: List[StreamVariable],
-        config: str = "../aggregate/adios.xml",
+        config: Path = Path("../aggregate/adios.xml"),
         stream_name: str = "AdiosOutput",
         lastN: int = 2000,
         batch: int = 10000,
@@ -175,11 +175,11 @@ class Streams:
         """
         Parameters
         ----------
-        file_list : List[fn]
+        files : List[str]
              adios files from each aggregator,
         variables: List[StreamVariable]
              list of variables to read from the aggegator file
-        config : str
+        config : Path
              adios xml file for the files,
         stream_name : str
              corresponding stream name in adios.xml
@@ -201,7 +201,7 @@ class Streams:
         self.lastN = lastN
         self.batch = batch
 
-        for fn in file_list:
+        for fn in files:
             self.readers[fn] = AdiosReader(fn, config, stream_name, variables)
             for v in self.vnames:
                 cname = "c_" + v
