@@ -16,6 +16,7 @@ import numpy as np
 import subprocess
 import itertools
 from deepdrivemd.sim.openmm.run_openmm import SimulationContext
+from typing import Tuple
 
 
 def configure_reporters(
@@ -28,7 +29,9 @@ def configure_reporters(
     sim.reporters.append(ContactMapReporter(report_steps, cfg))
 
 
-def next_outlier(cfg: OpenMMConfig, sim: omm.app.Simulation):
+def next_outlier(
+    cfg: OpenMMConfig, sim: omm.app.Simulation
+) -> Tuple[str, str, float, str]:
     """Get the next outlier to use as an initial state.
 
     Parameters
