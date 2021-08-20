@@ -9,6 +9,7 @@ import argparse
 import itertools
 from typing import List, Tuple
 from numba import cuda
+from pathlib import Path
 
 from deepdrivemd.utils import Timer, timer, t1Dto2D
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
@@ -311,7 +312,7 @@ def write_top_outliers(
         np.save(outlier_v_file, v)
 
 
-def write_db(top, tmp_dir) -> OutlierDB:
+def write_db(top: Path, tmp_dir: Path) -> OutlierDB:
     """Create and save a database of outliers to be used by simulation."""
     outlier_db_fn = f"{tmp_dir}/OutlierDB.pickle"
     outlier_files = list(map(lambda x: f"{tmp_dir}/{x}.pdb", top[2]))
@@ -322,7 +323,7 @@ def write_db(top, tmp_dir) -> OutlierDB:
     return db
 
 
-def publish(tmp_dir, published_dir):
+def publish(tmp_dir: Path, published_dir: Path):
     """Publish outliers and the corresponding database for simulations to pick up."""
     dbfn = f"{published_dir}/OutlierDB.pickle"
     subprocess.getstatusoutput(f"touch {dbfn}")
