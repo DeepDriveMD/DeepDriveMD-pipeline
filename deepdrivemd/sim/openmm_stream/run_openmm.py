@@ -102,8 +102,8 @@ def prepare_simulation(
         positions_pdb, velocities_npy, rmsd, md5 = outlier
         while True:
             try:
-                positions = pmd.load_file(positions_pdb).positions
-                velocities = np.load(velocities_npy)
+                positions = pmd.load_file(str(positions_pdb)).positions
+                velocities = np.load(str(velocities_npy))
                 break
             except Exception as e:
                 print("Exception ", e)

@@ -88,7 +88,7 @@ agent_stage:
     - 28
     lastN: 2000
     latent_dim: 10
-    min_step_increment: 300
+    min_step_increment: 500
     num_agg: 1
     num_sim: 12
     outlier_count: 120
@@ -213,7 +213,7 @@ machine_learning_stage:
     latent_dim: 10
     max_loss: 1000
     max_steps: 2000
-    min_step_increment: 300
+    min_step_increment: 200
     num_agg: 1
     output_path: set_by_deepdrivemd
     published_model_dir: set_by_deepdrivemd
@@ -270,7 +270,7 @@ molecular_dynamics_stage:
     pdb_file: set_by_deepdrivemd
     reference_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb
     report_interval_ps: 50.0
-    simulation_length_ns: 10.0
+    simulation_length_ns: 5.0
     solvent_type: implicit
     stage_idx: 0
     task_idx: 0

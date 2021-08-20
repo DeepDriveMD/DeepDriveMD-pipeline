@@ -71,7 +71,7 @@ class TaskConfigMD(BaseModel):
     initial_pdb_dir = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input"
     solvent_type = "implicit"
     top_suffix: str = None
-    simulation_length_ns = 10.0
+    simulation_length_ns = 10.0 / 2  # temporary
     report_interval_ps = 50.0
     dt_ps = 0.002
     temperature_kelvin = 300.0
@@ -178,7 +178,7 @@ class TaskConfigML(CVAE):
     output_path = "set_by_deepdrivemd"
     epochs = 30
     batch_size = 32
-    min_step_increment = 300
+    min_step_increment = 200
     max_steps = 2000
     max_loss = 1000
     num_agg = agg.num_tasks
@@ -218,7 +218,7 @@ class TaskConfigAgent(CVAE):
 
     agg_dir = f"{header.experiment_directory}/aggregation_runs"
     num_agg = agg.num_tasks
-    min_step_increment = 300
+    min_step_increment = 500
     timeout1 = 30
     timeout2 = 10
     best_model = f"{header.experiment_directory}/machine_learning_runs/stage0000/task0000/published_model/best.h5"

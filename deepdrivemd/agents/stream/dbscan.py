@@ -40,6 +40,8 @@ def clear_gpu():
         print("device = ", device)
         cuda.select_device(device)
         cuda.close()
+        print("Do we get here?")
+        sys.stdout.flush()
     except Exception as e:
         print(e)
 
@@ -126,21 +128,16 @@ def wait_for_input(cfg: OutlierDetectionConfig) -> List[str]:
 
 def dirs(cfg: OutlierDetectionConfig) -> Tuple[str, str, str]:
     """Create tmp_dir and published_dir into which outliers are written
-
     Returns
     -------
     Tuple[str, str, str]
-        Paths to top, tmp and published directories
+        Paths to temporary and published directories. As the outliers are found, they are first written into `tmp_dir` and late moved to `published_dir` from where they are taken by the simulations.
     """
-    top_dir = cfg.output_path
-    tmp_dir = f"{top_dir}/tmp"
-    published_dir = f"{top_dir}/published_outliers"
-
-    if not os.path.exists(tmp_dir):
-        os.mkdir(tmp_dir)
-    if not os.path.exists(published_dir):
-        os.mkdir(published_dir)
-    return top_dir, tmp_dir, published_dir
+    tmp_dir = cfg.output_path / "tmp"
+    published_dir = cfg.output_path / "published_outliers"
+    tmp_dir.mkdir(exist_ok=True)
+    published_dir.mkdir(exist_ok=True)
+    return tmp_dir, published_dir
 
 
 def predict(
@@ -506,7 +503,7 @@ def main(cfg: OutlierDetectionConfig):
         batch=cfg.read_batch,
     )
 
-    top_dir, tmp_dir, published_dir = dirs(cfg)
+    tmp_dir, published_dir = dirs(cfg)
     eps = cfg.init_eps
     min_samples = cfg.init_min_samples
 
