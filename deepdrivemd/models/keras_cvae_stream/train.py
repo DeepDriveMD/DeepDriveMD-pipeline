@@ -13,6 +13,7 @@ import os
 import sys
 import itertools
 from typing import List, Tuple
+from deepdrivemd.data.stream.enumerations import DataStructure
 
 
 def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
@@ -123,7 +124,7 @@ def main(cfg: KerasCVAEModelConfig):
 
     streams = Streams(
         bpfiles,
-        [StreamContactMapVariable("contact_map", np.uint8, 1)],
+        [StreamContactMapVariable("contact_map", np.uint8, DataStructure.array)],
         lastN=cfg.max_steps,
         config=cfg.adios_xml_agg,
         batch=cfg.read_batch,

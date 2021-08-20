@@ -4,6 +4,7 @@ from deepdrivemd.utils import t1Dto2D
 from pathlib import Path
 from typing import List
 from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
+from deepdrivemd.data.stream.enumerations import DataStructure
 
 
 class StreamVariable:
@@ -15,13 +16,13 @@ class StreamVariable:
          variable name in adios file
     dtype : type
          variable type, for example, np.uint8
-    structure : int
-         structure type: 0 - np.array, 1 - scalar, 2 - string
+    structure : DataStructure
+         enumeration: array, scalar, string
     total : List
          list of variable values for different steps
     """
 
-    def __init__(self, name: str, dtype: type, structure: int):
+    def __init__(self, name: str, dtype: type, structure: DataStructure):
         """
         Parameters
         ----------
@@ -29,8 +30,8 @@ class StreamVariable:
              variable name in adios file
         dtype : type
              variable type, for example, np.uint8
-        structure : int
-             structure type: 0 - np.array, 1 - scalar, 2 - string
+        structure : DataStructure
+             structure type: array, scalar, string
 
         """
         self.name = name

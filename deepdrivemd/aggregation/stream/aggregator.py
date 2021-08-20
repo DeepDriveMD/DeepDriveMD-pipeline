@@ -12,6 +12,7 @@ import itertools
 from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
 from typing import List, Dict, Tuple
 from pathlib import Path
+from deepdrivemd.data.stream.enumerations import DataStructure
 
 
 def find_input(cfg: StreamAggregation) -> List[str]:
@@ -101,24 +102,24 @@ def aggregate(
     """
 
     variablesR = {
-        "step": (np.int32, 0),
-        "contact_map": (np.uint8, 1),
-        "positions": (np.float32, 1),
-        "velocities": (np.float32, 1),
-        "md5": (np.int64, 1),
+        "step": (np.int32, DataStructure.scalar),
+        "contact_map": (np.uint8, DataStructure.array),
+        "positions": (np.float32, DataStructure.array),
+        "velocities": (np.float32, DataStructure.array),
+        "md5": (np.int64, DataStructure.array),
     }
 
     variablesW = {
-        "step": (np.int32, 0),
-        "contact_map": (np.uint8, 1),
-        "positions": (np.float32, 1),
-        "velocities": (np.float32, 1),
-        "md5": (str, 0),
+        "step": (np.int32, DataStructure.scalar),
+        "contact_map": (np.uint8, DataStructure.array),
+        "positions": (np.float32, DataStructure.array),
+        "velocities": (np.float32, DataStructure.array),
+        "md5": (str, DataStructure.scalar),
     }
 
     if cfg.compute_rmsd:
-        variablesR["rmsd"] = (np.float32, 0)
-        variablesW["rmsd"] = (np.float32, 0)
+        variablesR["rmsd"] = (np.float32, DataStructure.scalar)
+        variablesW["rmsd"] = (np.float32, DataStructure.scalar)
 
     ARW = AdiosStreamStepRW(connections, variablesR)
 
@@ -138,7 +139,15 @@ def aggregate(
 
             status = ARW.read_step(sim_task_id)
             if status:
+                print(f"ARW.d_md5 = {ARW.d_md5}")
+                import sys
+
+                sys.stdout.flush()
                 ARW.d_md5 = intarray2hash(ARW.d_md5)
+                print(f"ARW.d_md5 = {ARW.d_md5}")
+                import sys
+
+                sys.stdout.flush()
                 ARW.write_step(aggregator_stream, variablesW, end_step=False)
                 aggregator_stream.write("dir", str(sim_task_id), end_step=True)
             else:

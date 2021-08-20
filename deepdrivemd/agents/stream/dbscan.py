@@ -13,6 +13,7 @@ from numba import cuda
 from deepdrivemd.utils import Timer, timer, t1Dto2D
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 import tensorflow.keras.backend as K
+from deepdrivemd.data.stream.enumerations import DataStructure
 
 import pickle
 from deepdrivemd.data.stream.OutlierDB import OutlierDB
@@ -485,14 +486,16 @@ def main(cfg: OutlierDetectionConfig):
         model_path = str(wait_for_model(cfg))
 
     variable_list = [
-        StreamContactMapVariable("contact_map", np.uint8, 1),
-        StreamVariable("positions", np.float32, 1),
-        StreamVariable("md5", str, 2),
-        StreamVariable("velocities", np.float32, 1),
+        StreamContactMapVariable("contact_map", np.uint8, DataStructure.array),
+        StreamVariable("positions", np.float32, DataStructure.array),
+        StreamVariable("md5", str, DataStructure.string),
+        StreamVariable("velocities", np.float32, DataStructure.array),
     ]
 
     if cfg.compute_rmsd:
-        variable_list.append(StreamScalarVariable("rmsd", np.float32, 0))
+        variable_list.append(
+            StreamScalarVariable("rmsd", np.float32, DataStructure.scalar)
+        )
 
     mystreams = Streams(
         adios_files_list,
