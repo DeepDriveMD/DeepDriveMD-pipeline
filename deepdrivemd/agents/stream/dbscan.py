@@ -363,7 +363,6 @@ def top_outliers(
          Positions, velocities, md5sums, rmsds, outlier
          indices of outliers, sorted in ascending order by rmsd
     """
-    N = cfg.num_sim
     outlier_list = list(outlier_list[0])
     positions = cvae_input[1][outlier_list]
     velocities = cvae_input[3][outlier_list]
@@ -372,7 +371,7 @@ def top_outliers(
 
     z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
     z.sort(key=lambda x: x[3])
-    z = z[:N]
+    z = z[: cfg.num_sim]
     z = list(zip(*z))
 
     return z
