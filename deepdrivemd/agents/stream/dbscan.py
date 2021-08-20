@@ -311,7 +311,7 @@ def write_top_outliers(
         np.save(outlier_v_file, v)
 
 
-def write_db(top, tmp_dir):
+def write_db(top, tmp_dir) -> OutlierDB:
     """Create and save a database of outliers to be used by simulation."""
     outlier_db_fn = f"{tmp_dir}/OutlierDB.pickle"
     outlier_files = list(map(lambda x: f"{tmp_dir}/{x}.pdb", top[2]))
