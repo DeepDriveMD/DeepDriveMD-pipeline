@@ -399,7 +399,6 @@ def random_outliers(
          Positions, velocities, md5sums, rmsds, outlier
          indices of outliers in a random order.
     """
-    N = cfg.num_sim
     outlier_list = list(outlier_list[0])
     positions = cvae_input[1][outlier_list]
     velocities = cvae_input[3][outlier_list]
@@ -412,7 +411,7 @@ def random_outliers(
     z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
     indices = np.arange(len(z))
     np.random.shuffle(indices)
-    indices = indices[:N]
+    indices = indices[: cfg.num_sim]
     z = [z[i] for i in indices]
     z = list(zip(*z))
 
