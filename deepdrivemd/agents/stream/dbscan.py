@@ -301,9 +301,7 @@ def write_top_outliers(
           Top :obj:`N` positions, velocities, md5sums where
           :obj:`N` is equal to the number of the simulations.
     """
-    positions = top[0]
-    velocities = top[1]
-    md5s = top[2]
+    positions, velocities, md5s = top[:3]
 
     for p, v, m in zip(positions, velocities, md5s):
         outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
