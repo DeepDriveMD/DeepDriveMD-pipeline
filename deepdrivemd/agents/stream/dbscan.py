@@ -335,8 +335,6 @@ def publish(tmp_dir: Path, published_dir: Path):
     print(subprocess.getstatusoutput(f"mv {tmp_dir}/* {published_dir}/"))
     mylock.release()
 
-    return
-
 
 def top_outliers(
     cfg: OutlierDetectionConfig,
@@ -513,14 +511,6 @@ def main(cfg: OutlierDetectionConfig):
 
         with Timer("outlier_read"):
             cvae_input = mystreams.next()
-            print("=" * 10)
-            print("cvae_input")
-            print(type(cvae_input))
-            print(len(cvae_input))
-            for zzz in range(len(cvae_input)):
-                print(cvae_input[zzz].shape)
-            print("=" * 10)
-            sys.stdout.flush()
 
         with Timer("outlier_predict"):
             cm_predict = predict(cfg, model_path, cvae_input)
