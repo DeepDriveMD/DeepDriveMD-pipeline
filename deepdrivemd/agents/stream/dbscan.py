@@ -160,19 +160,17 @@ def predict(
     ----------
     cfg : OutlierDetectionConfig
     model_path : str
+        Path to the published model.
     cvae_input : Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray]]
+        Each list corresponds to the variable described by `variable_list` in `main` function. In particular, the first one contains contact maps and only those are used in `predict()`.
     batch_size : int
-
+        Batch size used to project input to the middle layer of the autoencoder.
     Returns
     -------
     np.ndarray
+        The latent space representation of the input.
     """
     input = np.expand_dims(cvae_input[0], axis=-1)
-
-    print(f"input.shape = {input.shape}")
-    import sys
-
-    sys.stdout.flush()
 
     cfg.initial_shape = input.shape[1:3]
     cfg.final_shape = list(input.shape[1:3]) + list(np.array([1]))
