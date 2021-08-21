@@ -68,6 +68,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     use_outliers: bool = True
     use_random_outliers: bool = False
     compute_rmsd: bool = True
+    final_shape: List[int] = [28, 28, 1]
 
 
 if __name__ == "__main__":
