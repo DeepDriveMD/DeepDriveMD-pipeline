@@ -251,10 +251,11 @@ if __name__ == "__main__":
             port=int(os.environ["RMQ_PORT"]),
             username=os.environ["RMQ_USERNAME"],
             password=os.environ["RMQ_PASSWORD"],
+            config={'base_path':cfg.radical_session_directory}
         )
     except KeyError:
         raise ValueError(
-            "Invalid RMQ environment. Please see README.md for configuring environment."
+            "Invalid RADICAL configurations, e.g. RMQ. Please see README.md for configuring environment."
         )
 
     # Calculate total number of nodes required. Assumes 1 MD job per GPU

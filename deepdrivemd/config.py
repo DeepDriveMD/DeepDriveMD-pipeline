@@ -204,6 +204,7 @@ class ExperimentConfig(BaseSettings):
     gpus_per_node: int
     hardware_threads_per_cpu: int
     experiment_directory: Path
+    radical_session_directory: Path
     node_local_path: Optional[Path]
     molecular_dynamics_stage: MolecularDynamicsStageConfig
     aggregation_stage: AggregationStageConfig
@@ -233,6 +234,7 @@ def generate_sample_config():
         gpus_per_node=6,
         max_iteration=4,
         experiment_directory="/path/to/experiment",
+        radical_session_directory="/path/to/radical",
         node_local_path=None,
         molecular_dynamics_stage=MolecularDynamicsStageConfig(),
         aggregation_stage=AggregationStageConfig(),
