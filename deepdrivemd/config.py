@@ -1,25 +1,26 @@
 # Schema of the YAML experiment file
 import json
-import yaml
-from pydantic import validator
-from pydantic import BaseSettings as _BaseSettings
 from pathlib import Path
-from typing import Optional, List, Union
-from typing import TypeVar, Type
+from typing import List, Optional, Type, TypeVar
+
+import yaml
+from pydantic import BaseSettings as _BaseSettings, validator
+
+from deepdrivemd.utils import PathLike
 
 _T = TypeVar("_T")
 
 
 class BaseSettings(_BaseSettings):
-    def dump_yaml(self, cfg_path):
+    def dump_yaml(self, cfg_path: PathLike) -> None:
         with open(cfg_path, mode="w") as fp:
             yaml.dump(json.loads(self.json()), fp, indent=4, sort_keys=False)
 
     @classmethod
-    def from_yaml(cls: Type[_T], filename: Union[str, Path]) -> _T:
+    def from_yaml(cls: Type[_T], filename: PathLike) -> _T:
         with open(filename) as fp:
             raw_data = yaml.safe_load(fp)
-        return cls(**raw_data)
+        return cls(**raw_data)  # type: ignore
 
 
 class CPUReqs(BaseSettings):
@@ -31,14 +32,14 @@ class CPUReqs(BaseSettings):
     thread_type: Optional[str]
 
     @validator("process_type")
-    def process_type_check(cls, v):
+    def process_type_check(cls, v: Optional[str]) -> Optional[str]:
         valid_process_types = {None, "MPI"}
         if v not in valid_process_types:
             raise ValueError(f"process_type must be one of {valid_process_types}")
         return v
 
     @validator("thread_type")
-    def thread_type_check(cls, v):
+    def thread_type_check(cls, v: Optional[str]) -> Optional[str]:
         thread_process_types = {None, "OpenMP"}
         if v not in thread_process_types:
             raise ValueError(f"thread_type must be one of {thread_process_types}")
@@ -54,14 +55,14 @@ class GPUReqs(BaseSettings):
     thread_type: Optional[str]
 
     @validator("process_type")
-    def process_type_check(cls, v):
+    def process_type_check(cls, v: Optional[str]) -> Optional[str]:
         valid_process_types = {None, "MPI"}
         if v not in valid_process_types:
             raise ValueError(f"process_type must be one of {valid_process_types}")
         return v
 
     @validator("thread_type")
-    def thread_type_check(cls, v):
+    def thread_type_check(cls, v: Optional[str]) -> Optional[str]:
         thread_process_types = {None, "OpenMP", "CUDA"}
         if v not in thread_process_types:
             raise ValueError(f"thread_type must be one of {thread_process_types}")
@@ -107,7 +108,7 @@ class MolecularDynamicsTaskConfig(BaseTaskConfig):
     initial_pdb_dir: Path = Path(".").resolve()
 
     @validator("initial_pdb_dir")
-    def initial_pdb_dir_must_exist_with_valid_pdbs(cls, v):
+    def initial_pdb_dir_must_exist_with_valid_pdbs(cls, v: Path) -> Path:
         if not v.exists():
             raise FileNotFoundError(v.as_posix())
         if not v.is_absolute():
@@ -212,7 +213,7 @@ class ExperimentConfig(BaseSettings):
     agent_stage: AgentStageConfig
 
     @validator("experiment_directory")
-    def experiment_directory_cannot_exist(cls, v):
+    def experiment_directory_cannot_exist(cls, v: Path) -> Path:
         if v.exists():
             raise FileNotFoundError(f"experiment_directory already exists! {v}")
         if not v.is_absolute():
@@ -220,7 +221,7 @@ class ExperimentConfig(BaseSettings):
         return v
 
 
-def generate_sample_config():
+def generate_sample_config() -> ExperimentConfig:
     return ExperimentConfig(
         title="COVID-19 - Workflow2",
         resource="ornl.summit",

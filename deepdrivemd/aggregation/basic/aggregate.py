@@ -1,11 +1,15 @@
-import h5py
 import argparse
+from typing import Dict, List
+
+import h5py  # type: ignore[import]
 import numpy as np
-from deepdrivemd.data.api import DeepDriveMD_API
+import numpy.typing as npt
+
 from deepdrivemd.aggregation.basic.config import BasicAggegation
+from deepdrivemd.data.api import DeepDriveMD_API
 
 
-def concatenate_last_n_h5(cfg: BasicAggegation):
+def concatenate_last_n_h5(cfg: BasicAggegation) -> None:  # noqa
 
     fields = []
     if cfg.rmsd:
@@ -29,7 +33,7 @@ def concatenate_last_n_h5(cfg: BasicAggegation):
     fout = h5py.File(cfg.output_path, "w", libver="latest")
 
     # Initialize data buffers
-    data = {x: [] for x in fields}
+    data: Dict[str, List[npt.ArrayLike]] = {x: [] for x in fields}
 
     for in_file in files:
 
@@ -41,40 +45,48 @@ def concatenate_last_n_h5(cfg: BasicAggegation):
                 data[field].append(fin[field][...])
 
     # Concatenate data
-    for field in data:
-        data[field] = np.concatenate(data[field])
+    concat_data: Dict[str, npt.ArrayLike] = {
+        field: np.concatenate(data[field]) for field in data  # type: ignore[no-untyped-call]
+    }
+    # for field in data:
+    #    data[field] = np.concatenate(data[field])  # type: ignore[no-untyped-call]
 
     # Centor of mass (CMS) subtraction
-    if "point_cloud" in data:
+    if "point_cloud" in concat_data:
         if cfg.verbose:
             print("Subtract center of mass (CMS) from point cloud")
         cms = np.mean(
-            data["point_cloud"][:, 0:3, :].astype(np.float128), axis=2, keepdims=True
+            concat_data["point_cloud"][:, 0:3, :].astype(np.float128),  # type: ignore[call-overload, union-attr, index]
+            axis=2,
+            keepdims=True,
         ).astype(np.float32)
-        data["point_cloud"][:, 0:3, :] -= cms
+        concat_data["point_cloud"][:, 0:3, :] -= cms  # type: ignore[call-overload, index]
 
     # Create new dsets from concatenated dataset
-    for field, concat_dset in data.items():
+    for field, concat_dset in concat_data.items():
         if field == "traj_file":
             utf8_type = h5py.string_dtype("utf-8")
             fout.create_dataset("traj_file", data=concat_dset, dtype=utf8_type)
             continue
 
-        shape = concat_dset.shape
+        shape = concat_dset.shape  # type: ignore[union-attr]
         chunkshape = (1,) + shape[1:]
         # Create dataset
-        if concat_dset.dtype != np.object:
+        if concat_dset.dtype != np.object:  # type: ignore[union-attr, attr-defined]
             if np.any(np.isnan(concat_dset)):
                 raise ValueError("NaN detected in concat_dset.")
             dset = fout.create_dataset(
-                field, shape, chunks=chunkshape, dtype=concat_dset.dtype
+                field,
+                shape,
+                chunks=chunkshape,
+                dtype=concat_dset.dtype,  # type: ignore[union-attr]
             )
         else:
             dset = fout.create_dataset(
                 field, shape, chunks=chunkshape, dtype=h5py.vlen_dtype(np.int16)
             )
         # write data
-        dset[...] = concat_dset[...]
+        dset[...] = concat_dset[...]  # type: ignore[call-overload, index]
 
     # Clean up
     fout.flush()

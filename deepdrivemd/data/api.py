@@ -1,10 +1,11 @@
-import json
 import itertools
+import json
 from pathlib import Path
-from typing import Any, List, Dict, Optional, Union, Callable
-import MDAnalysis
+from typing import Any, Callable, Dict, List, Optional
 
-PathLike = Union[str, Path]
+import MDAnalysis  # type: ignore
+
+from deepdrivemd.utils import PathLike
 
 
 def glob_file_from_dirs(dirs: List[str], pattern: str) -> List[str]:
@@ -14,11 +15,11 @@ def glob_file_from_dirs(dirs: List[str], pattern: str) -> List[str]:
 
 class Stage_API:
     @staticmethod
-    def task_name(task_idx: int):
+    def task_name(task_idx: int) -> str:
         return f"task{task_idx:04d}"
 
     @staticmethod
-    def stage_name(stage_idx: int):
+    def stage_name(stage_idx: int) -> str:
         return f"stage{stage_idx:04d}"
 
     @staticmethod
@@ -28,7 +29,10 @@ class Stage_API:
 
     @staticmethod
     def get_latest(
-        path: Path, pattern: str, is_dir: bool = False, key: Callable = lambda x: x
+        path: Path,
+        pattern: str,
+        is_dir: bool = False,
+        key: Callable[[Path], Path] = lambda x: x,
     ) -> Optional[Path]:
         matches = list(filter(lambda p: p.is_dir() == is_dir, path.glob(pattern)))
         if not matches:
@@ -40,7 +44,7 @@ class Stage_API:
         matches = list(filter(lambda p: p.is_dir() == is_dir, path.glob(pattern)))
         return len(matches)
 
-    def __init__(self, experiment_dir, stage_dir_name):
+    def __init__(self, experiment_dir: Path, stage_dir_name: str):
         self.experiment_dir = experiment_dir
         self._stage_dir_name = stage_dir_name
 
@@ -79,7 +83,7 @@ class Stage_API:
         return _task_dir
 
     def _task_file_path(
-        self, stage_idx: int = -1, task_idx: int = 0, suffix=".yaml"
+        self, stage_idx: int = -1, task_idx: int = 0, suffix: str = ".yaml"
     ) -> Optional[Path]:
         _task_dir = self.task_dir(stage_idx, task_idx)
         if _task_dir is None:
@@ -95,7 +99,7 @@ class Stage_API:
 
     def write_task_json(
         self, data: List[Dict[str, Any]], stage_idx: int = -1, task_idx: int = 0
-    ):
+    ) -> None:
         r"""Dump `data` to a new JSON file for the agent.
 
         Dump `data` to a JSON file written to the directory specified
@@ -119,7 +123,7 @@ class Stage_API:
         if path is None:
             return None
         with open(path, "r") as f:
-            data = json.load(f)
+            data: List[Dict[str, Any]] = json.load(f)
         return data
 
 
@@ -140,11 +144,11 @@ class DeepDriveMD_API:
         self.model_selection_stage = self._stage_api(self.MODEL_SELECTION_DIR)
         self.agent_stage = self._stage_api(self.AGENT_DIR)
 
-    def _stage_api(self, dirname):
+    def _stage_api(self, dirname: str) -> Stage_API:
         """Factory function for Stage_API."""
         return Stage_API(self.experiment_dir, dirname)
 
-    def get_total_iterations(self):
+    def get_total_iterations(self) -> int:
         return self.molecular_dynamics_stage.stage_dir_count()
 
     def get_last_n_md_runs(
@@ -184,23 +188,23 @@ class DeepDriveMD_API:
         #       /task_{task_idx}
         run_dirs = self.molecular_dynamics_stage.runs_dir.glob("*/task*")
         # Remove any potential files
-        run_dirs = filter(lambda p: p.is_dir(), run_dirs)
+        filtered_dirs = filter(lambda p: p.is_dir(), run_dirs)
         # Sort by deepdrivemd iteration and sim task id
-        run_dirs = sorted(run_dirs)
+        sorted_dirs = sorted(filtered_dirs)
         # Reverse sort to get last n
-        run_dirs = reversed(run_dirs)
+        reversed_dirs = reversed(sorted_dirs)
         # Evaluate generator up to n items
-        run_dirs = list(itertools.islice(run_dirs, n))
+        n_dirs = list(itertools.islice(reversed_dirs, n))
         # Put back in sequential order
-        run_dirs = reversed(run_dirs)
+        reversed_n_dirs = reversed(n_dirs)
         # Convert pathlib.Path to str
-        run_dirs = list(map(str, run_dirs))
+        last_n_dirs = list(map(str, reversed_n_dirs))
 
         return {
-            "data_files": glob_file_from_dirs(run_dirs, f"*{data_file_suffix}"),
-            "traj_files": glob_file_from_dirs(run_dirs, f"*{traj_file_suffix}"),
+            "data_files": glob_file_from_dirs(last_n_dirs, f"*{data_file_suffix}"),
+            "traj_files": glob_file_from_dirs(last_n_dirs, f"*{traj_file_suffix}"),
             "structure_files": glob_file_from_dirs(
-                run_dirs, f"*{structure_file_suffix}"
+                last_n_dirs, f"*{structure_file_suffix}"
             ),
         }
 
@@ -374,7 +378,7 @@ class DeepDriveMD_API:
         traj_file: PathLike,
         frame: int,
         in_memory: bool = False,
-    ):
+    ) -> None:
         r"""Write a PDB file.
 
         Writes `output_pdb_file` to disk containing coordindates of

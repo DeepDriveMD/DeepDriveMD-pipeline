@@ -1,16 +1,16 @@
 import itertools
-from pathlib import Path
-from typing import Union
-import numpy as np
-import torch
-from torch.utils.data import DataLoader, Dataset, Subset
-from molecules.ml.datasets import PointCloudDataset
-from molecules.ml.unsupervised.point_autoencoder import AAE3dHyperparams
-from molecules.ml.unsupervised.point_autoencoder.aae import Encoder
-from deepdrivemd.models.aae.config import AAEModelConfig
-from deepdrivemd.utils import setup_mpi
+from typing import Any, Optional
 
-PathLike = Union[str, Path]
+import numpy as np
+import numpy.typing as npt
+import torch  # type: ignore[import]
+from molecules.ml.datasets import PointCloudDataset  # type: ignore[import]
+from molecules.ml.unsupervised.point_autoencoder import AAE3dHyperparams  # type: ignore[import]
+from molecules.ml.unsupervised.point_autoencoder.aae import Encoder  # type: ignore[import]
+from torch.utils.data import DataLoader, Dataset, Subset  # type: ignore[import]
+
+from deepdrivemd.models.aae.config import AAEModelConfig
+from deepdrivemd.utils import PathLike, setup_mpi
 
 
 def shard_dataset(dataset: Dataset, comm_size: int, comm_rank: int) -> Dataset:
@@ -36,8 +36,8 @@ def generate_embeddings(
     model_weights_path: PathLike,
     inference_batch_size: int,
     encoder_gpu: int,
-    comm=None,
-) -> np.ndarray:
+    comm: Optional[Any] = None,
+) -> npt.ArrayLike:
 
     comm_size, comm_rank = setup_mpi(comm)
 
@@ -110,9 +110,9 @@ def generate_embeddings(
 
     if comm_size > 1:
         # gather results
-        embeddings = comm.allgather(embeddings)
+        embeddings = comm.allgather(embeddings)  # type: ignore[union-attr]
         embeddings = list(itertools.chain.from_iterable(embeddings))
 
-    embeddings = np.concatenate(embeddings)
+    embeddings = np.concatenate(embeddings)  # type: ignore[no-untyped-call]
 
     return embeddings

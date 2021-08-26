@@ -1,11 +1,14 @@
-import os
-import shutil
 import argparse
 import itertools
-from typing import List
-import radical.utils as ru
-from radical.entk import AppManager, Pipeline, Stage, Task
-from deepdrivemd.config import ExperimentConfig, BaseStageConfig
+import os
+import shutil
+from pathlib import Path
+from typing import List, Optional
+
+import radical.utils as ru  # type: ignore
+from radical.entk import AppManager, Pipeline, Stage, Task  # type: ignore
+
+from deepdrivemd.config import BaseStageConfig, ExperimentConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 
 
@@ -38,7 +41,7 @@ class PipelineManager:
 
         self._init_experiment_dir()
 
-    def _init_experiment_dir(self):
+    def _init_experiment_dir(self) -> None:
         # Make experiment directories
         self.cfg.experiment_directory.mkdir()
         self.api.molecular_dynamics_stage.runs_dir.mkdir()
@@ -47,20 +50,20 @@ class PipelineManager:
         self.api.model_selection_stage.runs_dir.mkdir()
         self.api.agent_stage.runs_dir.mkdir()
 
-    def func_condition(self):
+    def func_condition(self) -> None:
         if self.stage_idx < self.cfg.max_iteration:
             self.func_on_true()
         else:
             self.func_on_false()
 
-    def func_on_true(self):
+    def func_on_true(self) -> None:
         print(f"Finishing stage {self.stage_idx} of {self.cfg.max_iteration}")
         self._generate_pipeline_iteration()
 
-    def func_on_false(self):
+    def func_on_false(self) -> None:
         print("Done")
 
-    def _generate_pipeline_iteration(self):
+    def _generate_pipeline_iteration(self) -> None:
 
         self.pipeline.add_stages(self.generate_molecular_dynamics_stage())
 
@@ -88,8 +91,8 @@ class PipelineManager:
         stage_api = self.api.molecular_dynamics_stage
 
         if self.stage_idx == 0:
-            filenames = self.api.get_initial_pdbs(cfg.task_config.initial_pdb_dir)
-            filenames = itertools.cycle(filenames)
+            initial_pdbs = self.api.get_initial_pdbs(cfg.task_config.initial_pdb_dir)
+            filenames: Optional[itertools.cycle[Path]] = itertools.cycle(initial_pdbs)
         else:
             filenames = None
 
@@ -111,6 +114,7 @@ class PipelineManager:
                 cfg.task_config.pdb_file = None
 
             cfg_path = stage_api.config_path(self.stage_idx, task_idx)
+            assert cfg_path is not None
             cfg.task_config.dump_yaml(cfg_path)
             task = generate_task(cfg)
             task.arguments += ["-c", cfg_path.as_posix()]
@@ -137,6 +141,7 @@ class PipelineManager:
 
         # Write yaml configuration
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
+        assert cfg_path is not None
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
         task.arguments += ["-c", cfg_path.as_posix()]
@@ -167,6 +172,7 @@ class PipelineManager:
 
         # Write yaml configuration
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
+        assert cfg_path is not None
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
         task.arguments += ["-c", cfg_path.as_posix()]
@@ -193,6 +199,7 @@ class PipelineManager:
 
         # Write yaml configuration
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
+        assert cfg_path is not None
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
         task.arguments += ["-c", cfg_path.as_posix()]
@@ -219,6 +226,7 @@ class PipelineManager:
 
         # Write yaml configuration
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
+        assert cfg_path is not None
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
         task.arguments += ["-c", cfg_path.as_posix()]
