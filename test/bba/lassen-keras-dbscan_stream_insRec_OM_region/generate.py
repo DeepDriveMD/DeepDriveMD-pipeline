@@ -67,7 +67,7 @@ class TaskConfigMD(BaseModel):
     initial_pdb_dir = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/insRec_OM_region/"
     solvent_type = "explicit"
     top_suffix: str = ".top"
-    simulation_length_ns = 10.0 / 2
+    simulation_length_ns = 10.0 / 10
     report_interval_ps = 50.0
     dt_ps = 0.002
     temperature_kelvin = 300.0
@@ -175,10 +175,10 @@ class TaskConfigML(CVAE):
     task_idx = 0
     output_path = "set_by_deepdrivemd"
     epochs = 800
-    batch_size = 32
+    batch_size = 32 * 2
     min_step_increment = 200
     max_steps = 2000
-    max_loss = 35000
+    max_loss = 65000
     num_agg = agg.num_tasks
     timeout1 = 30
     timeout2 = 10

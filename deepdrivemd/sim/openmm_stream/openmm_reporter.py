@@ -8,7 +8,6 @@ from typing import Dict
 
 import adios2
 import hashlib
-import sys
 
 
 class ContactMapReporter(object):
@@ -66,8 +65,8 @@ class ContactMapReporter(object):
             d = positions_ca.shape[0] // self.cfg.divisibleby * self.cfg.divisibleby
             positions_ca = positions_ca[:d]
 
-        print(f"len(ca_indices) = {len(ca_indices)}, d = {d}, natoms = {natoms}")
-        sys.stdout.flush()
+        # print(f"len(ca_indices) = {len(ca_indices)}, d = {d}, natoms = {natoms}")
+        # import sys; sys.stdout.flush()
 
         contact_map = distances.contact_matrix(
             positions_ca, cutoff=self.cfg.threshold, returntype="numpy", box=None
