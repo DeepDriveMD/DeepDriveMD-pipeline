@@ -13,7 +13,7 @@ from deepdrivemd.utils import PathLike
 def sparse_to_dense(
     h5_file: PathLike,
     dataset_name: str,
-    initial_shape: Tuple[int, int, int],
+    initial_shape: Tuple[int, int],
     final_shape: Union[Tuple[int, int, int], Tuple[int, int]],
 ) -> "npt.ArrayLike":
     """Convert sparse COO formatted contact maps to dense.
@@ -24,7 +24,7 @@ def sparse_to_dense(
         The HDF5 file containing contact maps.
     dataset_name : str
         The dataset name containing the contact map indices.
-    initial_shape : Tuple[int, int, int]
+    initial_shape : Tuple[int, int]
         The shape of the contact map saved in the HDF5 file.
     final_shape : Union[Tuple[int, int, int], Tuple[int, int]]
         The final shape of the contact map incase adding an extra

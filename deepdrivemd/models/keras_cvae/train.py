@@ -61,7 +61,7 @@ def get_h5_training_file(cfg: KerasCVAEModelConfig) -> Tuple[Path, List[str]]:
 
 def preprocess(
     h5_file: Path,
-    initial_shape: Tuple[int, int, int],
+    initial_shape: Tuple[int, int],
     final_shape: Tuple[int, int, int],
     dataset_name: str = "contact_map",
     split_pct: float = 0.8,
