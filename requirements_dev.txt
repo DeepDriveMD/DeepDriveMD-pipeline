@@ -10,6 +10,7 @@ isort
 pre-commit
 sphinx
 sphinx_rtd_theme
+twine
 
 # mypy type stubs:
 types-PyYAML
