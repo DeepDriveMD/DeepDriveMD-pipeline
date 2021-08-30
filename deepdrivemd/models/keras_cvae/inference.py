@@ -1,4 +1,7 @@
-import numpy.typing as npt
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 from deepdrivemd.models.keras_cvae.config import KerasCVAEModelConfig
 from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
@@ -11,7 +14,7 @@ def generate_embeddings(
     h5_file: PathLike,
     model_weights_path: PathLike,
     inference_batch_size: int,
-) -> npt.ArrayLike:
+) -> "npt.ArrayLike":
 
     cfg = KerasCVAEModelConfig.from_yaml(model_cfg_path)
 

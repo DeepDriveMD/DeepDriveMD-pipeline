@@ -3,10 +3,12 @@ import time
 from inspect import Traceback, currentframe, getframeinfo
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Type, Union
 
 import numpy as np
-import numpy.typing as npt
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 PathLike = Union[str, Path]
 
@@ -14,7 +16,7 @@ PathLike = Union[str, Path]
 def setup_mpi_comm(distributed: bool) -> Optional[Any]:
     if distributed:
         # get communicator: duplicate from comm world
-        from mpi4py import MPI  # type: ignore
+        from mpi4py import MPI  # type: ignore[import]
 
         return MPI.COMM_WORLD.Dup()
     return None
@@ -74,8 +76,8 @@ class Timer:
 
 
 def bestk(
-    a: npt.ArrayLike, k: int, smallest: bool = True
-) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
+    a: "npt.ArrayLike", k: int, smallest: bool = True
+) -> Tuple["npt.ArrayLike", "npt.ArrayLike"]:
     r"""Return the best `k` values and correspdonding indices.
 
     Parameters

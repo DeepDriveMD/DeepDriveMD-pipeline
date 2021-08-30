@@ -5,8 +5,8 @@ import shutil
 from pathlib import Path
 from typing import List, Optional
 
-import radical.utils as ru  # type: ignore
-from radical.entk import AppManager, Pipeline, Stage, Task  # type: ignore
+import radical.utils as ru  # type: ignore[import]
+from radical.entk import AppManager, Pipeline, Stage, Task  # type: ignore[import]
 
 from deepdrivemd.config import BaseStageConfig, ExperimentConfig
 from deepdrivemd.data.api import DeepDriveMD_API

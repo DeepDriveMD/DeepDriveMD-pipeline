@@ -1,8 +1,10 @@
 import itertools
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 import numpy as np
-import numpy.typing as npt
 import torch  # type: ignore[import]
 from molecules.ml.datasets import PointCloudDataset  # type: ignore[import]
 from molecules.ml.unsupervised.point_autoencoder import AAE3dHyperparams  # type: ignore[import]
@@ -37,7 +39,7 @@ def generate_embeddings(
     inference_batch_size: int,
     encoder_gpu: int,
     comm: Optional[Any] = None,
-) -> npt.ArrayLike:
+) -> "npt.ArrayLike":
 
     comm_size, comm_rank = setup_mpi(comm)
 

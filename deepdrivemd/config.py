@@ -20,7 +20,7 @@ class BaseSettings(_BaseSettings):
     def from_yaml(cls: Type[_T], filename: PathLike) -> _T:
         with open(filename) as fp:
             raw_data = yaml.safe_load(fp)
-        return cls(**raw_data)  # type: ignore
+        return cls(**raw_data)  # type: ignore[call-arg]
 
 
 class CPUReqs(BaseSettings):

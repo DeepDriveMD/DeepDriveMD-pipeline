@@ -2,10 +2,12 @@ import argparse
 import json
 import random
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 import numpy as np
-import numpy.typing as npt
 from sklearn.neighbors import LocalOutlierFactor  # type: ignore[import]
 
 from deepdrivemd.agents.lof.config import OutlierDetectionConfig
@@ -23,7 +25,7 @@ def get_representation(
     inference_batch_size: int = 128,
     gpu_id: int = 0,
     comm: Optional[Any] = None,
-) -> npt.ArrayLike:
+) -> "npt.ArrayLike":
     if model_type == "AAE3d":
         from deepdrivemd.models.aae.inference import generate_embeddings
 
@@ -51,7 +53,7 @@ def get_representation(
     return embeddings
 
 
-def run_dbscan(data: npt.ArrayLike, eps: float = 0.35) -> npt.ArrayLike:
+def run_dbscan(data: "npt.ArrayLike", eps: float = 0.35) -> "npt.ArrayLike":
     # RAPIDS.ai import as needed
     import cupy as cp  # type: ignore[import]
     from cuml import DBSCAN as DBSCAN  # type: ignore[import]
@@ -62,8 +64,8 @@ def run_dbscan(data: npt.ArrayLike, eps: float = 0.35) -> npt.ArrayLike:
 
 
 def dbscan_outlier_search(
-    embeddings: npt.ArrayLike, num_intrinsic_outliers: int
-) -> npt.ArrayLike:
+    embeddings: "npt.ArrayLike", num_intrinsic_outliers: int
+) -> "npt.ArrayLike":
     """Find best eps and return corresponding outlier indices."""
     eps = 1.3
     outlier_min = num_intrinsic_outliers
@@ -89,8 +91,8 @@ def dbscan_outlier_search(
 
 
 def get_intrinsic_score(
-    embeddings: npt.ArrayLike, cfg: OutlierDetectionConfig
-) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
+    embeddings: "npt.ArrayLike", cfg: OutlierDetectionConfig
+) -> Tuple["npt.ArrayLike", "npt.ArrayLike"]:
 
     if cfg.intrinsic_score == "lof":
         # Perform LocalOutlierFactor outlier detection on embeddings
@@ -118,8 +120,8 @@ def get_intrinsic_score(
 
 
 def get_extrinsic_score(
-    intrinsic_inds: npt.ArrayLike, virtual_h5_file: Path, cfg: OutlierDetectionConfig
-) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
+    intrinsic_inds: "npt.ArrayLike", virtual_h5_file: Path, cfg: OutlierDetectionConfig
+) -> Tuple["npt.ArrayLike", "npt.ArrayLike"]:
 
     if cfg.extrinsic_score == "rmsd":
         # Get all RMSD values from virutal HDF5 file
@@ -141,9 +143,9 @@ def get_extrinsic_score(
 def generate_outliers(
     md_data: Dict[str, List[str]],
     sampled_h5_files: List[str],
-    outlier_inds: npt.ArrayLike,
-    intrinsic_scores: npt.ArrayLike,
-    extrinsic_scores: npt.ArrayLike,
+    outlier_inds: "npt.ArrayLike",
+    intrinsic_scores: "npt.ArrayLike",
+    extrinsic_scores: "npt.ArrayLike",
 ) -> List[Dict[str, object]]:
 
     assert len(intrinsic_scores) == len(extrinsic_scores)  # type: ignore[arg-type]

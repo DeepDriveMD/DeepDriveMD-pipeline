@@ -1,9 +1,11 @@
 import argparse
-from typing import Dict, List
+from typing import TYPE_CHECKING, Dict, List
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 import h5py  # type: ignore[import]
 import numpy as np
-import numpy.typing as npt
 
 from deepdrivemd.aggregation.basic.config import BasicAggegation
 from deepdrivemd.data.api import DeepDriveMD_API
@@ -33,7 +35,7 @@ def concatenate_last_n_h5(cfg: BasicAggegation) -> None:  # noqa
     fout = h5py.File(cfg.output_path, "w", libver="latest")
 
     # Initialize data buffers
-    data: Dict[str, List[npt.ArrayLike]] = {x: [] for x in fields}
+    data: Dict[str, List["npt.ArrayLike"]] = {x: [] for x in fields}
 
     for in_file in files:
 
@@ -45,7 +47,7 @@ def concatenate_last_n_h5(cfg: BasicAggegation) -> None:  # noqa
                 data[field].append(fin[field][...])
 
     # Concatenate data
-    concat_data: Dict[str, npt.ArrayLike] = {
+    concat_data: Dict[str, "npt.ArrayLike"] = {
         field: np.concatenate(data[field]) for field in data  # type: ignore[no-untyped-call]
     }
     # for field in data:

@@ -2,10 +2,12 @@ import argparse
 import json
 import time
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 import numpy as np
-import numpy.typing as npt
 
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
@@ -64,7 +66,7 @@ def preprocess(
     dataset_name: str = "contact_map",
     split_pct: float = 0.8,
     shuffle: bool = True,
-) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
+) -> Tuple["npt.ArrayLike", "npt.ArrayLike"]:
 
     data = sparse_to_dense(h5_file, dataset_name, initial_shape, final_shape)
 

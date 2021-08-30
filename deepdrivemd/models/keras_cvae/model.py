@@ -3,15 +3,17 @@ Convolutional variational autoencoder in Keras
 Reference: "Auto-Encoding Variational Bayes" (https://arxiv.org/abs/1312.6114)
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 import numpy as np
-import numpy.typing as npt
-import pandas as pd  # type: ignore
-import tensorflow.keras.backend as K  # type: ignore
-import tensorflow.keras.losses as objectives  # type: ignore
-from tensorflow.keras.callbacks import Callback  # type: ignore
-from tensorflow.keras.layers import (  # type: ignore
+import pandas as pd  # type: ignore[import]
+import tensorflow.keras.backend as K  # type: ignore[import]
+import tensorflow.keras.losses as objectives  # type: ignore[import]
+from tensorflow.keras.callbacks import Callback  # type: ignore[import]
+from tensorflow.keras.layers import (  # type: ignore[import]
     Conv2DTranspose,
     Convolution2D,
     Dense,
@@ -21,14 +23,14 @@ from tensorflow.keras.layers import (  # type: ignore
     Lambda,
     Reshape,
 )
-from tensorflow.keras.models import Model  # type: ignore
-from tensorflow.keras.optimizers import RMSprop  # type: ignore
+from tensorflow.keras.models import Model  # type: ignore[import]
+from tensorflow.keras.optimizers import RMSprop  # type: ignore[import]
 
 from deepdrivemd.utils import PathLike
 
 
 # save history from log
-class LossHistory(Callback):  # type: ignore
+class LossHistory(Callback):  # type: ignore[misc]
     def on_train_begin(self, logs: Dict[str, float] = {}) -> None:
         self.losses: List[float] = []
         self.val_losses: List[float] = []
@@ -292,7 +294,9 @@ class conv_variational_autoencoder(object):
             self.generation.append(self.all_decoding[i](self.generation[i - 1]))
         self.generator = Model(self.decoder_input, self.generation[-1])
 
-    def _sampling(self, args: Tuple[npt.ArrayLike, npt.ArrayLike]) -> npt.ArrayLike:
+    def _sampling(
+        self, args: Tuple["npt.ArrayLike", "npt.ArrayLike"]
+    ) -> "npt.ArrayLike":
         """Sampling function for embedding layer.
 
         Parameters
@@ -309,10 +313,12 @@ class conv_variational_autoencoder(object):
         epsilon = K.random_normal(
             shape=K.shape(z_mean), mean=self.eps_mean, stddev=self.eps_std
         )
-        sample: npt.ArrayLike = z_mean + K.exp(z_log_var) * epsilon
+        sample: "npt.ArrayLike" = z_mean + K.exp(z_log_var) * epsilon
         return sample
 
-    def _vae_loss1(self, input: npt.ArrayLike, output: npt.ArrayLike) -> npt.ArrayLike:
+    def _vae_loss1(
+        self, input: "npt.ArrayLike", output: "npt.ArrayLike"
+    ) -> "npt.ArrayLike":
         """Compute reconstruction loss.
 
         Parameters
@@ -329,7 +335,7 @@ class conv_variational_autoencoder(object):
         """
         input_flat = K.flatten(input)
         output_flat = K.flatten(output)
-        xent_loss: npt.ArrayLike = (
+        xent_loss: "npt.ArrayLike" = (
             self.image_size[0]
             * self.image_size[1]
             * objectives.binary_crossentropy(input_flat, output_flat)
@@ -338,10 +344,10 @@ class conv_variational_autoencoder(object):
 
     def train(
         self,
-        data: npt.ArrayLike,
+        data: "npt.ArrayLike",
         batch_size: int,
         epochs: int = 1,
-        validation_data: Optional[npt.ArrayLike] = None,
+        validation_data: Optional["npt.ArrayLike"] = None,
         checkpoint: bool = False,
         filepath: Optional[str] = None,
     ) -> None:
@@ -406,7 +412,7 @@ class conv_variational_autoencoder(object):
         """
         self.model.load_weights(filepath)
 
-    def decode(self, data: npt.ArrayLike) -> npt.ArrayLike:
+    def decode(self, data: "npt.ArrayLike") -> "npt.ArrayLike":
         """Return the decodings for given data
 
         Parameters
@@ -419,12 +425,12 @@ class conv_variational_autoencoder(object):
         npt.ArrayLike
             Array of decodings for input data.
         """
-        recon: npt.ArrayLike = self.model.predict(data)
+        recon: "npt.ArrayLike" = self.model.predict(data)
         return recon
 
     def return_embeddings(
-        self, data: npt.ArrayLike, batch_size: int = 32
-    ) -> npt.ArrayLike:
+        self, data: "npt.ArrayLike", batch_size: int = 32
+    ) -> "npt.ArrayLike":
         """Return the embeddings for given data.
 
         Parameters
@@ -439,10 +445,10 @@ class conv_variational_autoencoder(object):
         npt.ArrayLike
             Array of embeddings for input data.
         """
-        embeddings: npt.ArrayLike = self.embedder.predict(data, batch_size=batch_size)
+        embeddings: "npt.ArrayLike" = self.embedder.predict(data, batch_size=batch_size)
         return embeddings
 
-    def generate(self, embedding: npt.ArrayLike) -> npt.ArrayLike:
+    def generate(self, embedding: "npt.ArrayLike") -> "npt.ArrayLike":
         """Return a generated output given a latent embedding.
 
         Parameters
@@ -455,5 +461,5 @@ class conv_variational_autoencoder(object):
         npt.ArrayLike
             Array of generated output.
         """
-        preds: npt.ArrayLike = self.generator.predict(embedding)
+        preds: "npt.ArrayLike" = self.generator.predict(embedding)
         return preds

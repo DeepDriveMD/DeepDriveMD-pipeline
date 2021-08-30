@@ -1,9 +1,11 @@
-from typing import Tuple, Union
+from typing import TYPE_CHECKING, Tuple, Union
 
-import h5py  # type: ignore
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
+import h5py  # type: ignore[import]
 import numpy as np
-import numpy.typing as npt
-from scipy.sparse import coo_matrix  # type: ignore
+from scipy.sparse import coo_matrix  # type: ignore[import]
 
 from deepdrivemd.utils import PathLike
 
@@ -13,7 +15,7 @@ def sparse_to_dense(
     dataset_name: str,
     initial_shape: Tuple[int, int, int],
     final_shape: Union[Tuple[int, int, int], Tuple[int, int]],
-) -> npt.ArrayLike:
+) -> "npt.ArrayLike":
     """Convert sparse COO formatted contact maps to dense.
 
     Parameters

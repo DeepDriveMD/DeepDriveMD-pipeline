@@ -1,8 +1,10 @@
 from concurrent.futures import ProcessPoolExecutor
-from typing import Any, Callable, Dict, Iterable, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional
 
-import numpy.typing as npt
-from tqdm import tqdm  # type: ignore
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
+from tqdm import tqdm  # type: ignore[import]
 
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import parse_h5
@@ -27,7 +29,7 @@ class DeepDriveMD_Analysis:
 
     def get_agent_h5(
         self, iterations: int = -1, fields: List[str] = []
-    ) -> List[Dict[str, npt.ArrayLike]]:
+    ) -> List[Dict[str, "npt.ArrayLike"]]:
         if iterations == -1:
             iterations = self.api.get_total_iterations()
         stage_dirs = [

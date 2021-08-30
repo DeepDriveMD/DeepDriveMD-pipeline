@@ -3,10 +3,12 @@
 import random
 import shutil
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
-import h5py  # type: ignore
-import numpy.typing as npt
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
+import h5py  # type: ignore[import]
 
 from deepdrivemd.utils import PathLike
 
@@ -144,7 +146,7 @@ def get_virtual_h5_file(
     return virtual_h5_file, h5_files
 
 
-def parse_h5(path: PathLike, fields: List[str]) -> Dict[str, npt.ArrayLike]:
+def parse_h5(path: PathLike, fields: List[str]) -> Dict[str, "npt.ArrayLike"]:
     """Helper function for accessing data fields in a HDF5 file.
 
     Parameters
