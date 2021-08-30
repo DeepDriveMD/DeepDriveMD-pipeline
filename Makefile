@@ -25,7 +25,7 @@ lint:
 .PHONY: mypy
 mypy:
 	mypy --config-file setup.cfg --package deepdrivemd
-	mypy --config-file setup.cfg test/
+	# mypy --config-file setup.cfg test/
 
 .PHONY: all
 all: format lint mypy
