@@ -98,14 +98,12 @@ class BaseStageConfig(BaseSettings):
 
 
 class MolecularDynamicsTaskConfig(BaseTaskConfig):
-    """
-    Auto-generates configuration file for run_openmm.py
-    """
+    """Auto-generates configuration file for MD tasks."""
 
     # PDB file used to start MD run (set by DeepDriveMD)
     pdb_file: Optional[Path] = Path("set_by_deepdrivemd")
     # Initial data directory passed containing PDBs and optional topologies
-    initial_pdb_dir: Path = Path(".").resolve()
+    initial_pdb_dir: Path
 
     @validator("initial_pdb_dir")
     def initial_pdb_dir_must_exist_with_valid_pdbs(cls, v: Path) -> Path:
@@ -114,18 +112,18 @@ class MolecularDynamicsTaskConfig(BaseTaskConfig):
         if not v.is_absolute():
             raise ValueError(f"initial_pdb_dir must be an absolute path. Not {v}")
         if any("__" in p.as_posix() for p in v.glob("*/*.pdb")):
-            raise ValueError("Initial PDB files cannot contain a double underscore __")
+            raise ValueError(
+                f"Initial PDB files in {v} cannot contain a double underscore __"
+            )
         return v
 
 
 class MolecularDynamicsStageConfig(BaseStageConfig):
-    """
-    Global MD configuration (written one per experiment)
-    """
+    """Global MD configuration (written one per experiment)."""
 
     num_tasks: int = 1
     # Arbitrary task parameters
-    task_config: MolecularDynamicsTaskConfig = MolecularDynamicsTaskConfig()
+    task_config: MolecularDynamicsTaskConfig
 
 
 class AggregationTaskConfig(BaseTaskConfig):
@@ -133,14 +131,12 @@ class AggregationTaskConfig(BaseTaskConfig):
 
 
 class AggregationStageConfig(BaseStageConfig):
-    """
-    Global aggregation configuration (written one per experiment)
-    """
+    """Global aggregation configuration (written one per experiment)."""
 
     # Whether or not to skip aggregation stage
     skip_aggregation: bool = False
     # Arbitrary task parameters
-    task_config: AggregationTaskConfig = AggregationTaskConfig()
+    task_config: AggregationTaskConfig
 
 
 class MachineLearningTaskConfig(BaseTaskConfig):
@@ -148,19 +144,17 @@ class MachineLearningTaskConfig(BaseTaskConfig):
 
     # Model ID for file naming (set by DeepDriveMD)
     model_tag: str = "set_by_deepdrivemd"
-    # Model checkpoint file to load initial model weights from. Saved as .pt by CheckpointCallback.
-    init_weights_path: Optional[Path]
+    # Model checkpoint file to load initial model weights from.
+    init_weights_path: Optional[Path] = None
 
 
 class MachineLearningStageConfig(BaseStageConfig):
-    """
-    Global ML configuration (written one per experiment)
-    """
+    """Global ML configuration (written one per experiment)."""
 
     # Retrain every i deepdrivemd iterations
     retrain_freq: int = 1
     # Arbitrary task parameters
-    task_config: MachineLearningTaskConfig = MachineLearningTaskConfig()
+    task_config: MachineLearningTaskConfig
 
 
 class ModelSelectionTaskConfig(BaseTaskConfig):
@@ -168,12 +162,10 @@ class ModelSelectionTaskConfig(BaseTaskConfig):
 
 
 class ModelSelectionStageConfig(BaseStageConfig):
-    """
-    Global ML configuration (written one per experiment)
-    """
+    """Global ML configuration (written one per experiment)."""
 
     # Arbitrary task parameters
-    task_config: ModelSelectionTaskConfig = ModelSelectionTaskConfig()
+    task_config: ModelSelectionTaskConfig
 
 
 class AgentTaskConfig(BaseTaskConfig):
@@ -181,18 +173,14 @@ class AgentTaskConfig(BaseTaskConfig):
 
 
 class AgentStageConfig(BaseStageConfig):
-    """
-    Global agent configuration (written one per experiment)
-    """
+    """Global agent configuration (written one per experiment)."""
 
     # Arbitrary job parameters
-    task_config: AgentTaskConfig = AgentTaskConfig()
+    task_config: AgentTaskConfig
 
 
 class ExperimentConfig(BaseSettings):
-    """
-    Master configuration
-    """
+    """Main configuration."""
 
     title: str
     resource: str
@@ -235,11 +223,17 @@ def generate_sample_config() -> ExperimentConfig:
         max_iteration=4,
         experiment_directory="/path/to/experiment",
         node_local_path=None,
-        molecular_dynamics_stage=MolecularDynamicsStageConfig(),
-        aggregation_stage=AggregationStageConfig(),
-        machine_learning_stage=MachineLearningStageConfig(),
-        model_selection_stage=ModelSelectionStageConfig(),
-        agent_stage=AgentStageConfig(),
+        molecular_dynamics_stage=MolecularDynamicsStageConfig(
+            task_config=MolecularDynamicsTaskConfig(initial_pdb_dir=Path().resolve())
+        ),
+        aggregation_stage=AggregationStageConfig(task_config=AggregationTaskConfig()),
+        machine_learning_stage=MachineLearningStageConfig(
+            task_config=MachineLearningTaskConfig()
+        ),
+        model_selection_stage=ModelSelectionStageConfig(
+            task_config=ModelSelectionTaskConfig()
+        ),
+        agent_stage=AgentStageConfig(task_config=AgentTaskConfig()),
     )
 
 
