@@ -41,13 +41,6 @@ conda install scipy (this step is needed if a failure of installing scipy is obs
 pip install -e .
 ```
 
-Then, install pre-commit hooks: this will auto-format and auto-lint _on commit_ to enforce consistent code style:
-
-```
-pre-commit install
-pre-commit autoupdate
-```
-
 2. Install OpenMM:
 
 - by source code (for Linux ppc64le, e.g., Summit)
@@ -134,3 +127,13 @@ data/sys2:
 comp.pdb comp.top
 ```
 Where the topology files are optional and only used when `molecular_dynamics_stage.task_config.solvent_type` is "explicit". Only one system directory is needed but an arbitrary number are supported. Also note that the system directory names are arbitrary. The path to the `data` directory should be passed into the config via `molecular_dynamics_stage.initial_pdb_dir`.
+
+## Contributing
+
+Please report **bugs**, **feature requests**, or **questions** through the [Issue Tracker](https://github.com/DeepDriveMD/DeepDriveMD-pipeline/issues).
+
+If you are looking to contribute, please see [`CONTRIBUTING.md`](https://github.com/DeepDriveMD/DeepDriveMD-pipeline/blob/main/CONTRIBUTING.md).
+
+## License
+
+DeepDriveMD has a MIT license, as seen in the [LICENSE](https://github.com/DeepDriveMD/DeepDriveMD-pipeline/blob/main/LICENSE.md) file.

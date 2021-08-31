@@ -1,4 +1,5 @@
 from typing import List, Tuple
+
 from deepdrivemd.config import MachineLearningTaskConfig
 
 
@@ -10,9 +11,9 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     # Name of the dataset in the HDF5 file.
     dataset_name: str = "contact_map"
     # Shape of contact maps stored in HDF5 file
-    initial_shape: Tuple[int, ...] = (28, 28, 1)
+    initial_shape: Tuple[int, int] = (28, 28)
     # Shape of contact maps passed to CVAE
-    final_shape: Tuple[int, ...] = (28, 28, 1)
+    final_shape: Tuple[int, int, int] = (28, 28, 1)
     # Number of epochs to train during first iteration
     initial_epochs: int = 10
     # Number of epochs to train on later iterations

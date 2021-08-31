@@ -1,5 +1,7 @@
-from typing import Optional
+from typing import Any, Dict, Optional
+
 from pydantic import root_validator, validator
+
 from deepdrivemd.config import AgentTaskConfig
 
 
@@ -29,9 +31,9 @@ class OutlierDetectionConfig(AgentTaskConfig):
     inference_batch_size: int = 128
 
     @root_validator()
-    def num_outliers_check(cls, values: dict):
-        num_intrinsic_outliers = values.get("num_intrinsic_outliers")
-        num_extrinsic_outliers = values.get("num_extrinsic_outliers")
+    def num_outliers_check(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        num_intrinsic_outliers = values["num_intrinsic_outliers"]
+        num_extrinsic_outliers = values["num_extrinsic_outliers"]
         if num_extrinsic_outliers > num_intrinsic_outliers:
             raise ValueError(
                 "num_extrinsic_outliers must be less than or equal to num_intrinsic_outliers"
@@ -39,7 +41,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
         return values
 
     @root_validator()
-    def scoring_method_check(cls, values: dict):
+    def scoring_method_check(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         intrinsic_score = values.get("intrinsic_score")
         extrinsic_score = values.get("extrinsic_score")
         valid_intrinsic_scores = {"lof", "dbscan", None}
@@ -57,7 +59,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
         return values
 
     @validator("model_type")
-    def model_type_check(cls, v):
+    def model_type_check(cls, v: str) -> str:
         valid_model_types = {"AAE3d", "keras_cvae"}
         if v not in valid_model_types:
             raise ValueError(f"model_type must be one of {valid_model_types}, not {v}.")
