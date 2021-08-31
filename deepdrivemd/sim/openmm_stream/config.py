@@ -1,7 +1,9 @@
 from enum import Enum
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
+
 from pydantic import root_validator
+
 from deepdrivemd.config import MolecularDynamicsTaskConfig
 
 

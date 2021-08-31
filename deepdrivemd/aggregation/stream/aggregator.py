@@ -1,18 +1,20 @@
-import numpy as np
-from deepdrivemd.aggregation.stream.config import StreamAggregation
-from deepdrivemd.utils import Timer, timer, parse_args, intarray2hash
-import time
-import os
-import sys
-import adios2
+import itertools
 import math
+import os
 import queue
 import subprocess
-import itertools
-from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
-from typing import List, Dict, Tuple
+import sys
+import time
 from pathlib import Path
+from typing import Dict, List, Tuple
+
+import adios2
+import numpy as np
+
+from deepdrivemd.aggregation.stream.config import StreamAggregation
+from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
 from deepdrivemd.data.stream.enumerations import DataStructure
+from deepdrivemd.utils import Timer, intarray2hash, parse_args, timer
 
 
 def find_input(cfg: StreamAggregation) -> List[str]:

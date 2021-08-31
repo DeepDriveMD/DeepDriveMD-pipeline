@@ -7,12 +7,12 @@ if TYPE_CHECKING:
     import numpy.typing as npt
 
 import numpy as np
+
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
 from deepdrivemd.models.keras_cvae.config import KerasCVAEModelConfig
-
-from deepdrivemd.models.keras_cvae.utils import sparse_to_dense
 from deepdrivemd.models.keras_cvae.model import CVAE
+from deepdrivemd.models.keras_cvae.utils import sparse_to_dense
 from deepdrivemd.selection.latest.select_model import get_model_path
 from deepdrivemd.utils import Timer, parse_args
 

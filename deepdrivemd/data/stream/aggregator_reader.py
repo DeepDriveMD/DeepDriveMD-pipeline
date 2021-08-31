@@ -1,10 +1,12 @@
-import adios2
-import numpy as np
-from deepdrivemd.utils import t1Dto2D
 from pathlib import Path
 from typing import List
+
+import adios2
+import numpy as np
+
 from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
 from deepdrivemd.data.stream.enumerations import DataStructure
+from deepdrivemd.utils import t1Dto2D
 
 
 class StreamVariable:

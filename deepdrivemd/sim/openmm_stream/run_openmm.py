@@ -1,22 +1,24 @@
+import itertools
+import os
+import pickle
+import random
 import shutil
-import simtk.unit as u
+import subprocess
+import sys
+import time
+from typing import Tuple
+
+import numpy as np
+import parmed as pmd
 import simtk.openmm as omm
+import simtk.unit as u
+from lockfile import LockFile
 from mdtools.openmm.sim import configure_simulation
-from deepdrivemd.utils import Timer, parse_args
+
+from deepdrivemd.sim.openmm.run_openmm import SimulationContext
 from deepdrivemd.sim.openmm_stream.config import OpenMMConfig
 from deepdrivemd.sim.openmm_stream.openmm_reporter import ContactMapReporter
-import sys
-import os
-import time
-import random
-from lockfile import LockFile
-import pickle
-import parmed as pmd
-import numpy as np
-import subprocess
-import itertools
-from deepdrivemd.sim.openmm.run_openmm import SimulationContext
-from typing import Tuple
+from deepdrivemd.utils import Timer, parse_args
 
 
 def configure_reporters(

@@ -1,38 +1,35 @@
-import random
-import numpy as np
-import glob
-import subprocess
-import time
-import sys
-import os
 import argparse
+import glob
 import itertools
-from typing import List, Tuple
-from numba import cuda
-from pathlib import Path
-
-from deepdrivemd.utils import Timer, timer, t1Dto2D
-from deepdrivemd.agents.stream.config import OutlierDetectionConfig
-import tensorflow.keras.backend as K
-from deepdrivemd.data.stream.enumerations import DataStructure
-
+import os
 import pickle
-from deepdrivemd.data.stream.OutlierDB import OutlierDB
-from lockfile import LockFile
-from deepdrivemd.data.stream.aggregator_reader import (
-    Streams,
-    StreamVariable,
-    StreamContactMapVariable,
-    StreamScalarVariable,
-)
-
-import cupy as cp
-from cuml import DBSCAN as DBSCAN
-
-from deepdrivemd.models.keras_cvae.model import CVAE
-from simtk.openmm.app.pdbfile import PDBFile
+import random
+import subprocess
+import sys
+import time
+from pathlib import Path
+from typing import List, Tuple
 
 import adios2
+import cupy as cp
+import numpy as np
+import tensorflow.keras.backend as K
+from cuml import DBSCAN as DBSCAN
+from lockfile import LockFile
+from numba import cuda
+from simtk.openmm.app.pdbfile import PDBFile
+
+from deepdrivemd.agents.stream.config import OutlierDetectionConfig
+from deepdrivemd.data.stream.aggregator_reader import (
+    StreamContactMapVariable,
+    Streams,
+    StreamScalarVariable,
+    StreamVariable,
+)
+from deepdrivemd.data.stream.enumerations import DataStructure
+from deepdrivemd.data.stream.OutlierDB import OutlierDB
+from deepdrivemd.models.keras_cvae.model import CVAE
+from deepdrivemd.utils import Timer, t1Dto2D, timer
 
 
 def clear_gpu():

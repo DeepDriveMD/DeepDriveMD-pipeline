@@ -1,6 +1,7 @@
-from typing import List, Tuple
-from deepdrivemd.config import AgentTaskConfig
 from pathlib import Path
+from typing import List, Tuple
+
+from deepdrivemd.config import AgentTaskConfig
 
 
 class OutlierDetectionConfig(AgentTaskConfig):

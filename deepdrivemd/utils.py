@@ -1,12 +1,13 @@
+import argparse
+import math
 import sys
 import time
 from inspect import Traceback, currentframe, getframeinfo
 from pathlib import Path
 from types import TracebackType
 from typing import TYPE_CHECKING, Any, Optional, Tuple, Type, Union
+
 import numpy as np
-import math
-import argparse
 
 if TYPE_CHECKING:
     import numpy.typing as npt

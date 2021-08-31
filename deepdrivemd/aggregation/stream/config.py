@@ -1,5 +1,6 @@
-from deepdrivemd.config import AggregationTaskConfig
 from pathlib import Path
+
+from deepdrivemd.config import AggregationTaskConfig
 
 
 class StreamAggregation(AggregationTaskConfig):

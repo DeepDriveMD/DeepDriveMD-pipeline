@@ -1,13 +1,14 @@
-import simtk.unit as u
+import hashlib
 import os
-from MDAnalysis.analysis import distances, rms
-import MDAnalysis
-import numpy as np
-from deepdrivemd.utils import t2Dto1D, hash2intarray
 from typing import Dict
 
 import adios2
-import hashlib
+import MDAnalysis
+import numpy as np
+import simtk.unit as u
+from MDAnalysis.analysis import distances, rms
+
+from deepdrivemd.utils import hash2intarray, t2Dto1D
 
 
 class ContactMapReporter(object):

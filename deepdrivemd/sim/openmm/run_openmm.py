@@ -1,6 +1,7 @@
 import shutil
 from pathlib import Path
 from typing import Optional
+
 import simtk.openmm as omm  # type: ignore[import]
 import simtk.openmm.app as app  # type: ignore[import]
 import simtk.unit as u  # type: ignore[import]

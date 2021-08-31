@@ -1,19 +1,18 @@
-import time
-import numpy as np
-from deepdrivemd.utils import Timer, timer, parse_args
-from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
-from deepdrivemd.models.keras_cvae.model import CVAE
-import subprocess
 import glob
-from deepdrivemd.data.stream.aggregator_reader import (
-    Streams,
-    StreamContactMapVariable,
-)
-import os
-import sys
 import itertools
+import os
+import subprocess
+import sys
+import time
 from typing import List, Tuple
+
+import numpy as np
+
+from deepdrivemd.data.stream.aggregator_reader import StreamContactMapVariable, Streams
 from deepdrivemd.data.stream.enumerations import DataStructure
+from deepdrivemd.models.keras_cvae.model import CVAE
+from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
+from deepdrivemd.utils import Timer, parse_args, timer
 
 
 def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:

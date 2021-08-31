@@ -315,7 +315,7 @@ class CVAE:
         sample: "npt.ArrayLike" = z_mean + K.exp(z_log_var) * epsilon
         return sample
 
-    def _vae_loss1(
+    def _vae_loss(
         self, input: "npt.ArrayLike", output: "npt.ArrayLike"
     ) -> "npt.ArrayLike":
         """Compute reconstruction loss.
