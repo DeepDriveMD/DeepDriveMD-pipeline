@@ -4,6 +4,7 @@ Reference: "Auto-Encoding Variational Bayes" (https://arxiv.org/abs/1312.6114)
 """
 
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from pathlib import Path
 
 if TYPE_CHECKING:
     import numpy.typing as npt
@@ -347,7 +348,7 @@ class CVAE:
         batch_size: int,
         epochs: int = 1,
         validation_data: Optional["npt.ArrayLike"] = None,
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: Optional[PathLike] = None,
     ) -> None:
         """Train network on the given :obj:`data`.
 
@@ -361,14 +362,22 @@ class CVAE:
             Number of epochs to train for.
         validation_data : Optional[npt.ArrayLike], optional
             Validation data to report validation accuracy during training.
-        checkpoint_path : Optional[str], default=None
-            If not None, saves best model :obj:`checkpoint_path/best.h5` after each epoch.
+        checkpoint_path : Optional[PathLike], default=None
+            If not None, saves best model :obj:`checkpoint_path` after each epoch.
+            :obj:`checkpoint_path` should end with the suffix :obj:`.h5`.
+
+        Raises
+        ------
+        ValueError
+            If :obj:`checkpoint_path` is not None and it does not end in :obj:`.h5`.
         """
         callbacks = [self.history]
         if checkpoint_path is not None:
+            if Path(checkpoint_path).suffix != ".h5":
+                raise ValueError("checkpoint_path must end in .h5")
             callbacks.append(
                 ModelCheckpoint(
-                    f"{checkpoint_path}/best.h5",
+                    str(checkpoint_path),
                     monitor="val_loss",
                     save_best_only=True,
                     verbose=1,
