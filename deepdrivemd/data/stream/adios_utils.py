@@ -80,13 +80,6 @@ class AdiosStreamStepRW:
                 stream.Get(getattr(self, vname), getattr(self, dname))
             elif structure_type == DataStructure.string:
                 setattr(self, dname, stream.Get(getattr(self, vname)))
-            else:
-                print(
-                    f"Bug? structure_type = {structure_type}, type(structure_type) = {type(structure_type)}"
-                )
-                import sys
-
-                sys.stdout.flush()
         stream.EndStep()
         return True
 

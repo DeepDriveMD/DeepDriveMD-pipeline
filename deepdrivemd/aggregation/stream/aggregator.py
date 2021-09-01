@@ -120,6 +120,10 @@ def aggregate(
     }
 
     if cfg.compute_rmsd:
+        print(f"cfg.compute_rmsd = {cfg.compute_rmsd}; why are we here?")
+        import sys
+
+        sys.stdout.flush()
         variablesR["rmsd"] = (np.float32, DataStructure.scalar)
         variablesW["rmsd"] = (np.float32, DataStructure.scalar)
 
@@ -141,15 +145,7 @@ def aggregate(
 
             status = ARW.read_step(sim_task_id)
             if status:
-                print(f"ARW.d_md5 = {ARW.d_md5}")
-                import sys
-
-                sys.stdout.flush()
                 ARW.d_md5 = intarray2hash(ARW.d_md5)
-                print(f"ARW.d_md5 = {ARW.d_md5}")
-                import sys
-
-                sys.stdout.flush()
                 ARW.write_step(aggregator_stream, variablesW, end_step=False)
                 aggregator_stream.write("dir", str(sim_task_id), end_step=True)
             else:

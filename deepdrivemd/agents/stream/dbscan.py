@@ -39,7 +39,6 @@ def clear_gpu():
         print("device = ", device)
         cuda.select_device(device)
         cuda.close()
-        print("Do we get here?")
         sys.stdout.flush()
     except Exception as e:
         print(e)
@@ -520,15 +519,13 @@ def main(cfg: OutlierDetectionConfig):
                 or len(outlier_list) == 0
                 or len(outlier_list[0]) < cfg.num_sim
             ):
-                print(
-                    f"Selecting {cfg.num_sim} random states out of the best {2*cfg.num_sim} ones"
-                )
+                print("Not using outliers")
                 clear_gpu()
                 if cfg.compute_rmsd:
+                    print("Using best rmsd states")
                     outlier_list = [select_best(cfg, cvae_input)]
                 else:
-                    print(f"compute_rmsd = {cfg.compute_rmsd}")
-                    sys.stdout.flush()
+                    print("Using random states")
                     outlier_list = [
                         list(
                             np.random.choice(
