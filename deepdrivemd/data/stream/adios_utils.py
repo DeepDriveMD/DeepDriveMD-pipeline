@@ -1,6 +1,6 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Type
 
-import adios2
+import adios2  # type: ignore[import]
 import numpy as np
 
 from deepdrivemd.data.stream.enumerations import DataStructure
@@ -27,7 +27,7 @@ class AdiosStreamStepRW:
         connections: Dict[
             int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]
         ],
-        variables: Dict[str, Tuple[type, DataStructure]],
+        variables: Dict[str, Tuple[Type[object], DataStructure]],
     ):
         """Constructor.
 
@@ -86,9 +86,9 @@ class AdiosStreamStepRW:
     def write_step(
         self,
         wstream: adios2.adios2.Engine,
-        variables: Dict[str, Tuple[type, DataStructure]],
+        variables: Dict[str, Tuple[Type[object], DataStructure]],
         end_step: bool = False,
-    ):
+    ) -> None:
         """Write the next step from class `d_...` variables into `wstream` adios stream.
 
         Parameters
@@ -103,11 +103,12 @@ class AdiosStreamStepRW:
              meaning that the step writing is done; otherwise, terminating the step should be done
              outside of the method
         """
-        for v in variables:
+        vv = list(variables.keys())
+        for v in vv:
             dname = "d_" + v
             structure_type = variables[v][1]
             data = getattr(self, dname)
-            end = end_step and v == variables[-1]
+            end = end_step and v == vv[-1]
 
             if structure_type == DataStructure.scalar:
                 wstream.write(v, data, end_step=end)

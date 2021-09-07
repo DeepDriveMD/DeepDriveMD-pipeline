@@ -8,16 +8,17 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
-import adios2
-import cupy as cp
+import adios2  # type: ignore
+import cupy as cp  # type: ignore
 import numpy as np
-import tensorflow.keras.backend as K
-from cuml import DBSCAN as DBSCAN
-from lockfile import LockFile
-from numba import cuda
-from simtk.openmm.app.pdbfile import PDBFile
+import numpy.typing as npt
+import tensorflow.keras.backend as K  # type: ignore
+from cuml import DBSCAN as DBSCAN  # type: ignore
+from lockfile import LockFile  # type: ignore
+from numba import cuda  # type: ignore
+from simtk.openmm.app.pdbfile import PDBFile  # type: ignore
 
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 from deepdrivemd.data.stream.aggregator_reader import (
@@ -32,7 +33,7 @@ from deepdrivemd.models.keras_cvae.model import CVAE
 from deepdrivemd.utils import Timer, t1Dto2D, timer
 
 
-def clear_gpu():
+def clear_gpu() -> None:
     K.clear_session()
     try:
         device = int(os.environ["CUDA_VISIBLE_DEVICES"])
@@ -44,9 +45,9 @@ def clear_gpu():
         print(e)
 
 
-def build_model(cfg: OutlierDetectionConfig, model_path: str):
+def build_model(cfg: OutlierDetectionConfig, model_path: str) -> CVAE:
     cvae = CVAE(
-        image_size=cfg.final_shape,
+        image_size=cfg.final_shape,  # type: ignore
         channels=cfg.final_shape[-1],
         conv_layers=cfg.conv_layers,
         feature_maps=cfg.conv_filters,
@@ -61,7 +62,7 @@ def build_model(cfg: OutlierDetectionConfig, model_path: str):
     return cvae
 
 
-def wait_for_model(cfg: OutlierDetectionConfig) -> str:
+def wait_for_model(cfg: OutlierDetectionConfig) -> Path:
     """Wait for the trained model to be published by machine learning pipeline.
 
     Returns
@@ -124,7 +125,7 @@ def wait_for_input(cfg: OutlierDetectionConfig) -> List[str]:
     return bpfiles
 
 
-def dirs(cfg: OutlierDetectionConfig) -> Tuple[str, str, str]:
+def dirs(cfg: OutlierDetectionConfig) -> Tuple[Path, Path]:
     """Create tmp_dir and published_dir into which outliers are written
     Returns
     -------
@@ -142,14 +143,14 @@ def predict(
     cfg: OutlierDetectionConfig,
     model_path: str,
     cvae_input: Tuple[
-        List[np.ndarray],
-        List[np.ndarray],
-        List[np.ndarray],
-        List[np.ndarray],
-        List[np.ndarray],
+        List[npt.ArrayLike],
+        List[npt.ArrayLike],
+        List[npt.ArrayLike],
+        List[npt.ArrayLike],
+        List[npt.ArrayLike],
     ],
     batch_size: int = 32,
-) -> np.ndarray:
+) -> npt.ArrayLike:
     """Project contact maps into the middle layer of CVAE
 
     Parameters
@@ -166,7 +167,7 @@ def predict(
     np.ndarray
         The latent space representation of the input.
     """
-    input = np.expand_dims(cvae_input[0], axis=-1)
+    input = np.expand_dims(cvae_input[0], axis=-1)  # type: ignore
 
     cfg.initial_shape = input.shape[1:3]
     cfg.final_shape = list(input.shape[1:3]) + list(np.array([1]))
@@ -180,8 +181,8 @@ def predict(
 
 
 def outliers_from_latent(
-    cm_predict: np.ndarray, eps: float = 0.35, min_samples: int = 10
-) -> np.ndarray:
+    cm_predict: npt.ArrayLike, eps: float = 0.35, min_samples: int = 10
+) -> npt.ArrayLike:
     """Cluster the elements in the middle layer of CVAE.
 
     Parameters
@@ -203,16 +204,16 @@ def outliers_from_latent(
         cm_predict
     )
     db_label = db.labels_.to_array()
-    print("unique labels = ", np.unique(db_label))
+    print("unique labels = ", np.unique(db_label))  # type: ignore
     outlier_list = np.where(db_label == -1)
     clear_gpu()
-    return outlier_list
+    return outlier_list  # type: ignore
 
 
 def cluster(
     cfg: OutlierDetectionConfig,
-    cm_predict: np.ndarray,
-    outlier_list: np.ndarray,
+    cm_predict: npt.ArrayLike,
+    outlier_list: List[List[npt.ArrayLike]],
     eps: float,
     min_samples: int,
 ) -> Tuple[float, int]:
@@ -262,7 +263,9 @@ def cluster(
     return eps, min_samples
 
 
-def write_pdb_frame(frame: np.ndarray, original_pdb: str, output_pdb_fn: str):
+def write_pdb_frame(
+    frame: npt.ArrayLike, original_pdb: str, output_pdb_fn: str
+) -> None:
     """Write positions into pdb file.
 
     Parameters
@@ -282,8 +285,8 @@ def write_pdb_frame(frame: np.ndarray, original_pdb: str, output_pdb_fn: str):
 def write_top_outliers(
     cfg: OutlierDetectionConfig,
     tmp_dir: str,
-    top: Tuple[np.ndarray, np.ndarray, np.ndarray],
-):
+    top: Tuple[npt.ArrayLike, npt.ArrayLike, npt.ArrayLike],
+) -> None:
     """Save to PDB files top outliers.
 
     Parameters
@@ -297,25 +300,28 @@ def write_top_outliers(
     """
     positions, velocities, md5s = top[:3]
 
-    for p, v, m in zip(positions, velocities, md5s):
+    for p, v, m in zip(positions, velocities, md5s):  # type: ignore
         outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
         outlier_v_file = f"{tmp_dir}/{m}.npy"
-        write_pdb_frame(p, cfg.init_pdb_file, outlier_pdb_file)
-        np.save(outlier_v_file, v)
+        write_pdb_frame(p, cfg.init_pdb_file, outlier_pdb_file)  # type: ignore
+        np.save(outlier_v_file, v)  # type: ignore
 
 
-def write_db(top: Path, tmp_dir: Path) -> OutlierDB:
+def write_db(
+    top: List[List[npt.ArrayLike]],
+    tmp_dir: Path,
+) -> OutlierDB:
     """Create and save a database of outliers to be used by simulation."""
     outlier_db_fn = f"{tmp_dir}/OutlierDB.pickle"
     outlier_files = list(map(lambda x: f"{tmp_dir}/{x}.pdb", top[2]))
     rmsds = top[3]
-    db = OutlierDB(tmp_dir, list(zip(rmsds, outlier_files)))
+    db = OutlierDB(tmp_dir, list(zip(rmsds, outlier_files)))  # type: ignore
     with open(outlier_db_fn, "wb") as f:
         pickle.dump(db, f)
     return db
 
 
-def publish(tmp_dir: Path, published_dir: Path):
+def publish(tmp_dir: Path, published_dir: Path) -> None:
     """Publish outliers and the corresponding database for simulations to pick up."""
     dbfn = f"{published_dir}/OutlierDB.pickle"
     subprocess.getstatusoutput(f"touch {dbfn}")
@@ -334,9 +340,11 @@ def publish(tmp_dir: Path, published_dir: Path):
 
 def top_outliers(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
-    outlier_list: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    cvae_input: Tuple[
+        npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike
+    ],
+    outlier_list: List[npt.ArrayLike],
+) -> List[npt.ArrayLike]:
     """
     Find top :obj:num_sim` outliers sorted by :obj:`rmsd`.
 
@@ -345,7 +353,7 @@ def top_outliers(
     cfg : OutlierDetectionConfig
     cvae_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
             steps, positions, velocities, md5sums, rmsds
-    outlier_list : np.ndarray
+    outlier_list : List[npt.ArrayLike]
             indices corresponding to outliers
 
     Returns
@@ -354,25 +362,27 @@ def top_outliers(
          Positions, velocities, md5sums, rmsds, outlier
          indices of outliers, sorted in ascending order by rmsd
     """
-    outlier_list = list(outlier_list[0])
-    positions = cvae_input[1][outlier_list]
-    velocities = cvae_input[3][outlier_list]
-    md5s = cvae_input[2][outlier_list]
-    rmsds = cvae_input[4][outlier_list]
+    outlier_list1 = list(outlier_list[0])  # type: ignore
+    positions = cvae_input[1][outlier_list1]  # type: ignore
+    velocities = cvae_input[3][outlier_list1]  # type: ignore
+    md5s = cvae_input[2][outlier_list1]  # type: ignore
+    rmsds = cvae_input[4][outlier_list1]  # type: ignore
 
-    z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
-    z.sort(key=lambda x: x[3])
+    z = list(zip(positions, velocities, md5s, rmsds, outlier_list1))
+    z.sort(key=lambda x: x[3])  # type: ignore
     z = z[: cfg.num_sim]
-    z = list(zip(*z))
+    z1 = list(zip(*z))
 
-    return z
+    return z1
 
 
 def random_outliers(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
-    outlier_list: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    cvae_input: Tuple[
+        npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike
+    ],
+    outlier_list: List[npt.ArrayLike],
+) -> List[npt.ArrayLike]:
     """
     Find :obj:`num_sim` outliers in a random order. Can be used in the absense of :obj:`rmsd`.
 
@@ -390,12 +400,12 @@ def random_outliers(
          Positions, velocities, md5sums, rmsds, outlier
          indices of outliers in a random order.
     """
-    outlier_list = list(outlier_list[0])
-    positions = cvae_input[1][outlier_list]
-    velocities = cvae_input[3][outlier_list]
-    md5s = cvae_input[2][outlier_list]
+    outlier_list = list(outlier_list[0])  # type: ignore
+    positions = cvae_input[1][outlier_list]  # type: ignore
+    velocities = cvae_input[3][outlier_list]  # type: ignore
+    md5s = cvae_input[2][outlier_list]  # type: ignore
     if cfg.compute_rmsd:
-        rmsds = cvae_input[4][outlier_list]
+        rmsds = cvae_input[4][outlier_list]  # type: ignore
     else:
         rmsds = np.array([-1.0] * len(outlier_list))
 
@@ -404,14 +414,20 @@ def random_outliers(
     np.random.shuffle(indices)
     indices = indices[: cfg.num_sim]
     z = [z[i] for i in indices]
-    z = list(zip(*z))
+    z1 = list(zip(*z))
 
-    return z
+    return z1
 
 
 def select_best_random(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    cvae_input: Tuple[
+        List[npt.ArrayLike],
+        List[npt.ArrayLike],
+        List[npt.ArrayLike],
+        List[npt.ArrayLike],
+        List[npt.ArrayLike],
+    ],
 ) -> List[int]:
     """Sort cvae_input by rmsd, selects :obj:`2*cfg.num_sim` best entries, out of them
     randomly select :obj:`cfg.num_sim`, return the corresponding indices.
@@ -433,7 +449,7 @@ def select_best_random(
     This is used when no outliers are found.
     """
     rmsds = cvae_input[4]
-    z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])
+    z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])  # type: ignore
     sorted_index = list(map(lambda x: x[1], z))[2 * cfg.num_sim :]
     sorted_index = random.sample(sorted_index, cfg.num_sim)
     return sorted_index
@@ -441,7 +457,9 @@ def select_best_random(
 
 def select_best(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    cvae_input: Tuple[
+        npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike
+    ],
 ) -> List[int]:
     """Sort cvae_input by rmsd, selects best :obj:`cfg.num_sim`, return
     the corresponding indices.
@@ -459,12 +477,12 @@ def select_best(
         :obj:`lastN` from each aggregator.
     """
     rmsds = cvae_input[4]
-    z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])
+    z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])  # type: ignore
     sorted_index = list(map(lambda x: x[1], z))[cfg.num_sim :]
     return sorted_index
 
 
-def main(cfg: OutlierDetectionConfig):
+def main(cfg: OutlierDetectionConfig) -> None:
     print(subprocess.getstatusoutput("hostname")[1])
     sys.stdout.flush()
 
@@ -509,9 +527,9 @@ def main(cfg: OutlierDetectionConfig):
             cvae_input = mystreams.next()
 
         with Timer("outlier_predict"):
-            cm_predict = predict(cfg, model_path, cvae_input)
+            cm_predict = predict(cfg, model_path, cvae_input)  # type: ignore
 
-        outlier_list = []
+        outlier_list = []  # type: ignore
         with Timer("outlier_cluster"):
             eps, min_samples = cluster(cfg, cm_predict, outlier_list, eps, min_samples)
             if (
@@ -561,7 +579,7 @@ def main(cfg: OutlierDetectionConfig):
 
 def read_lastN(
     adios_files_list: List[str], lastN: int
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[List[npt.ArrayLike], npt.ArrayLike]:
     """Read :obj:`lastN` steps from each aggregated file. Used by :obj:`project()`
 
     Parameters
@@ -577,7 +595,7 @@ def read_lastN(
         :obj:`lastN` contact maps from each aggregated file and
         :obj:`lastN` corresponding rmsds.
     """
-    variable_lists = {}
+    variable_lists: Dict[str, List[npt.ArrayLike]] = {}
     for bp in adios_files_list:
         with adios2.open(bp, "r") as fh:
             steps = fh.steps()
@@ -629,15 +647,15 @@ def read_lastN(
     print(variable_lists["contact_map"].shape)
     print(variable_lists["rmsd"].shape)
     sys.stdout.flush()
-    return variable_lists["contact_map"], np.concatenate(variable_lists["rmsd"])
+    return variable_lists["contact_map"], np.concatenate(variable_lists["rmsd"])  # type: ignore
 
 
-def project(cfg: OutlierDetectionConfig):
+def project(cfg: OutlierDetectionConfig) -> None:
     """Postproduction: compute t-SNE embeddings."""
     if cfg.project_gpu:
         from cuml import TSNE
     else:
-        from sklearn.manifold import TSNE
+        from sklearn.manifold import TSNE  # type: ignore
 
     with Timer("wait_for_input"):
         adios_files_list = wait_for_input(cfg)
@@ -656,27 +674,27 @@ def project(cfg: OutlierDetectionConfig):
     rmsds = cvae_input[1]
 
     with open(cfg.output_path / "rmsd.npy", "wb") as f:
-        np.save(f, rmsds)
+        np.save(f, rmsds)  # type: ignore
 
     with Timer("project_predict"):
         embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=1024)
 
     with open(cfg.output_path / "embeddings_cvae.npy", "wb") as f:
-        np.save(f, embeddings_cvae)
+        np.save(f, embeddings_cvae)  # type: ignore
 
     with Timer("project_TSNE_2D"):
         tsne2 = TSNE(n_components=2)
         tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
 
     with open(cfg.output_path / "tsne_embeddings_2.npy", "wb") as f:
-        np.save(f, tsne_embeddings2)
+        np.save(f, tsne_embeddings2)  # type: ignore
 
     with Timer("project_TSNE_3D"):
         tsne3 = TSNE(n_components=3)
         tsne_embeddings3 = tsne3.fit_transform(embeddings_cvae)
 
     with open(cfg.output_path / "tsne_embeddings_3.npy", "wb") as f:
-        np.save(f, tsne_embeddings3)
+        np.save(f, tsne_embeddings3)  # type: ignore
 
 
 def parse_args() -> argparse.Namespace:

@@ -3,8 +3,8 @@ Convolutional variational autoencoder in Keras
 Reference: "Auto-Encoding Variational Bayes" (https://arxiv.org/abs/1312.6114)
 """
 
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 from pathlib import Path
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 if TYPE_CHECKING:
     import numpy.typing as npt

@@ -5,10 +5,11 @@ import queue
 import subprocess
 import sys
 import time
-from pathlib import Path
+
+# from pathlib import Path
 from typing import Dict, List, Tuple
 
-import adios2
+import adios2  # type: ignore
 import numpy as np
 
 from deepdrivemd.aggregation.stream.config import StreamAggregation
@@ -41,14 +42,14 @@ def find_input(cfg: StreamAggregation) -> List[str]:
 
 
 def connect_to_input(
-    cfg: StreamAggregation, bpfiles: List[Path]
+    cfg: StreamAggregation, bpfiles: List[str]
 ) -> Dict[int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]]:
     """Open adios streams for reading.
 
     Parameters
     ----------
     cfg : StreamAggregation
-    bpfiles : List[Path]
+    bpfiles : List[str]
 
     Returns
     -------
@@ -85,7 +86,7 @@ def aggregate(
         int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]
     ],
     aggregator_stream: adios2.adios2.Engine,
-):
+) -> None:
     """Read adios streams from a subset of simulations handled by this
     aggregator and write them to adios file to be used by machine learning and outlier search.
 
@@ -134,7 +135,7 @@ def aggregate(
         timer("aggregator_iteration", 1)
         print("iteration = ", iteration)
 
-        q = queue.Queue()
+        q: queue.Queue[int] = queue.Queue()
         for s in connections.keys():
             q.put(s)
 
@@ -145,7 +146,7 @@ def aggregate(
 
             status = ARW.read_step(sim_task_id)
             if status:
-                ARW.d_md5 = intarray2hash(ARW.d_md5)
+                ARW.d_md5 = intarray2hash(ARW.d_md5)  # type: ignore
                 ARW.write_step(aggregator_stream, variablesW, end_step=False)
                 aggregator_stream.write("dir", str(sim_task_id), end_step=True)
             else:

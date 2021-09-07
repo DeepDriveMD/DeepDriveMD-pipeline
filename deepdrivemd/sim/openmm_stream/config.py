@@ -1,7 +1,8 @@
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
+from lockfile import LockFile  # type: ignore
 from pydantic import root_validator
 
 from deepdrivemd.config import MolecularDynamicsTaskConfig
@@ -30,11 +31,11 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     # Read outlier trajectory into memory while writing PDB file - not used but is in run*.py, should be cleaned out from there
     in_memory: bool = True
     # Name of bp "socket" file in simulation directory (.sst is added by adios)
-    bp_file: Path = "md.bp"
+    bp_file: Path = Path("md.bp")
     # adios file name copied into the simulation directory
-    adios_cfg: Path = "adios.xml"
+    adios_cfg: Path = Path("adios.xml")
     # a template file for a simulation adios file (stream name should be replaced to be unique for each simulation)
-    adios_xml_sim: Path = "adios.xml"
+    adios_xml_sim: Path = Path("adios.xml")
     # a directory with initial pdb files
     initial_pdb_dir: Path = Path()
     # should rmsd be computed or there is no reference pdb
@@ -49,9 +50,12 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     copy_velocities_p: float = 0.5
     # simulation directory
     current_dir: Path = Path()
+    lock: LockFile = None
 
     @root_validator()
-    def explicit_solvent_requires_top_suffix(cls, values: dict):
+    def explicit_solvent_requires_top_suffix(
+        cls, values: Dict[str, str]
+    ) -> Dict[str, str]:
         top_suffix = values.get("top_suffix")
         solvent_type = values.get("solvent_type")
         if solvent_type == "explicit" and top_suffix is None:

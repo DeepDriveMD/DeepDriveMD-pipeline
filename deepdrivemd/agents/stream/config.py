@@ -58,7 +58,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     # initial value for min_samples for dbscan
     init_min_samples: int = 10
     # adios xml configuration file for aggregated data
-    adios_xml_agg: Path = ""
+    adios_xml_agg: Path = Path()
     # batch file for reading data from adios file
     read_batch: int = 10000
     # use rapids version of TSNE or scikit-learn version in postproduction when computing embeddings
@@ -70,6 +70,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     use_random_outliers: bool = False
     compute_rmsd: bool = True
     final_shape: List[int] = [28, 28, 1]
+    initial_shape: List[int] = [28, 28, 1]
 
 
 if __name__ == "__main__":

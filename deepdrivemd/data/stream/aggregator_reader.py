@@ -1,8 +1,9 @@
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
-import adios2
+import adios2  # type: ignore[import]
 import numpy as np
+import numpy.typing as npt
 
 from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
 from deepdrivemd.data.stream.enumerations import DataStructure
@@ -39,9 +40,9 @@ class StreamVariable:
         self.name = name
         self.dtype = dtype
         self.structure = structure
-        self.total = []
+        self.total: List[npt.ArrayLike] = []
 
-    def next(self, ARW: AdiosStreamStepRW):
+    def next(self, ARW: AdiosStreamStepRW) -> None:
         """Get the variable value for the next time step and append it to `total`.
 
         Parameters
@@ -60,7 +61,7 @@ class StreamContactMapVariable(StreamVariable):
     unpack bits to 1D array, convert 1D array to 2D array.
     """
 
-    def next(self, ARW):
+    def next(self, ARW: AdiosStreamStepRW) -> None:
         var = getattr(ARW, "d_" + self.name)
         var = np.unpackbits(var)
         var = t1Dto2D(var)
@@ -70,7 +71,7 @@ class StreamContactMapVariable(StreamVariable):
 class StreamScalarVariable(StreamVariable):
     """Implementation of `StreamVariable` that handles scalar variables."""
 
-    def next(self, ARW):
+    def next(self, ARW: AdiosStreamStepRW) -> None:
         var = getattr(ARW, "d_" + self.name)
         self.total.append(var[0])
 
@@ -105,13 +106,13 @@ class AdiosReader:
         self.variables = variables
         self.connections = {0: (self.adios, self.io, self.stream)}
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Destructor: clean the adios resources"""
         self.stream.Close()
         self.io.RemoveAllVariables()
         self.adios.RemoveAllIOs()
 
-    def next(self, N: int) -> List:
+    def next(self, N: int) -> List[Any]:
         """Read the next `N` steps of all variables.
 
         Parameters
@@ -139,7 +140,7 @@ class AdiosReader:
                 break
             for v in self.variables:
                 v.next(ARW)
-        output = [i]
+        output: List[Any] = [i]
         for v in self.variables:
             output.append(v.total.copy())
 
@@ -213,7 +214,7 @@ class Streams:
 
     def next(
         self,
-    ) -> List:
+    ) -> List[List[npt.ArrayLike]]:
         """Provide `lastN` steps from each aggregator
 
         Returns
@@ -244,13 +245,13 @@ class Streams:
                     cache = getattr(self, cname)
                     cache[fn] = cache[fn][-remain:] + nextbatch[j + 1]
 
-        output = []
+        output: List[Any] = []
         print(f"vnames = {self.vnames}")
         for v in self.vnames:
             cname = "c_" + v
             cache = getattr(self, cname)
             output.append(
-                np.concatenate(list(cache.values()))
+                np.concatenate(list(cache.values()))  # type: ignore
             )  # is it in the same order accross variables?
 
         return output

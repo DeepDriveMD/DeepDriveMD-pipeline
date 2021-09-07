@@ -95,6 +95,7 @@ class BaseStageConfig(BaseSettings):
     arguments: List[str] = []
     cpu_reqs: CPUReqs = CPUReqs()
     gpu_reqs: GPUReqs = GPUReqs()
+    num_tasks: int
 
 
 class MolecularDynamicsTaskConfig(BaseTaskConfig):
@@ -104,6 +105,7 @@ class MolecularDynamicsTaskConfig(BaseTaskConfig):
     pdb_file: Optional[Path] = Path("set_by_deepdrivemd")
     # Initial data directory passed containing PDBs and optional topologies
     initial_pdb_dir: Path
+    adios_xml_sim: Path
 
     @validator("initial_pdb_dir")
     def initial_pdb_dir_must_exist_with_valid_pdbs(cls, v: Path) -> Path:
@@ -129,6 +131,8 @@ class MolecularDynamicsStageConfig(BaseStageConfig):
 class AggregationTaskConfig(BaseTaskConfig):
     """Base class for specific aggregation configs to inherit."""
 
+    adios_xml_agg: Path
+
 
 class AggregationStageConfig(BaseStageConfig):
     """Global aggregation configuration (written one per experiment)."""
@@ -150,6 +154,7 @@ class MachineLearningTaskConfig(BaseTaskConfig):
     model_tag: str = "set_by_deepdrivemd"
     # Model checkpoint file to load initial model weights from.
     init_weights_path: Optional[Path] = None
+    adios_xml_agg: Path
 
 
 class MachineLearningStageConfig(BaseStageConfig):
@@ -178,6 +183,8 @@ class ModelSelectionStageConfig(BaseStageConfig):
 
 class AgentTaskConfig(BaseTaskConfig):
     """Base class for specific agent configs to inherit."""
+
+    adios_xml_agg: Path
 
 
 class AgentStageConfig(BaseStageConfig):
@@ -240,6 +247,7 @@ class StreamingExperimentConfig(DeepDriveMDConfig):
     aggregation_stage: StreamingAggregationStageConfig
     machine_learning_stage: StreamingMachineLearningStageConfig
     agent_stage: StreamingAgentStageConfig
+    molecular_dynamics_stage: MolecularDynamicsStageConfig
 
 
 def generate_sample_config() -> ExperimentConfig:

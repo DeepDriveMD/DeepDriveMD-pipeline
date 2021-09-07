@@ -6,7 +6,8 @@ from deepdrivemd.config import MachineLearningTaskConfig
 
 class KerasCVAEModelConfig(MachineLearningTaskConfig):
     # Shape of contact maps passed to CVAE
-    final_shape: Tuple[int, ...] = (28, 28, 1)
+    final_shape: List[int] = [28, 28, 1]
+    initial_shape: List[int] = [28, 28, 1]
     # Number of epochs
     epochs: int = 10
     # Training batch size

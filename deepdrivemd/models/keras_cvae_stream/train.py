@@ -7,6 +7,7 @@ import time
 from typing import List, Tuple
 
 import numpy as np
+import numpy.typing as npt
 
 from deepdrivemd.data.stream.aggregator_reader import StreamContactMapVariable, Streams
 from deepdrivemd.data.stream.enumerations import DataStructure
@@ -64,7 +65,7 @@ def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
 
 def next_input(
     cfg: KerasCVAEModelConfig, streams: Streams
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[List[npt.ArrayLike], List[npt.ArrayLike]]:
     """Read the next batch of contact maps from aggregated files.
 
     Returns
@@ -75,25 +76,25 @@ def next_input(
 
     with Timer("ml_read"):
         cm_data_input = streams.next()[0]
-    cm_data_input = np.expand_dims(cm_data_input, axis=-1)
+    cm_data_input = np.expand_dims(cm_data_input, axis=-1)  # type: ignore
 
-    cfg.initial_shape = cm_data_input.shape[1:3]
-    cfg.final_shape = list(cm_data_input.shape[1:3]) + [1]
+    cfg.initial_shape = cm_data_input.shape[1:3]  # type: ignore
+    cfg.final_shape = list(cm_data_input.shape[1:3]) + [1]  # type: ignore
 
     print(
-        f"in next_input: cm_data_input.shape = {cm_data_input.shape}"
+        f"in next_input: cm_data_input.shape = {cm_data_input.shape}"  # type: ignore
     )  # (2000, 28, 28, 1)
-    np.random.shuffle(cm_data_input)
+    np.random.shuffle(cm_data_input)  # type: ignore
     train_val_split = int(cfg.split_pct * len(cm_data_input))
     print(f"train_val_split = {train_val_split}")
     sys.stdout.flush()
     return cm_data_input[:train_val_split], cm_data_input[train_val_split:]
 
 
-def build_model(cfg: KerasCVAEModelConfig):
+def build_model(cfg: KerasCVAEModelConfig) -> CVAE:
     with Timer("ml_conv_variational_autoencoder"):
         cvae = CVAE(
-            image_size=cfg.final_shape,
+            image_size=cfg.final_shape,  # type: ignore
             channels=cfg.final_shape[-1],
             conv_layers=cfg.conv_layers,
             feature_maps=cfg.conv_filters,
@@ -108,7 +109,7 @@ def build_model(cfg: KerasCVAEModelConfig):
     return cvae
 
 
-def main(cfg: KerasCVAEModelConfig):
+def main(cfg: KerasCVAEModelConfig) -> None:
     print(subprocess.getstatusoutput("hostname")[1])
     sys.stdout.flush()
 
@@ -141,12 +142,11 @@ def main(cfg: KerasCVAEModelConfig):
 
         with Timer("ml_train"):
             cvae.train(
-                cm_data_train,
-                validation_data=cm_data_val,
+                cm_data_train,  # type: ignore
+                validation_data=cm_data_val,  # type: ignore
                 batch_size=cfg.batch_size,
                 epochs=cfg.epochs,
                 checkpoint_path=cfg.checkpoint_dir,
-                use_model_checkpoint=cfg.use_model_checkpoint,
             )
 
         loss = cvae.history.val_losses[-1]

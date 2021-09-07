@@ -4,8 +4,8 @@ import shutil
 from pathlib import Path
 from typing import List
 
-import radical.utils as ru
-from radical.entk import AppManager, Pipeline, Stage, Task
+import radical.utils as ru  # type: ignore
+from radical.entk import AppManager, Pipeline, Stage, Task  # type: ignore
 
 from deepdrivemd.config import BaseStageConfig, StreamingExperimentConfig
 from deepdrivemd.data.api import DeepDriveMD_API
@@ -33,7 +33,7 @@ class PipelineManager:
     MACHINE_LEARNING_PIPELINE_NAME = "MachineLearningPipeline"
     AGENT_PIPELINE_NAME = "AgentPipeline"
 
-    def __init__(self, cfg: StreamingExperimentConfig):
+    def __init__(self, cfg: StreamingExperimentConfig) -> None:
         self.cfg = cfg
         self.stage_idx = 0
         self.api = DeepDriveMD_API(cfg.experiment_directory)
@@ -60,7 +60,7 @@ class PipelineManager:
 
         self._init_experiment_dir()
 
-    def _init_experiment_dir(self):
+    def _init_experiment_dir(self) -> None:
         # Make experiment directories
         self.cfg.experiment_directory.mkdir()
         self.api.molecular_dynamics_stage.runs_dir.mkdir()
@@ -68,7 +68,7 @@ class PipelineManager:
         self.api.machine_learning_stage.runs_dir.mkdir()
         self.api.agent_stage.runs_dir.mkdir()
 
-    def _generate_pipeline_iteration(self):
+    def _generate_pipeline_iteration(self) -> None:
 
         self.pipelines[self.MOLECULAR_DYNAMICS_PIPELINE_NAME].add_stages(
             self.generate_molecular_dynamics_stage()
@@ -106,6 +106,7 @@ class PipelineManager:
             cfg.task_config.output_path = output_path
 
             cfg_path = stage_api.config_path(self.stage_idx, task_idx)
+            assert cfg_path is not None
             cfg.task_config.dump_yaml(cfg_path)
             task = generate_task(cfg)
             task.arguments += ["-c", cfg_path.as_posix()]
@@ -132,6 +133,7 @@ class PipelineManager:
 
             # Write yaml configuration
             cfg_path = stage_api.config_path(self.stage_idx, task_idx)
+            assert cfg_path is not None
             cfg.task_config.dump_yaml(cfg_path)
             task = generate_task(cfg)
             task.arguments += ["-c", cfg_path.as_posix()]
@@ -162,6 +164,7 @@ class PipelineManager:
 
         # Write yaml configuration
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
+        assert cfg_path is not None
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
         task.arguments += ["-c", cfg_path.as_posix()]
@@ -188,6 +191,7 @@ class PipelineManager:
 
         # Write yaml configuration
         cfg_path = stage_api.config_path(self.stage_idx, task_idx)
+        assert cfg_path is not None
         cfg.task_config.dump_yaml(cfg_path)
         task = generate_task(cfg)
         task.arguments += ["-c", cfg_path.as_posix()]
@@ -197,7 +201,7 @@ class PipelineManager:
 
 
 def compute_number_of_nodes(cfg: StreamingExperimentConfig) -> int:
-    nodes = 0
+    nodes = 0.0
 
     for stage in (
         cfg.molecular_dynamics_stage,

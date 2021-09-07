@@ -1,6 +1,7 @@
 import os
 import random
-from typing import List, Tuple
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
 
 class OutlierDB:
@@ -8,7 +9,7 @@ class OutlierDB:
 
     Attributes
     ----------
-    dir : str
+    dir : Path
           directory with published outliers
     sorted_index: List[str]
           list of md5sums of outlier positions (used as a name of
@@ -17,12 +18,12 @@ class OutlierDB:
           maps md5sum to rmsd
     """
 
-    def __init__(self, dir: str, restarts: List[Tuple[float, str]]):
+    def __init__(self, dir: Path, restarts: List[Tuple[List[float], str]]):
         """Constructor
 
         Parameters
         ----------
-        dir : str
+        dir : Path
               directory with published outliers
         restarts : List[Tuple[float, str]]
               list of outliers given as tuples of rmsd and md5sum of positions (used as a file name)
@@ -31,13 +32,13 @@ class OutlierDB:
         self.sorted_index = list(
             map(lambda x: os.path.basename(x[1]).replace(".pdb", ""), restarts)
         )
-        self.dictionary = {}
+        self.dictionary: Dict[str, List[float]] = {}
         for rmsd, path in restarts:
             md5 = os.path.basename(path).replace(".pdb", "")
             self.dictionary[md5] = rmsd
         self.print()
 
-    def print(self, n: int = 5):
+    def print(self, n: int = 5) -> None:
         print("=" * 30)
         print("In OutlierDB")
         n = min(n, len(self.sorted_index))
@@ -46,12 +47,14 @@ class OutlierDB:
             print(f"{md5}: {self.dictionary[md5]}")
         print("=" * 30)
 
-    def next_random(self, m: int = None, alpha: int = 1, beta: int = 25) -> str:
+    def next_random(
+        self, m: Union[int, None] = None, alpha: int = 1, beta: int = 25
+    ) -> str:
         """Return next outlier using beta distribution that prefers smaller rmsds
 
         Parameters
         ----------
-        m : int, default = None
+        m : int, default = -1
             if `m` is not `None`, restrict the random selection to the first
             `m` elements of `softed_index`, otherwise - any element can be chosen.
         alpha : int, default = 1

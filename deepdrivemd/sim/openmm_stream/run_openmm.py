@@ -6,19 +6,111 @@ import shutil
 import subprocess
 import sys
 import time
-from typing import Tuple
+from pathlib import Path
+from typing import Optional, Tuple, Union
 
 import numpy as np
-import parmed as pmd
-import simtk.openmm as omm
-import simtk.unit as u
-from lockfile import LockFile
-from mdtools.openmm.sim import configure_simulation
+import parmed as pmd  # type: ignore
+import simtk.openmm as omm  # type: ignore
+import simtk.unit as u  # type: ignore
+from lockfile import LockFile  # type: ignore
+from mdtools.openmm.sim import configure_simulation  # type: ignore
 
-from deepdrivemd.sim.openmm.run_openmm import SimulationContext
+from deepdrivemd.data.api import DeepDriveMD_API
+
+# from deepdrivemd.sim.openmm.run_openmm import SimulationContext
 from deepdrivemd.sim.openmm_stream.config import OpenMMConfig
 from deepdrivemd.sim.openmm_stream.openmm_reporter import ContactMapReporter
 from deepdrivemd.utils import Timer, parse_args
+
+
+class SimulationContext:
+    def __init__(self, cfg: OpenMMConfig):
+
+        self.cfg = cfg
+        self.api = DeepDriveMD_API(cfg.experiment_directory)
+        self._prefix = self.api.molecular_dynamics_stage.unique_name(cfg.output_path)
+        self._top_file: Optional[Path] = None
+
+        # Use node local storage if available. Otherwise, write to output directory.
+        if cfg.node_local_path is not None:
+            self.workdir = cfg.node_local_path.joinpath(self._prefix)
+        else:
+            self.workdir = cfg.output_path
+
+        self._init_workdir()
+
+    @property
+    def _sim_prefix(self) -> Path:
+        return self.workdir.joinpath(self._prefix)
+
+    @property
+    def pdb_file(self) -> str:
+        return self._pdb_file.as_posix()
+
+    @property
+    def top_file(self) -> Optional[str]:
+        if self._top_file is None:
+            return None
+        return self._top_file.as_posix()
+
+    @property
+    def reference_pdb_file(self) -> Optional[str]:
+        if self.cfg.reference_pdb_file is None:
+            return None
+        return self.cfg.reference_pdb_file.as_posix()
+
+    def _init_workdir(self) -> None:
+        """Setup workdir and copy PDB/TOP files."""
+
+        self.workdir.mkdir(exist_ok=True)
+
+        self._pdb_file = self._get_pdb_file()
+
+        if self.cfg.solvent_type == "explicit":
+            self._top_file = self._copy_top_file()
+        else:
+            self._top_file = None
+
+    def _get_pdb_file(self) -> Path:
+        if self.cfg.pdb_file is not None:
+            # Initial iteration
+            return self._copy_pdb_file()
+
+        # Iterations after outlier detection
+        outlier = self.api.get_restart_pdb(self.cfg.task_idx, self.cfg.stage_idx - 1)
+        system_name = self.api.get_system_name(outlier["structure_file"])
+        pdb_file = self.workdir.joinpath(f"{system_name}__{self._prefix}.pdb")
+        self.api.write_pdb(
+            pdb_file,
+            outlier["structure_file"],
+            outlier["traj_file"],
+            outlier["frame"],
+            self.cfg.in_memory,
+        )
+        return pdb_file
+
+    def _copy_pdb_file(self) -> Path:
+        assert self.cfg.pdb_file is not None
+        copy_to_file = self.api.get_system_pdb_name(self.cfg.pdb_file)
+        local_pdb_file = shutil.copy(
+            self.cfg.pdb_file, self.workdir.joinpath(copy_to_file)
+        )
+        return Path(local_pdb_file)
+
+    def _copy_top_file(self) -> Path:
+        assert self.cfg.top_suffix is not None
+        top_file = self.api.get_topology(
+            self.cfg.initial_pdb_dir, Path(self.pdb_file), self.cfg.top_suffix
+        )
+        assert top_file is not None
+        local_top_file = shutil.copy(top_file, self.workdir.joinpath(top_file.name))
+        return Path(local_top_file)
+
+    def move_results(self) -> None:
+        if self.workdir != self.cfg.output_path:
+            for p in self.workdir.iterdir():
+                shutil.move(str(p), str(self.cfg.output_path.joinpath(p.name)))
 
 
 def configure_reporters(
@@ -26,14 +118,14 @@ def configure_reporters(
     ctx: SimulationContext,
     cfg: OpenMMConfig,
     report_steps: int,
-):
+) -> None:
 
     sim.reporters.append(ContactMapReporter(report_steps, cfg))
 
 
 def next_outlier(
     cfg: OpenMMConfig, sim: omm.app.Simulation
-) -> Tuple[str, str, float, str]:
+) -> Union[Tuple[Path, Path, float, str], None]:
     """Get the next outlier to use as an initial state.
 
     Parameters
@@ -68,8 +160,8 @@ def next_outlier(
     shutil.copy(cfg.pickle_db, cfg.current_dir)
     cfg.lock.release()
 
-    with open(cfg.current_dir / "rmsd.txt", "w") as f:
-        f.write(f"{rmsd}\n")
+    with open(cfg.current_dir / "rmsd.txt", "w") as f:  # type: ignore
+        f.write(f"{rmsd}\n")  # type: ignore
 
     positions_pdb = cfg.current_dir / f"{md5}.pdb"
     velocities_npy = cfg.current_dir / f"{md5}.npy"
@@ -105,7 +197,7 @@ def prepare_simulation(
         while True:
             try:
                 positions = pmd.load_file(str(positions_pdb)).positions
-                velocities = np.load(str(velocities_npy))
+                velocities = np.load(str(velocities_npy))  # type: ignore
                 break
             except Exception as e:
                 print("Exception ", e)
@@ -127,7 +219,7 @@ def prepare_simulation(
         return False
 
 
-def init_input(cfg: OpenMMConfig):
+def init_input(cfg: OpenMMConfig) -> None:
     """The first iteration of the simulation is initialized from pdb
     files in `cfg.initial_pdb_dir`. For the given simulation the pdb file is
     selected using simulation `task_id` in a round robin fashion.
@@ -142,7 +234,7 @@ def init_input(cfg: OpenMMConfig):
     print(f"init_input: n = {n}, i = {i}, pdb_file = {cfg.pdb_file}")
 
 
-def run_simulation(cfg: OpenMMConfig):
+def run_simulation(cfg: OpenMMConfig) -> None:
     init_input(cfg)
 
     # openmm typed variables
@@ -187,7 +279,7 @@ def run_simulation(cfg: OpenMMConfig):
         prepare_simulation(cfg, iteration, sim)
 
 
-def adios_configuration(cfg: OpenMMConfig):
+def adios_configuration(cfg: OpenMMConfig) -> None:
     """Read a template `adios.xml` file, replace `SimulationOutput`
     stream name with the simulation directory and write the resulting
     configuration file into simulation directory.
