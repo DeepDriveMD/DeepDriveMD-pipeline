@@ -290,6 +290,7 @@ class CVAE(object):
         checkpoint_path=None,
         file_path=None,
         use_model_checkpoint=False,
+        **kwargs,
     ):
         """
         train network on given data
@@ -334,6 +335,7 @@ class CVAE(object):
             shuffle=True,
             validation_data=(validation_data, validation_data),
             callbacks=callbacks,
+            **kwargs,
         )
 
     def save(self, filepath):
