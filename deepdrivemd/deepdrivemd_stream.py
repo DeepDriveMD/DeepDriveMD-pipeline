@@ -223,6 +223,7 @@ if __name__ == "__main__":
     cfg = StreamingExperimentConfig.from_yaml(args.config)
     cfg.config_directory = os.path.dirname(os.path.abspath(args.config))
     print("config_directory = ", cfg.config_directory)
+    print("experiment directory = ", cfg.experiment_directory)
 
     cfg.adios_xml_sim = Path(cfg.config_directory) / "adios_sim.xml"
     cfg.adios_xml_agg = Path(cfg.config_directory) / "adios_agg.xml"

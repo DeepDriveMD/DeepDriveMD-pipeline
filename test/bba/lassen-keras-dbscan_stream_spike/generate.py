@@ -17,12 +17,12 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/18"
+    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/20"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
     node_local_path: Path = None
-    init_pdb_file = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/system/comp.pdb"
+    init_pdb_file = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/spike/system/spike_ace2_equi_pores_lipidsw_ions.pdb"
     ref_pdb_file: Path = None
     config_directory = "set_by_deepdrivemd"
     adios_xml_sim = "set_by_deepdrivemd"
@@ -64,10 +64,12 @@ class TaskConfigMD(BaseModel):
     output_path = "set_by_deepdrivemd"
     node_local_path = "set_by_deepdrivemd"
     pdb_file = "set_by_deepdrivemd"
-    initial_pdb_dir = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/"
-    solvent_type = "explicit"
-    top_suffix: str = ".top"
-    simulation_length_ns = 10.0
+    initial_pdb_dir = (
+        "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/spike/"
+    )
+    solvent_type = "implicit"
+    top_suffix: str = None
+    simulation_length_ns = 10.0 / 10
     report_interval_ps = 50.0
     dt_ps = 0.002
     temperature_kelvin = 300.0
@@ -84,7 +86,7 @@ class TaskConfigMD(BaseModel):
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
     compute_rmsd = False
-    divisibleby = 32
+    divisibleby = 256
 
 
 task_config_md = TaskConfigMD()
@@ -155,15 +157,15 @@ agg = Aggregator()
 
 
 class CVAE(BaseModel):
-    initial_shape = [458, 458]
-    final_shape = [458, 458, 1]
+    initial_shape = [1024, 1024]
+    final_shape = [1024, 1024, 1]
     split_pct = 0.8
     shuffle = True
     latent_dim = 10
     conv_layers = 4
     conv_filters = [64] * 4
     conv_filter_shapes = [[3, 3]] * 4
-    conv_strides = [[2, 2], [2, 2], [2, 2], [2, 2]]
+    conv_strides = [[4, 4], [4, 4], [4, 4], [4, 4]]
     dense_layers = 1
     dense_neurons = [128]
     dense_dropouts = [0.4]
@@ -174,11 +176,11 @@ class TaskConfigML(CVAE):
     stage_idx = 0
     task_idx = 0
     output_path = "set_by_deepdrivemd"
-    epochs = 200
-    batch_size = 32
+    epochs = 800
+    batch_size = 32 * 2
     min_step_increment = 200
     max_steps = 2000
-    max_loss = 1500
+    max_loss = 65000
     num_agg = agg.num_tasks
     timeout1 = 30
     timeout2 = 10

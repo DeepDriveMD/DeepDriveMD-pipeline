@@ -21,12 +21,8 @@ for fn in bpfiles:
         n = fr.steps()
         rmsd = fr.read("rmsd", [], [], 0, n)
         print(
-            f"n={n}, min(rmsd) = {np.min(rmsd)}, max(rms) = {np.max(rmsd)}, mean(rmsd) = {np.mean(rmsd)}"
+            f"n={n}, min(rmsd) = {np.min(rmsd)}, max(rms) = {np.max(rmsd)}, mean(rmsd) = {np.mean(rmsd)}, median(rmsd) = {np.median(rmsd)}"
         )
         np.save(f"{outdir}/rmsd_{taskid}.npy", rmsd)
-        """
-        for i in range(1, n, 1000):
-            print(i, ",", np.min(rmsd[:i]), ",", np.max(rmsd[max(0, i-1000):i]), ",", np.mean(rmsd[max(0, i - 1000):i]))
-        """
         print("=" * 30)
         sys.stdout.flush()
