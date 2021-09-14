@@ -27,7 +27,7 @@ class Header(BaseModel):
     config_directory = "set_by_deepdrivemd"
     adios_xml_sim = "set_by_deepdrivemd"
     adios_xml_agg = "set_by_deepdrivemd"
-    multi_ligand_table = (
+    multi_ligand_table = Path(
         "/usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv"
     )
 
@@ -70,8 +70,8 @@ class TaskConfigMD(BaseModel):
     initial_pdb_dir = "set_by_deepdrivemd"
     solvent_type = "explicit"
     top_suffix: str = ".prmtop"
-    simulation_length_ns = 10.0
-    report_interval_ps = 50.0
+    simulation_length_ns = 10.0 / 10
+    report_interval_ps = 50.0 / 10
     dt_ps = 0.002
     temperature_kelvin = 300.0
     heat_bath_friction_coef = 1.0

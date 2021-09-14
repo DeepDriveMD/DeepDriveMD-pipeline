@@ -17,6 +17,7 @@ import subprocess
 import itertools
 from deepdrivemd.sim.openmm.run_openmm import SimulationContext
 from typing import Tuple
+import pandas as pd
 
 
 def configure_reporters(
@@ -140,8 +141,22 @@ def init_input(cfg: OpenMMConfig):
     print(f"init_input: n = {n}, i = {i}, pdb_file = {cfg.pdb_file}")
 
 
+def init_multi_ligand(cfg: OpenMMConfig):
+    table = pd.read_csv(cfg.multi_ligand_table)
+    pdb = table["pdb"][cfg.task_idx]
+    tdir = table["tdir"][cfg.task_idx]
+    cfg.pdb_file = f"{tdir}/system/{pdb}"
+    cfg.initial_pdb_dir = tdir
+    print(
+        f"init_multi_ligand: id = {cfg.task_idx}, pdb = {cfg.pdb_file}, tdir = {cfg.initial_pdb_dir}"
+    )
+
+
 def run_simulation(cfg: OpenMMConfig):
-    init_input(cfg)
+    if cfg.multi_ligand_table != "":
+        init_multi_ligand(cfg)
+    else:
+        init_input(cfg)
 
     # openmm typed variables
     dt_ps = cfg.dt_ps * u.picoseconds
@@ -204,6 +219,8 @@ if __name__ == "__main__":
     print(subprocess.getstatusoutput("hostname")[1])
     sys.stdout.flush()
     args = parse_args()
+    print("args.config = ", args.config)
+    sys.stdout.flush()
     cfg = OpenMMConfig.from_yaml(args.config)
     adios_configuration(cfg)
     cfg.bp_file = cfg.output_path / "md.bp"

@@ -106,6 +106,7 @@ class MolecularDynamicsTaskConfig(BaseTaskConfig):
     # Initial data directory passed containing PDBs and optional topologies
     initial_pdb_dir: Path = Path(".").resolve()
 
+    """
     @validator("initial_pdb_dir")
     def initial_pdb_dir_must_exist_with_valid_pdbs(cls, v):
         if not v.exists():
@@ -115,6 +116,7 @@ class MolecularDynamicsTaskConfig(BaseTaskConfig):
         if any("__" in p.as_posix() for p in v.glob("*/*.pdb")):
             raise ValueError("Initial PDB files cannot contain a double underscore __")
         return v
+    """
 
 
 class MolecularDynamicsStageConfig(BaseStageConfig):
@@ -239,6 +241,7 @@ class StreamingExperimentConfig(ExperimentConfig):
     software_directory: Path
     init_pdb_file: Path
     ref_pdb_file: Optional[Path]
+    multi_ligand_table: Path
     model_selection_stage: Optional[ModelSelectionStageConfig]
     aggregation_stage: StreamingAggregationStageConfig
     machine_learning_stage: StreamingMachineLearningStageConfig
