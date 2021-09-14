@@ -46,8 +46,8 @@ agent_stage:
     best_model: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/301/machine_learning_runs/stage0000/task0000/published_model/best.h5
     compute_rmsd: false
     conv_filter_shapes:
-    - - 3
-      - 3
+    - - 5
+      - 5
     - - 3
       - 3
     - - 3
@@ -55,7 +55,7 @@ agent_stage:
     - - 3
       - 3
     conv_filters:
-    - 64
+    - 32
     - 64
     - 64
     - 64
@@ -91,8 +91,8 @@ agent_stage:
     num_agg: 10
     num_sim: 120
     outlier_count: 120
-    outlier_max: 5000
-    outlier_min: 100
+    outlier_max: 2000
+    outlier_min: 120
     output_path: set_by_deepdrivemd
     project_gpu: false
     project_lastN: 50000
@@ -171,8 +171,8 @@ machine_learning_stage:
     batch_size: 32
     checkpoint_dir: set_by_deepdrivemd
     conv_filter_shapes:
-    - - 3
-      - 3
+    - - 5
+      - 5
     - - 3
       - 3
     - - 3
@@ -180,7 +180,7 @@ machine_learning_stage:
     - - 3
       - 3
     conv_filters:
-    - 64
+    - 32
     - 64
     - 64
     - 64
@@ -199,7 +199,7 @@ machine_learning_stage:
     dense_layers: 1
     dense_neurons:
     - 128
-    epochs: 200
+    epochs: 70
     experiment_directory: set_by_deepdrivemd
     final_shape:
     - 458
@@ -210,12 +210,12 @@ machine_learning_stage:
     - 458
     latent_dim: 10
     max_loss: 1500
-    max_steps: 200
-    min_step_increment: 200
+    max_steps: 600
+    min_step_increment: 600
     num_agg: 10
     output_path: set_by_deepdrivemd
     published_model_dir: set_by_deepdrivemd
-    read_batch: 200
+    read_batch: 600
     reinit: true
     shuffle: true
     split_pct: 0.8

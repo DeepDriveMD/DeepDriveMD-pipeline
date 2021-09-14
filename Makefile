@@ -16,6 +16,8 @@ run7:
 	bin/run.sh lassen-keras-dbscan_stream_insRec_OM_region
 run8:
 	bin/run.sh lassen-keras-dbscan_stream_spike
+run9:
+	bin/run.sh lassen-keras-dbscan_stream_smoothended_rec_120
 watch1:
 	watch bpls ../Outputs/${d}/aggregation_runs/stage0000/task0000/agg.bp
 watch2:

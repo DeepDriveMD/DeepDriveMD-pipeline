@@ -161,8 +161,8 @@ class CVAE(BaseModel):
     shuffle = True
     latent_dim = 10
     conv_layers = 4
-    conv_filters = [64] * 4
-    conv_filter_shapes = [[3, 3]] * 4
+    conv_filters = [32, 64, 64, 64]
+    conv_filter_shapes = [[5, 5], [3, 3], [3, 3], [3, 3]]
     conv_strides = [[2, 2], [2, 2], [2, 2], [2, 2]]
     dense_layers = 1
     dense_neurons = [128]
@@ -174,10 +174,10 @@ class TaskConfigML(CVAE):
     stage_idx = 0
     task_idx = 0
     output_path = "set_by_deepdrivemd"
-    epochs = 200
+    epochs = 70
     batch_size = 32
-    min_step_increment = 200
-    max_steps = 200
+    min_step_increment = 600
+    max_steps = 600
     max_loss = 1500
     num_agg = agg.num_tasks
     timeout1 = 30
@@ -188,7 +188,7 @@ class TaskConfigML(CVAE):
     adios_xml_agg = header.adios_xml_agg
     reinit = True
     use_model_checkpoint = True
-    read_batch = 200
+    read_batch = 600
 
 
 task_config_ml = TaskConfigML()
@@ -221,8 +221,8 @@ class TaskConfigAgent(CVAE):
     best_model = f"{header.experiment_directory}/machine_learning_runs/stage0000/task0000/published_model/best.h5"
     lastN = 200
     outlier_count = 120
-    outlier_max = 5000
-    outlier_min = 100
+    outlier_max = 2000
+    outlier_min = 120
     init_pdb_file = f"{header.init_pdb_file}"
     ref_pdb_file = f"{header.ref_pdb_file}"
     init_eps = 1.3
