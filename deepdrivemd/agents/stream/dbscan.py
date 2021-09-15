@@ -10,6 +10,7 @@ import itertools
 from typing import List, Tuple
 from numba import cuda
 from pathlib import Path
+import pandas as pd
 
 from deepdrivemd.utils import Timer, timer, t1Dto2D
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
@@ -277,6 +278,8 @@ def write_pdb_frame(frame: np.ndarray, original_pdb: str, output_pdb_fn: str):
     output_pdb_fn : str
         Where to write an outlier.
     """
+    print("original_pdb = ", str(original_pdb))
+    sys.stdout.flush()
     pdb = PDBFile(str(original_pdb))
     with open(str(output_pdb_fn), "w") as f:
         PDBFile.writeFile(pdb.getTopology(), frame, f)
@@ -300,11 +303,24 @@ def write_top_outliers(
     """
     positions, velocities, md5s = top[:3]
 
-    for p, v, m in zip(positions, velocities, md5s):
-        outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
-        outlier_v_file = f"{tmp_dir}/{m}.npy"
-        write_pdb_frame(p, cfg.init_pdb_file, outlier_pdb_file)
-        np.save(outlier_v_file, v)
+    if cfg.multi_ligand_table is not None:
+        dirs = top[-1]
+        table = pd.read_csv(cfg.multi_ligand_table)
+        for p, v, m, d in zip(positions, velocities, md5s, dirs):
+            d = int(d)
+            topology_file = table["pdb"][d]
+            tdir = table["tdir"][d]
+            outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
+            outlier_v_file = f"{tmp_dir}/{m}.npy"
+            cfg.init_pdb_file = f"{tdir}/system/{topology_file}"
+            write_pdb_frame(p, cfg.init_pdb_file, outlier_pdb_file)
+            np.save(outlier_v_file, v)
+    else:
+        for p, v, m in zip(positions, velocities, md5s):
+            outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
+            outlier_v_file = f"{tmp_dir}/{m}.npy"
+            write_pdb_frame(p, cfg.init_pdb_file, outlier_pdb_file)
+            np.save(outlier_v_file, v)
 
 
 def write_db(top: Path, tmp_dir: Path) -> OutlierDB:
@@ -402,7 +418,11 @@ def random_outliers(
     else:
         rmsds = np.array([-1.0] * len(outlier_list))
 
-    z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
+    if cfg.multi_ligand_table is not None:
+        dirs = cvae_input[-1][outlier_list]
+        z = list(zip(positions, velocities, md5s, rmsds, outlier_list, dirs))
+    else:
+        z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
     indices = np.arange(len(z))
     np.random.shuffle(indices)
     indices = indices[: cfg.num_sim]
@@ -489,6 +509,9 @@ def main(cfg: OutlierDetectionConfig):
             StreamScalarVariable("rmsd", np.float32, DataStructure.scalar)
         )
 
+    if cfg.multi_ligand_table is not None:
+        variable_list.append(StreamVariable("dir", str, DataStructure.string))
+
     mystreams = Streams(
         adios_files_list,
         variable_list,
@@ -510,6 +533,11 @@ def main(cfg: OutlierDetectionConfig):
 
         with Timer("outlier_read"):
             cvae_input = mystreams.next()
+            print("len(cvae_input) = ", len(cvae_input))
+            print("type(cvae_input[-1]) = ", type(cvae_input[-1]))
+            sys.stdout.flush()
+            print("cvae_input[-1].shape = ", cvae_input[-1].shape)
+            sys.stdout.flush()
 
         with Timer("outlier_predict"):
             cm_predict = predict(cfg, model_path, cvae_input)

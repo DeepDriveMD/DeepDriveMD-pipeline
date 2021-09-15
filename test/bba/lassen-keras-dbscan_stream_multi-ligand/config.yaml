@@ -7,16 +7,7 @@ gpus_per_node: 4
 hardware_threads_per_cpu: 4
 init_pdb_file: set_by_deepdrivemd
 max_iteration: 4
-multi_ligand_table: !!python/object/apply:pathlib.PosixPath
-- /
-- usr
-- workspace
-- cv_ddmd
-- yakushin
-- Integration1
-- data
-- ml
-- ml_table.csv
+multi_ligand_table: /usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv
 node_local_path: null
 project: cv19-a01
 queue: pbatch
@@ -98,16 +89,7 @@ agent_stage:
     lastN: 2000
     latent_dim: 10
     min_step_increment: 500
-    multi_ligand_table: !!python/object/apply:pathlib.PosixPath
-    - /
-    - usr
-    - workspace
-    - cv_ddmd
-    - yakushin
-    - Integration1
-    - data
-    - ml
-    - ml_table.csv
+    multi_ligand_table: /usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv
     num_agg: 1
     num_sim: 12
     outlier_count: 120
@@ -155,16 +137,7 @@ aggregation_stage:
     adios_xml_agg: set_by_deepdrivemd
     compute_rmsd: false
     experiment_directory: set_by_deepdrivemd
-    multi_ligand_table: !!python/object/apply:pathlib.PosixPath
-    - /
-    - usr
-    - workspace
-    - cv_ddmd
-    - yakushin
-    - Integration1
-    - data
-    - ml
-    - ml_table.csv
+    multi_ligand_table: /usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv
     n_sim: 12
     node_local_path: set_by_deepdrivemd
     num_tasks: 1
@@ -291,16 +264,7 @@ molecular_dynamics_stage:
     initial_pdb_dir: set_by_deepdrivemd
     lock: set_by_deepdrivemd
     mda_selection: protein and name CA
-    multi_ligand_table: !!python/object/apply:pathlib.PosixPath
-    - /
-    - usr
-    - workspace
-    - cv_ddmd
-    - yakushin
-    - Integration1
-    - data
-    - ml
-    - ml_table.csv
+    multi_ligand_table: /usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv
     next_outlier_policy: 1
     node_local_path: set_by_deepdrivemd
     openmm_selection:
