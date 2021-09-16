@@ -315,6 +315,9 @@ def write_top_outliers(
             cfg.init_pdb_file = f"{tdir}/system/{topology_file}"
             write_pdb_frame(p, cfg.init_pdb_file, outlier_pdb_file)
             np.save(outlier_v_file, v)
+            task_file = f"{tmp_dir}/{m}.txt"
+            with open(task_file, "w") as f:
+                f.write(str(d))
     else:
         for p, v, m in zip(positions, velocities, md5s):
             outlier_pdb_file = f"{tmp_dir}/{m}.pdb"

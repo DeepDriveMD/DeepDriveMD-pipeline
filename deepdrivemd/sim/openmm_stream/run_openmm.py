@@ -65,6 +65,10 @@ def next_outlier(
     shutil.copy(positions_pdb, cfg.current_dir)
     shutil.copy(velocities_npy, cfg.current_dir)
     shutil.copy(cfg.pickle_db, cfg.current_dir)
+    if cfg.multi_ligand_table is not None:
+        task = cfg.outliers_dir / f"{md5}.txt"
+        shutil.copy(task, cfg.current_dir)
+
     cfg.lock.release()
 
     with open(cfg.current_dir / "rmsd.txt", "w") as f:
@@ -73,7 +77,12 @@ def next_outlier(
     positions_pdb = cfg.current_dir / f"{md5}.pdb"
     velocities_npy = cfg.current_dir / f"{md5}.npy"
 
-    return positions_pdb, velocities_npy, rmsd, md5
+    if cfg.multi_ligand_table is not None:
+        with open(task) as f:
+            task_id = int(f.read())
+        return positions_pdb, velocities_npy, rmsd, md5, task_id
+    else:
+        return positions_pdb, velocities_npy, rmsd, md5
 
 
 def prepare_simulation(
@@ -100,7 +109,10 @@ def prepare_simulation(
     outlier = next_outlier(cfg, sim)
     if outlier is not None:
         print("There are outliers")
-        positions_pdb, velocities_npy, rmsd, md5 = outlier
+        if cfg.multi_ligand_table is not None:
+            positions_pdb, velocities_npy, rmsd, md5, task = outlier
+        else:
+            positions_pdb, velocities_npy, rmsd, md5 = outlier
         while True:
             try:
                 positions = pmd.load_file(str(positions_pdb)).positions
@@ -110,6 +122,23 @@ def prepare_simulation(
                 print("Exception ", e)
                 print(f"Waiting for {positions_pdb} and {velocities_npy}")
                 time.sleep(5)
+
+        if cfg.multi_ligand_table is not None:
+            init_multi_ligand(cfg, task)
+            with Timer("molecular_dynamics_SimulationContext"):
+                ctx = SimulationContext(cfg)
+            with Timer("molecular_dynamics_configure_simulation"):
+                dt_ps = cfg.dt_ps * u.picoseconds
+                temperature_kelvin = cfg.temperature_kelvin * u.kelvin
+                sim = configure_simulation(
+                    pdb_file=ctx.pdb_file,
+                    top_file=ctx.top_file,
+                    solvent_type=cfg.solvent_type,
+                    gpu_index=0,
+                    dt_ps=dt_ps,
+                    temperature_kelvin=temperature_kelvin,
+                    heat_bath_friction_coef=cfg.heat_bath_friction_coef,
+                )
 
         sim.context.setPositions(positions)
         if random.random() < cfg.copy_velocities_p:
@@ -141,14 +170,16 @@ def init_input(cfg: OpenMMConfig):
     print(f"init_input: n = {n}, i = {i}, pdb_file = {cfg.pdb_file}")
 
 
-def init_multi_ligand(cfg: OpenMMConfig):
+def init_multi_ligand(cfg: OpenMMConfig, task_id=None):
+    if task_id is None:
+        task_id = cfg.task_idx
     table = pd.read_csv(cfg.multi_ligand_table)
-    pdb = table["pdb"][cfg.task_idx]
-    tdir = table["tdir"][cfg.task_idx]
+    pdb = table["pdb"][task_id]
+    tdir = table["tdir"][task_id]
     cfg.pdb_file = f"{tdir}/system/{pdb}"
     cfg.initial_pdb_dir = tdir
     print(
-        f"init_multi_ligand: id = {cfg.task_idx}, pdb = {cfg.pdb_file}, tdir = {cfg.initial_pdb_dir}"
+        f"init_multi_ligand: id = {task_id}, pdb = {cfg.pdb_file}, tdir = {cfg.initial_pdb_dir}"
     )
 
 

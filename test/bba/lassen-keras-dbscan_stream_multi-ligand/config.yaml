@@ -273,8 +273,8 @@ molecular_dynamics_stage:
     output_path: set_by_deepdrivemd
     pdb_file: set_by_deepdrivemd
     reference_pdb_file: None
-    report_interval_ps: 5.0
-    simulation_length_ns: 1.0
+    report_interval_ps: 1.25
+    simulation_length_ns: 0.25
     solvent_type: explicit
     stage_idx: 0
     task_idx: 0
