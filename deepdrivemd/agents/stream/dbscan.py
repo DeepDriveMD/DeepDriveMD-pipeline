@@ -11,6 +11,7 @@ from typing import List, Tuple
 from numba import cuda
 from pathlib import Path
 import pandas as pd
+from sklearn.neighbors import LocalOutlierFactor
 
 from deepdrivemd.utils import Timer, timer, t1Dto2D
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
@@ -304,9 +305,11 @@ def write_top_outliers(
     positions, velocities, md5s = top[:3]
 
     if cfg.multi_ligand_table is not None:
-        dirs = top[-1]
+        dirs = top[5]
         table = pd.read_csv(cfg.multi_ligand_table)
         for p, v, m, d in zip(positions, velocities, md5s, dirs):
+            print("d=", d)
+            sys.stdout.flush()
             d = int(d)
             topology_file = table["pdb"][d]
             tdir = table["tdir"][d]
@@ -432,6 +435,49 @@ def random_outliers(
     z = [z[i] for i in indices]
     z = list(zip(*z))
 
+    return z
+
+
+def run_lof(data: np.ndarray) -> np.ndarray:
+    clf = LocalOutlierFactor()
+    clf.fit_predict(data)
+    lof_scores = clf.negative_outlier_factor_
+    return lof_scores
+
+
+def top_lof(
+    cfg: OutlierDetectionConfig,
+    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    cm_predict: np.array,
+    outlier_list: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+
+    outlier_list = list(outlier_list[0])
+    projections = cm_predict[outlier_list]
+    lof_scores = run_lof(projections)
+    print("lof_scores = ", lof_scores)
+    sys.stdout.flush()
+    positions = cvae_input[1][outlier_list]
+    velocities = cvae_input[3][outlier_list]
+    md5s = cvae_input[2][outlier_list]
+
+    if cfg.compute_rmsd:
+        rmsds = cvae_input[4][outlier_list]
+    else:
+        rmsds = np.array([-1.0] * len(outlier_list))
+
+    if cfg.multi_ligand_table is not None:
+        dirs = cvae_input[-1][outlier_list]
+        z = list(
+            zip(positions, velocities, md5s, rmsds, outlier_list, dirs, lof_scores)
+        )
+        z.sort(key=lambda x: x[6])
+    else:
+        z = list(zip(positions, velocities, md5s, rmsds, outlier_list, lof_scores))
+        z.sort(key=lambda x: x[5])
+
+    z = z[: cfg.num_sim]
+    z = list(zip(*z))
     return z
 
 
@@ -571,8 +617,10 @@ def main(cfg: OutlierDetectionConfig):
                     ]
                 eps = cfg.init_eps
                 min_samples = cfg.init_min_samples
-
-        if cfg.use_random_outliers or (not cfg.compute_rmsd):
+        if cfg.multi_ligand_table is not None:
+            print("Using top lof outliers")
+            top = top_lof(cfg, cvae_input, cm_predict, outlier_list)
+        elif cfg.use_random_outliers or (not cfg.compute_rmsd):
             print("Using random outliers")
             top = random_outliers(cfg, cvae_input, outlier_list)
         else:
