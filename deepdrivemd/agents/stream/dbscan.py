@@ -659,6 +659,12 @@ def read_lastN(
         :obj:`lastN` contact maps from each aggregated file and
         :obj:`lastN` corresponding rmsds.
     """
+
+    if cfg.compute_rmsd:
+        vars = ["contact_map", "rmsd"]
+    else:
+        vars = ["contact_map"]
+
     variable_lists = {}
     for bp in adios_files_list:
         with adios2.open(bp, "r") as fh:
@@ -667,7 +673,7 @@ def read_lastN(
             if start_step < 0:
                 start_step = 0
                 lastN = steps
-            for v in ["contact_map", "rmsd"]:
+            for v in vars:
                 if v == "contact_map":
                     shape = list(
                         map(int, fh.available_variables()[v]["Shape"].split(","))
@@ -709,9 +715,36 @@ def read_lastN(
     )
 
     print(variable_lists["contact_map"].shape)
-    print(variable_lists["rmsd"].shape)
+    if cfg.compute_rmsd:
+        print(variable_lists["rmsd"].shape)
     sys.stdout.flush()
-    return variable_lists["contact_map"], np.concatenate(variable_lists["rmsd"])
+
+    if cfg.compute_rmsd:
+        return variable_lists["contact_map"], np.concatenate(variable_lists["rmsd"])
+    else:
+        return variable_lists["contact_map"]
+
+
+def project_mini(cfg: OutlierDetectionConfig):
+    with Timer("wait_for_input"):
+        adios_files_list = wait_for_input(cfg)
+    with Timer("wait_for_model"):
+        model_path = str(wait_for_model(cfg))
+        print("model_path = ", model_path)
+
+    lastN = cfg.project_lastN
+
+    # Create output directories
+    dirs(cfg)
+
+    for i, bp in enumerate(adios_files_list):
+        print(f"i={i}, bp={bp}")
+        sys.stdout.flush()
+        cvae_input = [read_lastN([bp], lastN)]
+        with Timer("project_predict"):
+            embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=64)
+        with open(cfg.output_path / f"embeddings_cvae_{i}.npy", "wb") as f:
+            np.save(f, embeddings_cvae)
 
 
 def project(cfg: OutlierDetectionConfig):
@@ -735,10 +768,10 @@ def project(cfg: OutlierDetectionConfig):
     with Timer("project_next"):
         cvae_input = read_lastN(adios_files_list, lastN)
 
-    rmsds = cvae_input[1]
-
-    with open(cfg.output_path / "rmsd.npy", "wb") as f:
-        np.save(f, rmsds)
+    if cfg.compute_rmsd:
+        rmsds = cvae_input[1]
+        with open(cfg.output_path / "rmsd.npy", "wb") as f:
+            np.save(f, rmsds)
 
     with Timer("project_predict"):
         embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=1024)
@@ -767,6 +800,10 @@ def parse_args() -> argparse.Namespace:
         "-c", "--config", help="YAML config file", type=str, required=True
     )
     parser.add_argument("-p", "--project", action="store_true", help="compute tsne")
+    parser.add_argument(
+        "-m", "--miniproject", action="store_true", help="compute embeddings only"
+    )
+
     args = parser.parse_args()
     return args
 
@@ -776,5 +813,7 @@ if __name__ == "__main__":
     cfg = OutlierDetectionConfig.from_yaml(args.config)
     if args.project:
         project(cfg)
+    elif args.miniproject:
+        project_mini(cfg)
     else:
         main(cfg)

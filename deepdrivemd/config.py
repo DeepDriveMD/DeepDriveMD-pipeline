@@ -241,7 +241,7 @@ class StreamingExperimentConfig(ExperimentConfig):
     software_directory: Path
     init_pdb_file: Path
     ref_pdb_file: Optional[Path]
-    multi_ligand_table: Path
+    multi_ligand_table: Optional[Path]
     model_selection_stage: Optional[ModelSelectionStageConfig]
     aggregation_stage: StreamingAggregationStageConfig
     machine_learning_stage: StreamingMachineLearningStageConfig

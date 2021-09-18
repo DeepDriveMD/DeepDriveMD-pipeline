@@ -12,6 +12,8 @@ timers:
 	cd /p/gpfs1/${USER}/radical.pilot.sandbox && python ${PWD}/timers.py ./`ls -tr | tail -1`/pilot*
 project: pdir
 	PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc:${PYTHONPATH} python ../deepdrivemd/agents/stream/dbscan.py -c ../../Outputs/${d}/agent_runs/stage0000/task0000/stage0000_task0000.yaml -p
+project_mini: pdir
+	PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc:${PYTHONPATH} python ../deepdrivemd/agents/stream/dbscan.py -c ../../Outputs/${d}/agent_runs/stage0000/task0000/stage0000_task0000.yaml -m
 
 clean:
 	rm -f *~ *.out *.err *.csv *.npy
