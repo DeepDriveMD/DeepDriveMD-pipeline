@@ -65,7 +65,7 @@ def next_outlier(
     shutil.copy(positions_pdb, cfg.current_dir)
     shutil.copy(velocities_npy, cfg.current_dir)
     shutil.copy(cfg.pickle_db, cfg.current_dir)
-    if cfg.multi_ligand_table is not None:
+    if hasattr(cfg, "multi_ligand_table"):
         task = cfg.outliers_dir / f"{md5}.txt"
         shutil.copy(task, cfg.current_dir)
 
@@ -77,7 +77,7 @@ def next_outlier(
     positions_pdb = cfg.current_dir / f"{md5}.pdb"
     velocities_npy = cfg.current_dir / f"{md5}.npy"
 
-    if cfg.multi_ligand_table is not None:
+    if hasattr(cfg, "multi_ligand_table"):
         with open(task) as f:
             task_id = int(f.read())
         return positions_pdb, velocities_npy, rmsd, md5, task_id
@@ -109,7 +109,7 @@ def prepare_simulation(
     outlier = next_outlier(cfg, sim)
     if outlier is not None:
         print("There are outliers")
-        if cfg.multi_ligand_table is not None:
+        if hasattr(cfg, "multi_ligand_table"):
             positions_pdb, velocities_npy, rmsd, md5, task = outlier
         else:
             positions_pdb, velocities_npy, rmsd, md5 = outlier
@@ -123,7 +123,7 @@ def prepare_simulation(
                 print(f"Waiting for {positions_pdb} and {velocities_npy}")
                 time.sleep(5)
 
-        if cfg.multi_ligand_table is not None:
+        if hasattr(cfg, "multi_ligand_table"):
             init_multi_ligand(cfg, task)
             with Timer("molecular_dynamics_SimulationContext"):
                 ctx = SimulationContext(cfg)
@@ -184,7 +184,7 @@ def init_multi_ligand(cfg: OpenMMConfig, task_id=None):
 
 
 def run_simulation(cfg: OpenMMConfig):
-    if cfg.multi_ligand_table != "":
+    if hasattr(cfg, "multi_ligand_table"):
         init_multi_ligand(cfg)
     else:
         init_input(cfg)

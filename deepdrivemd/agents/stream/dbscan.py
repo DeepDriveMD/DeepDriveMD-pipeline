@@ -304,7 +304,7 @@ def write_top_outliers(
     """
     positions, velocities, md5s = top[:3]
 
-    if cfg.multi_ligand_table is not None:
+    if hasattr(cfg, "multi_ligand_table"):
         dirs = top[5]
         table = pd.read_csv(cfg.multi_ligand_table)
         for p, v, m, d in zip(positions, velocities, md5s, dirs):
@@ -424,7 +424,7 @@ def random_outliers(
     else:
         rmsds = np.array([-1.0] * len(outlier_list))
 
-    if cfg.multi_ligand_table is not None:
+    if hasattr(cfg, "multi_ligand_table"):
         dirs = cvae_input[-1][outlier_list]
         z = list(zip(positions, velocities, md5s, rmsds, outlier_list, dirs))
     else:
@@ -466,7 +466,7 @@ def top_lof(
     else:
         rmsds = np.array([-1.0] * len(outlier_list))
 
-    if cfg.multi_ligand_table is not None:
+    if hasattr(cfg, "multi_ligand_table"):
         dirs = cvae_input[-1][outlier_list]
         z = list(
             zip(positions, velocities, md5s, rmsds, outlier_list, dirs, lof_scores)
@@ -558,7 +558,7 @@ def main(cfg: OutlierDetectionConfig):
             StreamScalarVariable("rmsd", np.float32, DataStructure.scalar)
         )
 
-    if cfg.multi_ligand_table is not None:
+    if hasattr(cfg, "multi_ligand_table"):
         variable_list.append(StreamVariable("dir", str, DataStructure.string))
 
     mystreams = Streams(
@@ -617,7 +617,7 @@ def main(cfg: OutlierDetectionConfig):
                     ]
                 eps = cfg.init_eps
                 min_samples = cfg.init_min_samples
-        if cfg.multi_ligand_table is not None:
+        if hasattr(cfg, "multi_ligand_table"):
             print("Using top lof outliers")
             top = top_lof(cfg, cvae_input, cm_predict, outlier_list)
         elif cfg.use_random_outliers or (not cfg.compute_rmsd):
