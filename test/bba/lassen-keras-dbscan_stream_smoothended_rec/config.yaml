@@ -10,7 +10,7 @@ max_iteration: 4
 node_local_path: null
 project: cv19-a01
 queue: pbatch
-ref_pdb_file: null
+ref_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/system/comp.pdb
 resource: llnl.lassen
 schema_: local
 software_directory: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd
@@ -44,10 +44,10 @@ agent_stage:
     adios_xml_agg: set_by_deepdrivemd
     agg_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/18/aggregation_runs
     best_model: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/18/machine_learning_runs/stage0000/task0000/published_model/best.h5
-    compute_rmsd: false
+    compute_rmsd: true
     conv_filter_shapes:
-    - - 3
-      - 3
+    - - 5
+      - 5
     - - 3
       - 3
     - - 3
@@ -55,7 +55,7 @@ agent_stage:
     - - 3
       - 3
     conv_filters:
-    - 64
+    - 32
     - 64
     - 64
     - 64
@@ -85,19 +85,20 @@ agent_stage:
     initial_shape:
     - 458
     - 458
-    lastN: 2000
+    lastN: 200
     latent_dim: 10
-    min_step_increment: 500
+    min_step_increment: 200
     num_agg: 1
     num_sim: 12
     outlier_count: 120
-    outlier_max: 5000
-    outlier_min: 100
+    outlier_max: 2000
+    outlier_min: 120
+    outlier_selection: lof
     output_path: set_by_deepdrivemd
     project_gpu: false
     project_lastN: 50000
-    read_batch: 2000
-    ref_pdb_file: None
+    read_batch: 200
+    ref_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/system/comp.pdb
     shuffle: true
     split_pct: 0.8
     stage_idx: 0
@@ -133,7 +134,7 @@ aggregation_stage:
   skip_aggregation: false
   task_config:
     adios_xml_agg: set_by_deepdrivemd
-    compute_rmsd: false
+    compute_rmsd: true
     experiment_directory: set_by_deepdrivemd
     n_sim: 12
     node_local_path: set_by_deepdrivemd
@@ -171,8 +172,8 @@ machine_learning_stage:
     batch_size: 32
     checkpoint_dir: set_by_deepdrivemd
     conv_filter_shapes:
-    - - 3
-      - 3
+    - - 5
+      - 5
     - - 3
       - 3
     - - 3
@@ -180,7 +181,7 @@ machine_learning_stage:
     - - 3
       - 3
     conv_filters:
-    - 64
+    - 32
     - 64
     - 64
     - 64
@@ -199,7 +200,7 @@ machine_learning_stage:
     dense_layers: 1
     dense_neurons:
     - 128
-    epochs: 200
+    epochs: 70
     experiment_directory: set_by_deepdrivemd
     final_shape:
     - 458
@@ -210,12 +211,12 @@ machine_learning_stage:
     - 458
     latent_dim: 10
     max_loss: 1500
-    max_steps: 2000
-    min_step_increment: 200
+    max_steps: 600
+    min_step_increment: 600
     num_agg: 1
     output_path: set_by_deepdrivemd
     published_model_dir: set_by_deepdrivemd
-    read_batch: 2000
+    read_batch: 600
     reinit: true
     shuffle: true
     split_pct: 0.8
@@ -251,13 +252,14 @@ molecular_dynamics_stage:
   task_config:
     adios_xml_sim: set_by_deepdrivemd
     bp_file: set_by_deepdrivemd
-    compute_rmsd: false
+    compute_rmsd: true
     copy_velocities_p: 0.5
     divisibleby: 32
     dt_ps: 0.002
     experiment_directory: set_by_deepdrivemd
     heat_bath_friction_coef: 1.0
     in_memory: false
+    init_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/system/comp.pdb
     initial_pdb_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/
     lock: set_by_deepdrivemd
     mda_selection: protein and name CA
@@ -268,13 +270,14 @@ molecular_dynamics_stage:
     outliers_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/18/agent_runs/stage0000/task0000/published_outliers
     output_path: set_by_deepdrivemd
     pdb_file: set_by_deepdrivemd
-    reference_pdb_file: None
-    report_interval_ps: 50.0
-    simulation_length_ns: 10.0
+    reference_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/system/comp.pdb
+    report_interval_ps: 2.5
+    simulation_length_ns: 0.5
     solvent_type: explicit
     stage_idx: 0
     task_idx: 0
     temperature_kelvin: 300.0
     threshold: 8.0
     top_suffix: .top
+    zcentroid_atoms: resname CY8 and not name H*
 

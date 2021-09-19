@@ -8,6 +8,7 @@ from typing import Dict
 
 import adios2
 import hashlib
+import sys
 
 
 class ContactMapReporter(object):
@@ -27,12 +28,22 @@ class ContactMapReporter(object):
         self.step = 0
         self.cfg = cfg
 
+        self.universe_init = MDAnalysis.Universe(self.cfg.init_pdb_file)
+        self.heavy_atoms = self.universe_init.select_atoms(self.cfg.zcentroid_atoms)
+        self.heavy_atoms_indices = self.heavy_atoms.indices
+        self.heavy_atoms_masses = self.heavy_atoms.masses
+
     def __del__(self):
         self._adios_stream.close()
 
     def describeNextReport(self, simulation):
         steps = self._reportInterval - simulation.currentStep % self._reportInterval
         return (steps, True, False, False, False, None)
+
+    def zcentroid(self, positions):
+        return np.average(
+            positions[self.heavy_atoms_indices, 2], weights=self.heavy_atoms_masses
+        )
 
     def report(self, simulation, state):
         """Computes contact maps, md5 sum of positions, rmsd to the reference state and records them into `_adios_stream`"""
@@ -48,6 +59,10 @@ class ContactMapReporter(object):
         positions = np.array(state.getPositions().value_in_unit(u.angstrom)).astype(
             np.float32
         )
+        centroid = np.array(self.zcentroid(positions), dtype=np.float32)
+        print(f"centroid = {centroid}")
+        sys.stdout.flush()
+
         velocities = stateA.getVelocities(asNumpy=True)
 
         velocities = np.array(
@@ -66,9 +81,7 @@ class ContactMapReporter(object):
             d = positions_ca.shape[0] // self.cfg.divisibleby * self.cfg.divisibleby
             positions_ca = positions_ca[:d]
 
-        print(f"len(ca_indices) = {len(ca_indices)}, d = {d}, natoms = {natoms}")
-        import sys
-
+        # print(f"len(ca_indices) = {len(ca_indices)}, d = {d}, natoms = {natoms}")
         sys.stdout.flush()
 
         contact_map = distances.contact_matrix(
@@ -85,13 +98,15 @@ class ContactMapReporter(object):
             "positions": positions,
             "velocities": velocities,
             "contact_map": contact_map,
+            "zcentroid": centroid,
         }
 
         if self.cfg.compute_rmsd:
             mda_u = MDAnalysis.Universe(str(self.cfg.reference_pdb_file))
             reference_positions = mda_u.select_atoms(
                 self.cfg.mda_selection
-            ).positions.copy()
+            ).positions.copy()[:d]
+
             rmsd = rms.rmsd(positions_ca, reference_positions, superposition=True)
             rmsd = np.array([rmsd], dtype=np.float32)
             output["rmsd"] = rmsd

@@ -617,7 +617,7 @@ def main(cfg: OutlierDetectionConfig):
                     ]
                 eps = cfg.init_eps
                 min_samples = cfg.init_min_samples
-        if hasattr(cfg, "multi_ligand_table"):
+        if cfg.outlier_selection == "lof":
             print("Using top lof outliers")
             top = top_lof(cfg, cvae_input, cm_predict, outlier_list)
         elif cfg.use_random_outliers or (not cfg.compute_rmsd):

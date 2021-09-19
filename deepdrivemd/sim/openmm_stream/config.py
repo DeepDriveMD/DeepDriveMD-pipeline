@@ -47,6 +47,7 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     copy_velocities_p: float = 0.5
     # simulation directory
     current_dir: Path = Path()
+    zcentroid_atoms: Optional[str] = ""
 
     @root_validator()
     def explicit_solvent_requires_top_suffix(cls, values: dict):

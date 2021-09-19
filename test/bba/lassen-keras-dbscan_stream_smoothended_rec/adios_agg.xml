@@ -2,7 +2,7 @@
 <adios-config>
     <io name="AggregatorOutput">
         <engine type="BPFile">
-        <parameter key="FlushStepsCount" value="100"/>
+        <parameter key="FlushStepsCount" value="10"/>
         </engine>
     </io>
 </adios-config>

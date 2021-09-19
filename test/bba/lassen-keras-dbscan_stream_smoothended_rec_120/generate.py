@@ -17,13 +17,13 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/301"
+    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/303"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
     node_local_path: Path = None
     init_pdb_file = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/system/comp.pdb"
-    ref_pdb_file: Path = None
+    ref_pdb_file: Path = init_pdb_file
     config_directory = "set_by_deepdrivemd"
     adios_xml_sim = "set_by_deepdrivemd"
     adios_xml_agg = "set_by_deepdrivemd"
@@ -83,8 +83,10 @@ class TaskConfigMD(BaseModel):
     next_outlier_policy = 1
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
-    compute_rmsd = False
+    compute_rmsd = True
     divisibleby = 32
+    zcentroid_atoms = "resname CY8 and not name H*"
+    init_pdb_file = f"{header.init_pdb_file}"
 
 
 task_config_md = TaskConfigMD()
@@ -235,6 +237,7 @@ class TaskConfigAgent(CVAE):
     use_outliers = True
     use_random_outliers = True
     compute_rmsd = task_config_md.compute_rmsd
+    outlier_selection = "lof"
 
 
 task_config_agent = TaskConfigAgent()

@@ -107,6 +107,7 @@ def aggregate(
         "positions": (np.float32, DataStructure.array),
         "velocities": (np.float32, DataStructure.array),
         "md5": (np.int64, DataStructure.array),
+        "zcentroid": (np.float32, DataStructure.scalar),
     }
 
     variablesW = {
@@ -115,6 +116,7 @@ def aggregate(
         "positions": (np.float32, DataStructure.array),
         "velocities": (np.float32, DataStructure.array),
         "md5": (str, DataStructure.scalar),
+        "zcentroid": (np.float32, DataStructure.scalar),
     }
 
     if cfg.compute_rmsd:
