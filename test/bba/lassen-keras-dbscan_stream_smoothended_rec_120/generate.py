@@ -224,7 +224,7 @@ class TaskConfigAgent(CVAE):
     lastN = 200
     outlier_count = 120
     outlier_max = 2000
-    outlier_min = 120
+    outlier_min = 500
     init_pdb_file = f"{header.init_pdb_file}"
     ref_pdb_file = f"{header.ref_pdb_file}"
     init_eps = 1.3

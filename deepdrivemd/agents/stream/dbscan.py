@@ -661,9 +661,9 @@ def read_lastN(
     """
 
     if cfg.compute_rmsd:
-        vars = ["contact_map", "rmsd"]
+        vars = ["contact_map", "zcentroid", "rmsd"]
     else:
-        vars = ["contact_map"]
+        vars = ["contact_map", "zcentroid"]
 
     variable_lists = {}
     for bp in adios_files_list:
@@ -678,7 +678,7 @@ def read_lastN(
                     shape = list(
                         map(int, fh.available_variables()[v]["Shape"].split(","))
                     )
-                elif v == "rmsd":
+                elif v == "rmsd" or v == "zcentroid":
                     print(fh.available_variables()[v]["Shape"])
                     sys.stdout.flush()
                 if v == "contact_map":
@@ -690,7 +690,7 @@ def read_lastN(
                         step_start=start_step,
                         step_count=lastN,
                     )
-                elif v == "rmsd":
+                elif v == "rmsd" or v == "zcentroid":
                     var = fh.read(v, [], [], step_start=start_step, step_count=lastN)
                 print("v = ", v, " var.shape = ", var.shape)
                 try:
@@ -720,9 +720,15 @@ def read_lastN(
     sys.stdout.flush()
 
     if cfg.compute_rmsd:
-        return variable_lists["contact_map"], np.concatenate(variable_lists["rmsd"])
+        return (
+            variable_lists["contact_map"],
+            np.concatenate(variable_lists["zcentroid"]),
+            np.concatenate(variable_lists["rmsd"]),
+        )
     else:
-        return variable_lists["contact_map"]
+        return variable_lists["contact_map"], np.concatenate(
+            variable_lists["zcentroid"]
+        )
 
 
 def project_mini(cfg: OutlierDetectionConfig):
@@ -740,7 +746,17 @@ def project_mini(cfg: OutlierDetectionConfig):
     for i, bp in enumerate(adios_files_list):
         print(f"i={i}, bp={bp}")
         sys.stdout.flush()
-        cvae_input = [read_lastN([bp], lastN)]
+        cvae_input = read_lastN([bp], lastN)
+
+        zcentroid = cvae_input[1]
+        with open(cfg.output_path / f"zcentroid_{i}.npy", "wb") as f:
+            np.save(f, zcentroid)
+
+        if cfg.compute_rmsd:
+            rmsds = cvae_input[2]
+            with open(cfg.output_path / f"rmsd_{i}.npy", "wb") as f:
+                np.save(f, rmsds)
+
         with Timer("project_predict"):
             embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=64)
         with open(cfg.output_path / f"embeddings_cvae_{i}.npy", "wb") as f:

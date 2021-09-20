@@ -92,7 +92,7 @@ agent_stage:
     num_sim: 120
     outlier_count: 120
     outlier_max: 2000
-    outlier_min: 120
+    outlier_min: 500
     outlier_selection: lof
     output_path: set_by_deepdrivemd
     project_gpu: false
