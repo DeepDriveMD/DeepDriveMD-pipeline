@@ -20,6 +20,8 @@ run9:
 	bin/run.sh lassen-keras-dbscan_stream_smoothended_rec_120
 run10:
 	bin/run.sh lassen-keras-dbscan_stream_multi-ligand
+run11:
+	bin/run.sh lassen-keras-dbscan_stream_multi-ligand_120
 watch1:
 	watch bpls ../Outputs/${d}/aggregation_runs/stage0000/task0000/agg.bp
 watch2:

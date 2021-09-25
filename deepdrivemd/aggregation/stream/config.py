@@ -13,6 +13,7 @@ class StreamAggregation(AggregationTaskConfig):
     adios_xml_agg: Path = Path()
     # is rmsd used
     compute_rmsd: bool = True
+    compute_zcentroid: bool = False
 
 
 if __name__ == "__main__":

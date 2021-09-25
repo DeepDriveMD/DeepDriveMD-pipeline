@@ -28,10 +28,17 @@ class ContactMapReporter(object):
         self.step = 0
         self.cfg = cfg
 
-        self.universe_init = MDAnalysis.Universe(self.cfg.init_pdb_file)
-        self.heavy_atoms = self.universe_init.select_atoms(self.cfg.zcentroid_atoms)
-        self.heavy_atoms_indices = self.heavy_atoms.indices
-        self.heavy_atoms_masses = self.heavy_atoms.masses
+        # print("cfg.init_pdb_file = ", self.cfg.init_pdb_file); sys.stdout.flush()
+        if cfg.compute_zcentroid or cfg.compute_rmsd:
+            self.universe_init = MDAnalysis.Universe(self.cfg.init_pdb_file)
+        if cfg.compute_zcentroid:
+            self.heavy_atoms = self.universe_init.select_atoms(self.cfg.zcentroid_atoms)
+            self.heavy_atoms_indices = self.heavy_atoms.indices
+            self.heavy_atoms_masses = self.heavy_atoms.masses
+        if cfg.compute_rmsd:
+            self.rmsd_positions = self.universe_init.select_atoms(
+                self.cfg.mda_selection
+            ).positions.copy()
 
     def __del__(self):
         self._adios_stream.close()
@@ -59,9 +66,11 @@ class ContactMapReporter(object):
         positions = np.array(state.getPositions().value_in_unit(u.angstrom)).astype(
             np.float32
         )
-        centroid = np.array(self.zcentroid(positions), dtype=np.float32)
-        print(f"centroid = {centroid}")
-        sys.stdout.flush()
+
+        if self.cfg.compute_zcentroid:
+            centroid = np.array(self.zcentroid(positions), dtype=np.float32)
+            print(f"centroid = {centroid}")
+            sys.stdout.flush()
 
         velocities = stateA.getVelocities(asNumpy=True)
 
@@ -98,15 +107,13 @@ class ContactMapReporter(object):
             "positions": positions,
             "velocities": velocities,
             "contact_map": contact_map,
-            "zcentroid": centroid,
         }
 
-        if self.cfg.compute_rmsd:
-            mda_u = MDAnalysis.Universe(str(self.cfg.reference_pdb_file))
-            reference_positions = mda_u.select_atoms(
-                self.cfg.mda_selection
-            ).positions.copy()[:d]
+        if self.cfg.compute_zcentroid:
+            output["zcentroid"] = centroid
 
+        if self.cfg.compute_rmsd:
+            reference_positions = self.rmsd_positions[:d].copy()
             rmsd = rms.rmsd(positions_ca, reference_positions, superposition=True)
             rmsd = np.array([rmsd], dtype=np.float32)
             output["rmsd"] = rmsd

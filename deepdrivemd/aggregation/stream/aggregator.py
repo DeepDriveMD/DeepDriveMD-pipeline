@@ -107,7 +107,6 @@ def aggregate(
         "positions": (np.float32, DataStructure.array),
         "velocities": (np.float32, DataStructure.array),
         "md5": (np.int64, DataStructure.array),
-        "zcentroid": (np.float32, DataStructure.scalar),
     }
 
     variablesW = {
@@ -116,16 +115,15 @@ def aggregate(
         "positions": (np.float32, DataStructure.array),
         "velocities": (np.float32, DataStructure.array),
         "md5": (str, DataStructure.scalar),
-        "zcentroid": (np.float32, DataStructure.scalar),
     }
 
     if cfg.compute_rmsd:
-        print(f"cfg.compute_rmsd = {cfg.compute_rmsd}; why are we here?")
-        import sys
-
-        sys.stdout.flush()
         variablesR["rmsd"] = (np.float32, DataStructure.scalar)
         variablesW["rmsd"] = (np.float32, DataStructure.scalar)
+
+    if cfg.compute_zcentroid:
+        variablesR["zcentroid"] = (np.float32, DataStructure.scalar)
+        variablesW["zcentroid"] = (np.float32, DataStructure.scalar)
 
     ARW = AdiosStreamStepRW(connections, variablesR)
 

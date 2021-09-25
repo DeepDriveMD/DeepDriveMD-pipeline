@@ -17,7 +17,7 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/303"
+    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/305"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
@@ -176,7 +176,7 @@ class TaskConfigML(CVAE):
     stage_idx = 0
     task_idx = 0
     output_path = "set_by_deepdrivemd"
-    epochs = 70
+    epochs = 130
     batch_size = 32
     min_step_increment = 600
     max_steps = 600
@@ -188,7 +188,7 @@ class TaskConfigML(CVAE):
     published_model_dir = "set_by_deepdrivemd"
     checkpoint_dir = "set_by_deepdrivemd"
     adios_xml_agg = header.adios_xml_agg
-    reinit = True
+    reinit = False
     use_model_checkpoint = True
     read_batch = 600
 

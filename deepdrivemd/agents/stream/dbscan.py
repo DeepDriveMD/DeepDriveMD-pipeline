@@ -660,10 +660,13 @@ def read_lastN(
         :obj:`lastN` corresponding rmsds.
     """
 
+    vars = ["contact_map"]
+
+    if cfg.compute_zcentroid:
+        vars.append("zcentroid")
+
     if cfg.compute_rmsd:
-        vars = ["contact_map", "zcentroid", "rmsd"]
-    else:
-        vars = ["contact_map", "zcentroid"]
+        vars.append("rmsd")
 
     variable_lists = {}
     for bp in adios_files_list:
@@ -719,16 +722,15 @@ def read_lastN(
         print(variable_lists["rmsd"].shape)
     sys.stdout.flush()
 
+    result = [variable_lists["contact_map"]]
+
+    if cfg.compute_zcentroid:
+        result.append(np.concatenate(variable_lists["zcentroid"]))
+
     if cfg.compute_rmsd:
-        return (
-            variable_lists["contact_map"],
-            np.concatenate(variable_lists["zcentroid"]),
-            np.concatenate(variable_lists["rmsd"]),
-        )
-    else:
-        return variable_lists["contact_map"], np.concatenate(
-            variable_lists["zcentroid"]
-        )
+        result.append(np.concatenate(variable_lists["rmsd"]))
+
+    return tuple(result)
 
 
 def project_mini(cfg: OutlierDetectionConfig):
@@ -748,9 +750,10 @@ def project_mini(cfg: OutlierDetectionConfig):
         sys.stdout.flush()
         cvae_input = read_lastN([bp], lastN)
 
-        zcentroid = cvae_input[1]
-        with open(cfg.output_path / f"zcentroid_{i}.npy", "wb") as f:
-            np.save(f, zcentroid)
+        if cfg.compute_zcentroid:
+            zcentroid = cvae_input[1]
+            with open(cfg.output_path / f"zcentroid_{i}.npy", "wb") as f:
+                np.save(f, zcentroid)
 
         if cfg.compute_rmsd:
             rmsds = cvae_input[2]

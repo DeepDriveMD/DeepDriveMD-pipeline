@@ -48,6 +48,7 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     # simulation directory
     current_dir: Path = Path()
     zcentroid_atoms: Optional[str] = ""
+    compute_zcentroid: bool = False
 
     @root_validator()
     def explicit_solvent_requires_top_suffix(cls, values: dict):

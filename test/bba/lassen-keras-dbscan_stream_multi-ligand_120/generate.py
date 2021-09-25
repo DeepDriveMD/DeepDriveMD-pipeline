@@ -7,12 +7,12 @@ from pathlib import Path
 
 
 class Header(BaseModel):
-    title = "BBA integration test"
+    title = "multi-ligand"
     resource = "llnl.lassen"
     queue = "pbatch"
     schema_ = "local"
     project = "cv19-a01"
-    walltime_min = 60 * 3
+    walltime_min = 60 * 12
     max_iteration = 4
     cpus_per_node = 40
     gpus_per_node = 4
@@ -70,8 +70,8 @@ class TaskConfigMD(BaseModel):
     initial_pdb_dir = "set_by_deepdrivemd"
     solvent_type = "explicit"
     top_suffix: str = ".prmtop"
-    simulation_length_ns = 10.0 / 40
-    report_interval_ps = 50.0 / 40
+    simulation_length_ns = 10.0 / 5
+    report_interval_ps = 50.0 / 5
     dt_ps = 0.002
     temperature_kelvin = 300.0
     heat_bath_friction_coef = 1.0
@@ -89,7 +89,6 @@ class TaskConfigMD(BaseModel):
     compute_rmsd = True
     divisibleby = 32
     multi_ligand_table = header.multi_ligand_table
-    # compute_rmsd = True
     zcentroid_atoms = "resname CY8 and not name H*"
     init_pdb_file = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/l1076-710260/system/sys_l1076-710260.pdb"
     compute_zcentroid = False
@@ -115,7 +114,7 @@ class MD(BaseModel):
     arguments = [f"{header.software_directory}/sim/openmm_stream/run_openmm.py"]
     cpu_reqs = cpu_req_md.dict()
     gpu_reqs = gpu_req_md.dict()
-    num_tasks = 12
+    num_tasks = 120
     task_config = task_config_md.dict()
 
 
@@ -138,7 +137,7 @@ class TaskConfigAgg(BaseModel):
     task_idx = 0
     output_path = "set_by_deepdrivemd"
     node_local_path = "set_by_deepdrivemd"
-    num_tasks = 1
+    num_tasks = 10
     n_sim = md.num_tasks
     sleeptime_bpfiles = 30
     adios_xml_agg = header.adios_xml_agg
@@ -184,10 +183,10 @@ class TaskConfigML(CVAE):
     stage_idx = 0
     task_idx = 0
     output_path = "set_by_deepdrivemd"
-    epochs = 200
+    epochs = 130
     batch_size = 32
-    min_step_increment = 200
-    max_steps = 2000
+    min_step_increment = 600
+    max_steps = 600
     max_loss = 1500
     num_agg = agg.num_tasks
     timeout1 = 30
@@ -196,9 +195,9 @@ class TaskConfigML(CVAE):
     published_model_dir = "set_by_deepdrivemd"
     checkpoint_dir = "set_by_deepdrivemd"
     adios_xml_agg = header.adios_xml_agg
-    reinit = True
+    reinit = False
     use_model_checkpoint = True
-    read_batch = 2000
+    read_batch = 600
 
 
 task_config_ml = TaskConfigML()
@@ -225,19 +224,19 @@ class TaskConfigAgent(CVAE):
 
     agg_dir = f"{header.experiment_directory}/aggregation_runs"
     num_agg = agg.num_tasks
-    min_step_increment = 500
+    min_step_increment = 200
     timeout1 = 30
     timeout2 = 10
     best_model = f"{header.experiment_directory}/machine_learning_runs/stage0000/task0000/published_model/best.h5"
-    lastN = 2000
+    lastN = 200
     outlier_count = 120
-    outlier_max = 5000
-    outlier_min = 100
+    outlier_max = 2000
+    outlier_min = 500
     init_pdb_file = f"{header.init_pdb_file}"
     ref_pdb_file = f"{header.ref_pdb_file}"
     init_eps = 1.3
     init_min_samples = 10
-    read_batch = 2000
+    read_batch = 200
     num_sim = md.num_tasks
     project_lastN = 50 * 1000
     project_gpu = False
