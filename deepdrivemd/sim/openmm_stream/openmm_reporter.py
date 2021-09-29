@@ -1,12 +1,13 @@
 import simtk.unit as u
-import os
+
+# import os
 from MDAnalysis.analysis import distances, rms
 import MDAnalysis
 import numpy as np
 from deepdrivemd.utils import t2Dto1D, hash2intarray
 from typing import Dict
 
-import adios2
+# import adios2
 import hashlib
 import sys
 
@@ -18,17 +19,25 @@ class ContactMapReporter(object):
         self._reportInterval = reportInterval
         print(cfg)
         print(f"report interval = {reportInterval}")
+        print("ContactMapRepoter constructor")
+        self._adios_stream = cfg._adios_stream
+
+        """
         stream_name = os.path.basename(cfg.output_path)
+
         self._adios_stream = adios2.open(
             name=str(cfg.bp_file),
             mode="w",
             config_file=str(cfg.adios_cfg),
             io_in_config_file=stream_name,
         )
+        """
+
         self.step = 0
         self.cfg = cfg
 
-        # print("cfg.init_pdb_file = ", self.cfg.init_pdb_file); sys.stdout.flush()
+        print("cfg.init_pdb_file = ", self.cfg.init_pdb_file)
+        sys.stdout.flush()
         if cfg.compute_zcentroid or cfg.compute_rmsd:
             self.universe_init = MDAnalysis.Universe(self.cfg.init_pdb_file)
         if cfg.compute_zcentroid:
@@ -41,7 +50,10 @@ class ContactMapReporter(object):
             ).positions.copy()
 
     def __del__(self):
+        """
         self._adios_stream.close()
+        """
+        print("ContactMapRepoter destructor")
 
     def describeNextReport(self, simulation):
         steps = self._reportInterval - simulation.currentStep % self._reportInterval
@@ -90,7 +102,7 @@ class ContactMapReporter(object):
             d = positions_ca.shape[0] // self.cfg.divisibleby * self.cfg.divisibleby
             positions_ca = positions_ca[:d]
 
-        # print(f"len(ca_indices) = {len(ca_indices)}, d = {d}, natoms = {natoms}")
+        print(f"len(ca_indices) = {len(ca_indices)}, d = {d}, natoms = {natoms}")
         sys.stdout.flush()
 
         contact_map = distances.contact_matrix(
@@ -117,6 +129,10 @@ class ContactMapReporter(object):
             rmsd = rms.rmsd(positions_ca, reference_positions, superposition=True)
             rmsd = np.array([rmsd], dtype=np.float32)
             output["rmsd"] = rmsd
+
+        if hasattr(self.cfg, "multi_ligand_table"):
+            output["ligand"] = np.array([self.cfg.ligand], dtype=np.int32)
+            output["natoms"] = np.array([natoms], dtype=np.int32)
 
         self.write_adios_step(output)
         self.step += 1

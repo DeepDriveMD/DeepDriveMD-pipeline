@@ -14,6 +14,7 @@ class StreamAggregation(AggregationTaskConfig):
     # is rmsd used
     compute_rmsd: bool = True
     compute_zcentroid: bool = False
+    multi_ligand_table: Path = Path()
 
 
 if __name__ == "__main__":

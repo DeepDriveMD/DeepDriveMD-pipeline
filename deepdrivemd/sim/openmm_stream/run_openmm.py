@@ -18,6 +18,7 @@ import itertools
 from deepdrivemd.sim.openmm.run_openmm import SimulationContext
 from typing import Tuple
 import pandas as pd
+import adios2
 
 
 def configure_reporters(
@@ -26,8 +27,8 @@ def configure_reporters(
     cfg: OpenMMConfig,
     report_steps: int,
 ):
-
-    sim.reporters.append(ContactMapReporter(report_steps, cfg))
+    cfg.reporter = ContactMapReporter(report_steps, cfg)
+    sim.reporters.append(cfg.reporter)
 
 
 def next_outlier(
@@ -80,6 +81,7 @@ def next_outlier(
     if hasattr(cfg, "multi_ligand_table"):
         with open(task) as f:
             task_id = int(f.read())
+            cfg.ligand = task_id
         return positions_pdb, velocities_npy, rmsd, md5, task_id
     else:
         return positions_pdb, velocities_npy, rmsd, md5
@@ -127,11 +129,21 @@ def prepare_simulation(
             init_multi_ligand(cfg, task)
             with Timer("molecular_dynamics_SimulationContext"):
                 ctx = SimulationContext(cfg)
+                print("ctx = ", ctx)
+                print("dir(ctx) = ", dir(ctx))
+
             with Timer("molecular_dynamics_configure_simulation"):
                 dt_ps = cfg.dt_ps * u.picoseconds
                 temperature_kelvin = cfg.temperature_kelvin * u.kelvin
+                print("positions_pdb = ", positions_pdb)
+                print("ctx.top_file = ", ctx.top_file)
+                try:
+                    del sim
+                except Exception as e:
+                    print(e)
+                    pass
                 sim = configure_simulation(
-                    pdb_file=ctx.pdb_file,
+                    pdb_file=str(positions_pdb),  # ctx.pdb_file,
                     top_file=ctx.top_file,
                     solvent_type=cfg.solvent_type,
                     gpu_index=0,
@@ -139,6 +151,9 @@ def prepare_simulation(
                     temperature_kelvin=temperature_kelvin,
                     heat_bath_friction_coef=cfg.heat_bath_friction_coef,
                 )
+
+            with Timer("molecular_dynamics_configure_reporters"):
+                configure_reporters(sim, ctx, cfg, cfg.report_steps)
 
         sim.context.setPositions(positions)
         if random.random() < cfg.copy_velocities_p:
@@ -149,10 +164,10 @@ def prepare_simulation(
             sim.context.setVelocitiesToTemperature(
                 cfg.temperature_kelvin * u.kelvin, random.randint(1, 10000)
             )
-        return True
+        return True, sim
     else:
         print("There are no outliers")
-        return False
+        return False, sim
 
 
 def init_input(cfg: OpenMMConfig):
@@ -215,6 +230,7 @@ def run_simulation(cfg: OpenMMConfig):
     nsteps = int(simulation_length_ns / dt_ps)
 
     report_steps = int(report_interval_ps / dt_ps)
+    cfg.report_steps = report_steps
     print("report_steps = ", report_steps)
 
     # Configure reporters to write output files
@@ -228,7 +244,7 @@ def run_simulation(cfg: OpenMMConfig):
         sys.stdout.flush()
         with Timer("molecular_dynamics_step"):
             sim.step(nsteps)
-        prepare_simulation(cfg, iteration, sim)
+        _, sim = prepare_simulation(cfg, iteration, sim)
 
 
 def adios_configuration(cfg: OpenMMConfig):
@@ -255,4 +271,15 @@ if __name__ == "__main__":
     cfg = OpenMMConfig.from_yaml(args.config)
     adios_configuration(cfg)
     cfg.bp_file = cfg.output_path / "md.bp"
+
+    stream_name = os.path.basename(cfg.output_path)
+    cfg._adios_stream = adios2.open(
+        name=str(cfg.bp_file),
+        mode="w",
+        config_file=str(cfg.adios_cfg),
+        io_in_config_file=stream_name,
+    )
+
     run_simulation(cfg)
+
+    cfg._adios_stream.close()

@@ -4,17 +4,32 @@ from collections import Counter
 import sys
 import glob
 
-fns = glob.glob("../../Outputs/301/aggregation_runs/stage0000/task00*/agg.bp")
+fns = glob.glob("../../Outputs/305/aggregation_runs/stage0000/task00*/agg.bp")
+fns.sort()
+
+start = 0
+end = len(fns)
+
+try:
+    start = int(sys.argv[1])
+    end = int(sys.argv[2])
+except Exception as e:
+    print(e)
+
+print("start = ", start, " end = ", end)
+sys.stdout.flush()
+
+
 # fns.reverse()
 # total_count = 19200
 count = 200 * 12
 
-for fn in fns:
+for fn in fns[start:end]:
     with adios2.open(fn, "r") as fh:
         total_count = fh.steps()
         iterations = int(total_count / count)
         print("total_count = ", total_count, " iterations = ", iterations)
-        for i in range(iterations):
+        for i in range(iterations - 1, 0, -1):
             start = count * i
             print("i = ", i)
             sys.stdout.flush()

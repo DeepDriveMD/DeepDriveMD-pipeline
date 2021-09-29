@@ -756,7 +756,7 @@ def project_mini(cfg: OutlierDetectionConfig):
                 np.save(f, zcentroid)
 
         if cfg.compute_rmsd:
-            rmsds = cvae_input[2]
+            rmsds = cvae_input[1]  # cvae_input[2]
             with open(cfg.output_path / f"rmsd_{i}.npy", "wb") as f:
                 np.save(f, rmsds)
 

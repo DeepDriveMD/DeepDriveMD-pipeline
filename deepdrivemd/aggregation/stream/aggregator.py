@@ -125,6 +125,12 @@ def aggregate(
         variablesR["zcentroid"] = (np.float32, DataStructure.scalar)
         variablesW["zcentroid"] = (np.float32, DataStructure.scalar)
 
+    if hasattr(cfg, "multi_ligand_table"):
+        variablesR["ligand"] = (np.int32, DataStructure.scalar)
+        variablesR["natoms"] = (np.int32, DataStructure.scalar)
+        variablesW["ligand"] = (np.int32, DataStructure.scalar)
+        variablesW["natoms"] = (np.int32, DataStructure.scalar)
+
     ARW = AdiosStreamStepRW(connections, variablesR)
 
     # infinite loop over simulation reporting steps
