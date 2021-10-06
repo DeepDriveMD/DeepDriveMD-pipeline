@@ -196,6 +196,7 @@ def init_multi_ligand(cfg: OpenMMConfig, task_id=None):
     print(
         f"init_multi_ligand: id = {task_id}, pdb = {cfg.pdb_file}, tdir = {cfg.initial_pdb_dir}"
     )
+    cfg.ligand = cfg.task_idx
 
 
 def run_simulation(cfg: OpenMMConfig):

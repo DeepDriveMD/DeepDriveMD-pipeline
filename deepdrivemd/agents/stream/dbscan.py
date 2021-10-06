@@ -668,6 +668,10 @@ def read_lastN(
     if cfg.compute_rmsd:
         vars.append("rmsd")
 
+    if hasattr(cfg, "multi_ligand_table"):
+        vars.append("ligand")
+        vars.append("dir")
+
     variable_lists = {}
     for bp in adios_files_list:
         with adios2.open(bp, "r") as fh:
@@ -693,9 +697,14 @@ def read_lastN(
                         step_start=start_step,
                         step_count=lastN,
                     )
-                elif v == "rmsd" or v == "zcentroid":
+                elif v == "rmsd" or v == "zcentroid" or v == "ligand":
                     var = fh.read(v, [], [], step_start=start_step, step_count=lastN)
-                print("v = ", v, " var.shape = ", var.shape)
+                elif v == "dir":
+                    var = fh.read_string(v, step_start=start_step, step_count=lastN)
+                if v != "dir":
+                    print("v = ", v, " var.shape = ", var.shape)
+                else:
+                    print("v = ", v, " len(var) = ", len(var))
                 try:
                     variable_lists[v].append(var)
                 except Exception as e:
@@ -730,6 +739,10 @@ def read_lastN(
     if cfg.compute_rmsd:
         result.append(np.concatenate(variable_lists["rmsd"]))
 
+    if hasattr(cfg, "multi_ligand_table"):
+        result.append(np.concatenate(variable_lists["ligand"]))
+        result.append(np.concatenate(variable_lists["dir"]))
+
     return tuple(result)
 
 
@@ -759,6 +772,16 @@ def project_mini(cfg: OutlierDetectionConfig):
             rmsds = cvae_input[1]  # cvae_input[2]
             with open(cfg.output_path / f"rmsd_{i}.npy", "wb") as f:
                 np.save(f, rmsds)
+
+        if hasattr(cfg, "multi_ligand_table"):
+            ligand = cvae_input[2]
+            sim = cvae_input[3]
+            for j in range(len(ligand)):
+                print(f"ligand[{j}] = {ligand[j]}")
+                if ligand[j] == -1:
+                    ligand[j] = int(sim[j])
+            with open(cfg.output_path / f"ligand_{i}.npy", "wb") as f:
+                np.save(f, ligand)
 
         with Timer("project_predict"):
             embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=64)
