@@ -1,10 +1,10 @@
 title: Smoothened Receptor
 resource: llnl.lassen
-queue: pdebug
+queue: pbatch
 schema_: local
 project: cv19-a01
-walltime_min: 30
-max_iteration: 3
+walltime_min: 720
+max_iteration: 20
 cpus_per_node: 40
 gpus_per_node: 4
 hardware_threads_per_cpu: 4
@@ -115,14 +115,14 @@ machine_learning_stage:
         k_random_old_h5_files: 120
         dataset_name: contact_map
         initial_shape:
-        - 458
-        - 458
+        - 459
+        - 459
         final_shape:
-        - 458
-        - 458
+        - 448
+        - 448
         - 1
-        initial_epochs: 100
-        epochs: 25
+        initial_epochs: 50
+        epochs: 50
         batch_size: 32
         split_pct: 0.8
         shuffle: true
@@ -217,7 +217,7 @@ agent_stage:
         num_extrinsic_outliers: 120
         intrinsic_score: dbscan_lof_outlier
         extrinsic_score: null
-        n_traj_frames: 1000
+        n_traj_frames: 200
         n_most_recent_h5_files: 120
         k_random_old_h5_files: 120
         sklearn_num_jobs: -1
