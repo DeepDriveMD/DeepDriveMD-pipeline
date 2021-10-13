@@ -110,6 +110,16 @@ def get_intrinsic_score(
         intrinsic_inds = dbscan_outlier_search(embeddings, cfg.num_intrinsic_outliers)
         # DBSCAN does not have an outlier score
         intrinsic_scores = np.zeros(len(intrinsic_inds))  # type: ignore[arg-type]
+    elif cfg.intrinsic_score == "dbscan_lof_outlier":
+        intrinsic_inds = dbscan_outlier_search(embeddings, cfg.num_intrinsic_outliers)
+        clf = LocalOutlierFactor()
+        clf.fit_predict(embeddings[intrinsic_inds])  # type: ignore[index]
+        intrinsic_scores: "npt.ArrayLike" = clf.negative_outlier_factor_  # type: ignore[no-redef]
+        # Sort the DBSCAN outliers by LOF score.
+        # The smaller the lof_score, the more likely the point is an outlier.
+        sorted_lof_inds = np.argsort(intrinsic_scores)
+        intrinsic_inds = intrinsic_inds[sorted_lof_inds]  # type: ignore[call-overload, index]
+
     else:
         # If no intrinsic_score, simply return all the data
         intrinsic_inds = np.arange(len(embeddings))  # type: ignore[arg-type]

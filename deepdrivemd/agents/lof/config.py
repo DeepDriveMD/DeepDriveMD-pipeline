@@ -44,7 +44,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     def scoring_method_check(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         intrinsic_score = values.get("intrinsic_score")
         extrinsic_score = values.get("extrinsic_score")
-        valid_intrinsic_scores = {"lof", "dbscan", None}
+        valid_intrinsic_scores = {"lof", "dbscan", "dbscan_lof_outlier", None}
         valid_extrinsic_scores = {"rmsd", None}
         if intrinsic_score is None and extrinsic_score is None:
             raise ValueError("intrinsic_score and extrinsic_score cannot both be None.")
