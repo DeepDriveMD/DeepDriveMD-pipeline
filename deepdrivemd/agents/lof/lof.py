@@ -67,9 +67,11 @@ def dbscan_outlier_search(
     embeddings: "npt.ArrayLike", num_intrinsic_outliers: int
 ) -> "npt.ArrayLike":
     """Find best eps and return corresponding outlier indices."""
+
+    # TODO: Move these parameters to config
     eps = 1.3
     outlier_min = num_intrinsic_outliers
-    outlier_max = num_intrinsic_outliers + 200
+    outlier_max = num_intrinsic_outliers + 2000
     attempts = 120
 
     for _ in range(attempts):
@@ -111,7 +113,14 @@ def get_intrinsic_score(
         # DBSCAN does not have an outlier score
         intrinsic_scores = np.zeros(len(intrinsic_inds))  # type: ignore[arg-type]
     elif cfg.intrinsic_score == "dbscan_lof_outlier":
-        intrinsic_inds = dbscan_outlier_search(embeddings, cfg.num_intrinsic_outliers)
+        try:
+            intrinsic_inds = dbscan_outlier_search(
+                embeddings, cfg.num_intrinsic_outliers
+            )
+        except ValueError:
+            print("WARNING: Could not find outliers with DBSCAN")
+            # Default to the "lof" intrinsic score if DBSCAN doesn't find outliers
+            intrinsic_inds = np.arange(len(embeddings))  # type: ignore[arg-type]
         clf = LocalOutlierFactor()
         clf.fit_predict(embeddings[intrinsic_inds])  # type: ignore[index]
         intrinsic_scores: "npt.ArrayLike" = clf.negative_outlier_factor_  # type: ignore[no-redef]
