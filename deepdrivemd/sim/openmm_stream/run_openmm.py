@@ -56,21 +56,35 @@ def next_outlier(
     if cfg.lock == "set_by_deepdrivemd":
         cfg.lock = LockFile(cfg.pickle_db)
 
-    cfg.lock.acquire()
-    with open(cfg.pickle_db, "rb") as f:
-        db = pickle.load(f)
-    md5 = db.sorted_index[cfg.task_idx]
-    rmsd = db.dictionary[md5]
-    positions_pdb = cfg.outliers_dir / f"{md5}.pdb"
-    velocities_npy = cfg.outliers_dir / f"{md5}.npy"
-    shutil.copy(positions_pdb, cfg.current_dir)
-    shutil.copy(velocities_npy, cfg.current_dir)
-    shutil.copy(cfg.pickle_db, cfg.current_dir)
-    if hasattr(cfg, "multi_ligand_table"):
-        task = cfg.outliers_dir / f"{md5}.txt"
-        shutil.copy(task, cfg.current_dir)
+    while True:
+        try:
+            cfg.lock.acquire()
+            with open(cfg.pickle_db, "rb") as f:
+                db = pickle.load(f)
+            md5 = db.sorted_index[cfg.task_idx]
+            rmsd = db.dictionary[md5]
+            positions_pdb = cfg.outliers_dir / f"{md5}.pdb"
+            velocities_npy = cfg.outliers_dir / f"{md5}.npy"
 
-    cfg.lock.release()
+            shutil.copy(positions_pdb, cfg.current_dir)
+            shutil.copy(velocities_npy, cfg.current_dir)
+            shutil.copy(cfg.pickle_db, cfg.current_dir)
+            if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
+                task = cfg.outliers_dir / f"{md5}.txt"
+                shutil.copy(task, cfg.current_dir)
+            cfg.lock.release()
+        except Exception as e:
+            print("=" * 30)
+            print(e)
+            sleeptime = random.randint(3, 15)
+            print(f"Sleeping for {sleeptime} seconds")
+            print(subprocess.getstatusoutput(f"ls -l {cfg.outliers_dir}")[1])
+            print(subprocess.getstatusoutput(f"md5sum {cfg.outliers_dir}/*")[1])
+            print("=" * 30)
+            sys.stdout.flush()
+            time.sleep(sleeptime)
+            continue
+        break
 
     with open(cfg.current_dir / "rmsd.txt", "w") as f:
         f.write(f"{rmsd}\n")
@@ -78,7 +92,7 @@ def next_outlier(
     positions_pdb = cfg.current_dir / f"{md5}.pdb"
     velocities_npy = cfg.current_dir / f"{md5}.npy"
 
-    if hasattr(cfg, "multi_ligand_table"):
+    if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         with open(task) as f:
             task_id = int(f.read())
             cfg.ligand = task_id
@@ -111,7 +125,7 @@ def prepare_simulation(
     outlier = next_outlier(cfg, sim)
     if outlier is not None:
         print("There are outliers")
-        if hasattr(cfg, "multi_ligand_table"):
+        if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
             positions_pdb, velocities_npy, rmsd, md5, task = outlier
         else:
             positions_pdb, velocities_npy, rmsd, md5 = outlier
@@ -125,7 +139,7 @@ def prepare_simulation(
                 print(f"Waiting for {positions_pdb} and {velocities_npy}")
                 time.sleep(5)
 
-        if hasattr(cfg, "multi_ligand_table"):
+        if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
             init_multi_ligand(cfg, task)
             with Timer("molecular_dynamics_SimulationContext"):
                 ctx = SimulationContext(cfg)
@@ -200,7 +214,7 @@ def init_multi_ligand(cfg: OpenMMConfig, task_id=None):
 
 
 def run_simulation(cfg: OpenMMConfig):
-    if hasattr(cfg, "multi_ligand_table"):
+    if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         init_multi_ligand(cfg)
     else:
         init_input(cfg)

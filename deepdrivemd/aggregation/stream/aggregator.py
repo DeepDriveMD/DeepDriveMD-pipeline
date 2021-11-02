@@ -125,7 +125,7 @@ def aggregate(
         variablesR["zcentroid"] = (np.float32, DataStructure.scalar)
         variablesW["zcentroid"] = (np.float32, DataStructure.scalar)
 
-    if hasattr(cfg, "multi_ligand_table"):
+    if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         variablesR["ligand"] = (np.int32, DataStructure.scalar)
         variablesR["natoms"] = (np.int32, DataStructure.scalar)
         variablesW["ligand"] = (np.int32, DataStructure.scalar)

@@ -9,9 +9,14 @@ from tensorflow.keras.layers import Input, Dense, Lambda, Flatten, Reshape, Drop
 from tensorflow.keras.layers import Convolution2D, Conv2DTranspose
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import RMSprop
-from tensorflow.keras.callbacks import Callback, ModelCheckpoint
+from tensorflow.keras.callbacks import Callback, ModelCheckpoint, EarlyStopping
 import tensorflow.keras.backend as K
 import tensorflow.keras.losses as objectives
+import tensorflow as tf
+
+tf.config.experimental.set_lms_enabled(True)
+print("lms_enabled was executed")
+
 
 # save history from log;
 class LossHistory(Callback):
@@ -324,6 +329,15 @@ class CVAE(object):
                     monitor="val_loss",
                     save_best_only=True,
                     verbose=1,
+                )
+            )
+            callbacks.append(
+                EarlyStopping(
+                    monitor="val_loss",
+                    patience=20,
+                    verbose=1,
+                    mode="min",
+                    restore_best_weights=True,
                 )
             )
 

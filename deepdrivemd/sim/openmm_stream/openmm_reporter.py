@@ -4,7 +4,7 @@ import simtk.unit as u
 from MDAnalysis.analysis import distances, rms
 import MDAnalysis
 import numpy as np
-from deepdrivemd.utils import t2Dto1D, hash2intarray
+from deepdrivemd.utils import t2Dto1D, hash2intarray, timer
 from typing import Dict
 
 # import adios2
@@ -36,9 +36,9 @@ class ContactMapReporter(object):
         self.step = 0
         self.cfg = cfg
 
-        print("cfg.init_pdb_file = ", self.cfg.init_pdb_file)
-        sys.stdout.flush()
         if cfg.compute_zcentroid or cfg.compute_rmsd:
+            # print("cfg.init_pdb_file = ", self.cfg.init_pdb_file)
+            # sys.stdout.flush()
             self.universe_init = MDAnalysis.Universe(self.cfg.init_pdb_file)
         if cfg.compute_zcentroid:
             self.heavy_atoms = self.universe_init.select_atoms(self.cfg.zcentroid_atoms)
@@ -66,6 +66,7 @@ class ContactMapReporter(object):
 
     def report(self, simulation, state):
         """Computes contact maps, md5 sum of positions, rmsd to the reference state and records them into `_adios_stream`"""
+        timer("reporting", 1)
         step = self.step
         stateA = simulation.context.getState(getPositions=True, getVelocities=True)
         ca_indices = []
@@ -130,11 +131,15 @@ class ContactMapReporter(object):
             rmsd = np.array([rmsd], dtype=np.float32)
             output["rmsd"] = rmsd
 
-        if hasattr(self.cfg, "multi_ligand_table"):
+        if (
+            hasattr(self.cfg, "multi_ligand_table")
+            and self.cfg.multi_ligand_table.is_file()
+        ):
             output["ligand"] = np.array([self.cfg.ligand], dtype=np.int32)
             output["natoms"] = np.array([natoms], dtype=np.int32)
 
         self.write_adios_step(output)
+        timer("reporting", -1)
         self.step += 1
 
     def write_adios_step(self, output: Dict[str, np.ndarray]):

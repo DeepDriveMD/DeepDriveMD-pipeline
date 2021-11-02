@@ -13,6 +13,11 @@ from pathlib import Path
 import pandas as pd
 from sklearn.neighbors import LocalOutlierFactor
 
+# from multiprocessing import Process, Pool
+from pathos.multiprocessing import ProcessingPool as Pool
+
+# import math
+
 from deepdrivemd.utils import Timer, timer, t1Dto2D
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 import tensorflow.keras.backend as K
@@ -35,6 +40,8 @@ from deepdrivemd.models.keras_cvae.model import CVAE
 from simtk.openmm.app.pdbfile import PDBFile
 
 import adios2
+
+pool = Pool(38)
 
 
 def clear_gpu():
@@ -279,11 +286,31 @@ def write_pdb_frame(frame: np.ndarray, original_pdb: str, output_pdb_fn: str):
     output_pdb_fn : str
         Where to write an outlier.
     """
-    print("original_pdb = ", str(original_pdb))
-    sys.stdout.flush()
     pdb = PDBFile(str(original_pdb))
     with open(str(output_pdb_fn), "w") as f:
         PDBFile.writeFile(pdb.getTopology(), frame, f)
+        f.flush()
+        f.flush()
+
+    del pdb
+
+    """
+    print('output_pdb_fn: ', output_pdb_fn, subprocess.getstatusoutput(f"ls -l {output_pdb_fn}"),
+          subprocess.getstatusoutput(f"md5sum {output_pdb_fn}"),
+          subprocess.getstatusoutput("free -h"), ', parent process: ', os.getppid(),
+          ', process id: ', os.getpid(), ', core: ',
+          open("/proc/{pid}/stat".format(pid=os.getpid()), 'rb').read().split()[-14] )
+    sys.stdout.flush()
+    """
+
+
+def check_output(dir):
+    print("=" * 30)
+    print(subprocess.getstatusoutput(f"ls -l {dir}/*")[1])
+    print("=" * 30)
+    print(subprocess.getstatusoutput(f"md5sum {dir}/*")[1])
+    print("=" * 30)
+    sys.stdout.flush()
 
 
 def write_top_outliers(
@@ -304,7 +331,9 @@ def write_top_outliers(
     """
     positions, velocities, md5s = top[:3]
 
-    if hasattr(cfg, "multi_ligand_table"):
+    pp = []
+
+    if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         dirs = top[5]
         table = pd.read_csv(cfg.multi_ligand_table)
         for p, v, m, d in zip(positions, velocities, md5s, dirs):
@@ -316,17 +345,27 @@ def write_top_outliers(
             outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
             outlier_v_file = f"{tmp_dir}/{m}.npy"
             cfg.init_pdb_file = f"{tdir}/system/{topology_file}"
-            write_pdb_frame(p, cfg.init_pdb_file, outlier_pdb_file)
-            np.save(outlier_v_file, v)
+            pp.append(
+                pool.apipe(write_pdb_frame, p, cfg.init_pdb_file, outlier_pdb_file)
+            )
+            pp.append(pool.apipe(np.save, outlier_v_file, v))
             task_file = f"{tmp_dir}/{m}.txt"
             with open(task_file, "w") as f:
                 f.write(str(d))
+                f.flush()
     else:
         for p, v, m in zip(positions, velocities, md5s):
             outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
             outlier_v_file = f"{tmp_dir}/{m}.npy"
-            write_pdb_frame(p, cfg.init_pdb_file, outlier_pdb_file)
-            np.save(outlier_v_file, v)
+            pp.append(
+                pool.apipe(write_pdb_frame, p, cfg.init_pdb_file, outlier_pdb_file)
+            )
+            pp.append(pool.apipe(np.save, outlier_v_file, v))
+
+    for p in pp:
+        zz = p.get()
+        print(zz)
+    check_output(tmp_dir)
 
 
 def write_db(top: Path, tmp_dir: Path) -> OutlierDB:
@@ -350,7 +389,7 @@ def publish(tmp_dir: Path, published_dir: Path):
     mylock.acquire()
     print(
         subprocess.getstatusoutput(
-            f"rm -rf {published_dir}/*.pdb {published_dir}/*.npy"
+            f"rm -rf {published_dir}/*.pickle {published_dir}/*.pdb {published_dir}/*.npy"
         )
     )
     print(subprocess.getstatusoutput(f"mv {tmp_dir}/* {published_dir}/"))
@@ -424,7 +463,7 @@ def random_outliers(
     else:
         rmsds = np.array([-1.0] * len(outlier_list))
 
-    if hasattr(cfg, "multi_ligand_table"):
+    if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         dirs = cvae_input[-1][outlier_list]
         z = list(zip(positions, velocities, md5s, rmsds, outlier_list, dirs))
     else:
@@ -466,7 +505,7 @@ def top_lof(
     else:
         rmsds = np.array([-1.0] * len(outlier_list))
 
-    if hasattr(cfg, "multi_ligand_table"):
+    if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         dirs = cvae_input[-1][outlier_list]
         z = list(
             zip(positions, velocities, md5s, rmsds, outlier_list, dirs, lof_scores)
@@ -541,10 +580,9 @@ def main(cfg: OutlierDetectionConfig):
     sys.stdout.flush()
 
     print(cfg)
+
     with Timer("wait_for_input"):
         adios_files_list = wait_for_input(cfg)
-    with Timer("wait_for_model"):
-        model_path = str(wait_for_model(cfg))
 
     variable_list = [
         StreamContactMapVariable("contact_map", np.uint8, DataStructure.array),
@@ -558,7 +596,7 @@ def main(cfg: OutlierDetectionConfig):
             StreamScalarVariable("rmsd", np.float32, DataStructure.scalar)
         )
 
-    if hasattr(cfg, "multi_ligand_table"):
+    if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         variable_list.append(StreamVariable("dir", str, DataStructure.string))
 
     mystreams = Streams(
@@ -570,6 +608,12 @@ def main(cfg: OutlierDetectionConfig):
         batch=cfg.read_batch,
     )
 
+    with Timer("outlier_read"):
+        cvae_input = mystreams.next()
+
+    with Timer("wait_for_model"):
+        model_path = str(wait_for_model(cfg))
+
     tmp_dir, published_dir = dirs(cfg)
     eps = cfg.init_eps
     min_samples = cfg.init_min_samples
@@ -580,6 +624,7 @@ def main(cfg: OutlierDetectionConfig):
 
         timer("outlier_search_iteration", 1)
 
+        """
         with Timer("outlier_read"):
             cvae_input = mystreams.next()
             print("len(cvae_input) = ", len(cvae_input))
@@ -587,6 +632,7 @@ def main(cfg: OutlierDetectionConfig):
             sys.stdout.flush()
             print("cvae_input[-1].shape = ", cvae_input[-1].shape)
             sys.stdout.flush()
+        """
 
         with Timer("outlier_predict"):
             cm_predict = predict(cfg, model_path, cvae_input)
@@ -638,6 +684,9 @@ def main(cfg: OutlierDetectionConfig):
         with Timer("outlier_publish"):
             publish(tmp_dir, published_dir)
 
+        with Timer("outlier_read"):
+            cvae_input = mystreams.next()
+
         timer("outlier_search_iteration", -1)
 
 
@@ -662,13 +711,15 @@ def read_lastN(
 
     vars = ["contact_map"]
 
-    if cfg.compute_zcentroid:
+    if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
+        print("compute_zcentroid = ", cfg.compute_zcentroid)
+        sys.stdout.flush()
         vars.append("zcentroid")
 
     if cfg.compute_rmsd:
         vars.append("rmsd")
 
-    if hasattr(cfg, "multi_ligand_table"):
+    if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         vars.append("ligand")
         vars.append("dir")
 
@@ -733,13 +784,13 @@ def read_lastN(
 
     result = [variable_lists["contact_map"]]
 
-    if cfg.compute_zcentroid:
+    if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
         result.append(np.concatenate(variable_lists["zcentroid"]))
 
     if cfg.compute_rmsd:
         result.append(np.concatenate(variable_lists["rmsd"]))
 
-    if hasattr(cfg, "multi_ligand_table"):
+    if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         result.append(np.concatenate(variable_lists["ligand"]))
         result.append(np.concatenate(variable_lists["dir"]))
 
@@ -763,7 +814,7 @@ def project_mini(cfg: OutlierDetectionConfig):
         sys.stdout.flush()
         cvae_input = read_lastN([bp], lastN)
 
-        if cfg.compute_zcentroid:
+        if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
             zcentroid = cvae_input[1]
             with open(cfg.output_path / f"zcentroid_{i}.npy", "wb") as f:
                 np.save(f, zcentroid)
@@ -773,7 +824,7 @@ def project_mini(cfg: OutlierDetectionConfig):
             with open(cfg.output_path / f"rmsd_{i}.npy", "wb") as f:
                 np.save(f, rmsds)
 
-        if hasattr(cfg, "multi_ligand_table"):
+        if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
             ligand = cvae_input[2]
             sim = cvae_input[3]
             for j in range(len(ligand)):
@@ -836,6 +887,40 @@ def project(cfg: OutlierDetectionConfig):
         np.save(f, tsne_embeddings3)
 
 
+def project_tsne_3D(cfg: OutlierDetectionConfig):
+    from sklearn.manifold import TSNE
+
+    tsne3 = TSNE(n_components=3)
+    emb = []
+    for i in range(10):
+        with open(cfg.output_path / f"embeddings_cvae_{i}.npy", "rb") as f:
+            emb.append(np.load(f))
+    embeddings_cvae = np.concatenate(emb)
+
+    with Timer("project_TSNE_3D"):
+        tsne_embeddings3 = tsne3.fit_transform(embeddings_cvae)
+
+    with open(cfg.output_path / "tsne_embeddings_3.npy", "wb") as f:
+        np.save(f, tsne_embeddings3)
+
+
+def project_tsne_2D(cfg: OutlierDetectionConfig):
+    from sklearn.manifold import TSNE
+
+    tsne2 = TSNE(n_components=2)
+    emb = []
+    for i in range(10):
+        with open(cfg.output_path / f"embeddings_cvae_{i}.npy", "rb") as f:
+            emb.append(np.load(f))
+    embeddings_cvae = np.concatenate(emb)
+
+    with Timer("project_TSNE_2D"):
+        tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
+
+    with open(cfg.output_path / "tsne_embeddings_2.npy", "wb") as f:
+        np.save(f, tsne_embeddings2)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -845,6 +930,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-m", "--miniproject", action="store_true", help="compute embeddings only"
     )
+    parser.add_argument(
+        "-T",
+        "--tsne_2D",
+        action="store_true",
+        help="compute 2D tsne, assuming embeddings are already computed",
+    )
+    parser.add_argument(
+        "-t",
+        "--tsne_3D",
+        action="store_true",
+        help="compute 3D tsne, assuming embeddings are already computed",
+    )
 
     args = parser.parse_args()
     return args
@@ -853,9 +950,14 @@ def parse_args() -> argparse.Namespace:
 if __name__ == "__main__":
     args = parse_args()
     cfg = OutlierDetectionConfig.from_yaml(args.config)
+
     if args.project:
         project(cfg)
     elif args.miniproject:
         project_mini(cfg)
+    elif args.tsne_3D:
+        project_tsne_3D(cfg)
+    elif args.tsne_2D:
+        project_tsne_2D(cfg)
     else:
         main(cfg)

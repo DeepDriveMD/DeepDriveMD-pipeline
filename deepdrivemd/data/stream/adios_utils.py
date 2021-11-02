@@ -61,10 +61,13 @@ class AdiosStreamStepRW:
         if not (status == adios2.StepStatus.OK):
             return False
 
+        # print(self.variables)
+
         for v in self.variables:
             vname = "var_" + v
             dname = "d_" + v
             dtype = self.variables[v][0]
+            # print("vname = ", vname); import sys; sys.stdout.flush()
             structure_type = self.variables[v][1]
             setattr(self, vname, io.InquireVariable(v))
             if structure_type == DataStructure.scalar:
