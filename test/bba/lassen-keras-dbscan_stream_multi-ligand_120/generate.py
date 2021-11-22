@@ -17,7 +17,7 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/306"
+    experiment_directory = "/p/gpfs1/yakushin/Outputs/306"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
@@ -71,7 +71,7 @@ class TaskConfigMD(BaseModel):
     solvent_type = "explicit"
     top_suffix: str = ".prmtop"
     simulation_length_ns = 10.0 / 5
-    report_interval_ps = 50.0 / 5
+    report_interval_ps = 50.0 / 1
     dt_ps = 0.002
     temperature_kelvin = 300.0
     heat_bath_friction_coef = 1.0
@@ -105,6 +105,7 @@ pre_exec_md = [
     "module use /usr/workspace/cv_ddmd/software1/modules",
     "module load adios2",
     f"export PYTHONPATH={pythonpath}",
+    "export OMP_PROC_BIND=false",
 ]
 
 

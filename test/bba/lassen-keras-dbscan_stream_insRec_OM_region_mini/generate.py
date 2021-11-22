@@ -12,22 +12,18 @@ class Header(BaseModel):
     queue = "pbatch"
     schema_ = "local"
     project = "cv19-a01"
-    walltime_min = 30
+    walltime_min = 60 * 12
     max_iteration = 4
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/p/gpfs1/yakushin/Outputs/3"
+    experiment_directory = "/p/gpfs1/yakushin/Outputs/19m"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
     node_local_path: Path = None
-    init_pdb_file = (
-        "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb"
-    )
-    ref_pdb_file = (
-        "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb"
-    )
+    init_pdb_file = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/insRec_OM_region/system/prot.pdb"
+    ref_pdb_file: Path = None
     config_directory = "set_by_deepdrivemd"
     adios_xml_sim = "set_by_deepdrivemd"
     adios_xml_agg = "set_by_deepdrivemd"
@@ -68,10 +64,10 @@ class TaskConfigMD(BaseModel):
     output_path = "set_by_deepdrivemd"
     node_local_path = "set_by_deepdrivemd"
     pdb_file = "set_by_deepdrivemd"
-    initial_pdb_dir = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input"
-    solvent_type = "implicit"
-    top_suffix: str = None
-    simulation_length_ns = 10.0 / 2  # temporary
+    initial_pdb_dir = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/insRec_OM_region/"
+    solvent_type = "explicit"
+    top_suffix: str = ".top"
+    simulation_length_ns = 10.0 / 10
     report_interval_ps = 50.0
     dt_ps = 0.002
     temperature_kelvin = 300.0
@@ -84,9 +80,11 @@ class TaskConfigMD(BaseModel):
     bp_file = "set_by_deepdrivemd"
     outliers_dir = f"{header.experiment_directory}/agent_runs/stage0000/task0000/published_outliers"
     copy_velocities_p = 0.5
+    next_outlier_policy = 1
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
-    compute_rmsd = True
+    compute_rmsd = False
+    divisibleby = 256
     init_pdb_file = header.init_pdb_file
 
 
@@ -158,18 +156,18 @@ agg = Aggregator()
 
 
 class CVAE(BaseModel):
-    initial_shape = [28, 28]
-    final_shape = [28, 28, 1]
+    initial_shape = [1024, 1024]
+    final_shape = [1024, 1024, 1]
     split_pct = 0.8
     shuffle = True
     latent_dim = 10
     conv_layers = 4
     conv_filters = [64] * 4
     conv_filter_shapes = [[3, 3]] * 4
-    conv_strides = [[1, 1], [2, 2], [1, 1], [1, 1]]
+    conv_strides = [[4, 4], [4, 4], [4, 4], [4, 4]]
     dense_layers = 1
     dense_neurons = [128]
-    dense_dropouts = [0.25]
+    dense_dropouts = [0.4]
 
 
 class TaskConfigML(CVAE):
@@ -177,11 +175,11 @@ class TaskConfigML(CVAE):
     stage_idx = 0
     task_idx = 0
     output_path = "set_by_deepdrivemd"
-    epochs = 30
-    batch_size = 32
+    epochs = 800
+    batch_size = 32 * 2
     min_step_increment = 200
     max_steps = 2000
-    max_loss = 1000
+    max_loss = 65000
     num_agg = agg.num_tasks
     timeout1 = 30
     timeout2 = 10
@@ -204,7 +202,6 @@ class ML(BaseModel):
     cpu_reqs = cpu_req_md.dict()
     gpu_reqs = gpu_req_md.dict()
     task_config = task_config_ml.dict()
-    num_tasks = 1
 
 
 cpu_req_agent = cpu_req_md.copy()
@@ -225,8 +222,8 @@ class TaskConfigAgent(CVAE):
     best_model = f"{header.experiment_directory}/machine_learning_runs/stage0000/task0000/published_model/best.h5"
     lastN = 2000
     outlier_count = 120
-    outlier_max = 1000
-    outlier_min = 500
+    outlier_max = 5000
+    outlier_min = 100
     init_pdb_file = f"{header.init_pdb_file}"
     ref_pdb_file = f"{header.ref_pdb_file}"
     init_eps = 1.3
@@ -237,7 +234,7 @@ class TaskConfigAgent(CVAE):
     project_gpu = False
     adios_xml_agg = header.adios_xml_agg
     use_outliers = True
-    use_random_outliers = False
+    use_random_outliers = True
     compute_rmsd = task_config_md.compute_rmsd
 
 
@@ -251,7 +248,6 @@ class Agent(BaseModel):
     cpu_reqs = cpu_req_agent.dict()
     gpu_reqs = gpu_req_md.dict()
     task_config = task_config_agent.dict()
-    num_tasks = 1
 
 
 class Components(BaseModel):

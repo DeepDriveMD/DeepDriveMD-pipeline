@@ -1,0 +1,6 @@
+rm -f *~ */*~
+rm -rf __pycache__ */__pycache__ *.log */*/__pycache__ */*/*/__pycache__
+rm -rf re.session.*
+[[ ! -z "306m" ]] && echo "d = 306m" && rm -rf /p/gpfs1/yakushin/Outputs/306m
+d = 306m
+make: *** [Makefile:43: clean] Interrupt

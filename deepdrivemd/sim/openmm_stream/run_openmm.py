@@ -72,6 +72,7 @@ def next_outlier(
             if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
                 task = cfg.outliers_dir / f"{md5}.txt"
                 shutil.copy(task, cfg.current_dir)
+                copied_task = cfg.current_dir / f"{md5}.txt"
             cfg.lock.release()
         except Exception as e:
             print("=" * 30)
@@ -93,7 +94,7 @@ def next_outlier(
     velocities_npy = cfg.current_dir / f"{md5}.npy"
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-        with open(task) as f:
+        with open(copied_task) as f:
             task_id = int(f.read())
             cfg.ligand = task_id
         return positions_pdb, velocities_npy, rmsd, md5, task_id
@@ -210,7 +211,7 @@ def init_multi_ligand(cfg: OpenMMConfig, task_id=None):
     print(
         f"init_multi_ligand: id = {task_id}, pdb = {cfg.pdb_file}, tdir = {cfg.initial_pdb_dir}"
     )
-    cfg.ligand = cfg.task_idx
+    cfg.ligand = task_id  # cfg.task_idx
 
 
 def run_simulation(cfg: OpenMMConfig):

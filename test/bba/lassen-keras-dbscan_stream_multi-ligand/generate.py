@@ -17,7 +17,7 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/306s"
+    experiment_directory = "/p/gpfs1/yakushin/Outputs/306m"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
@@ -70,8 +70,8 @@ class TaskConfigMD(BaseModel):
     initial_pdb_dir = "set_by_deepdrivemd"
     solvent_type = "explicit"
     top_suffix: str = ".prmtop"
-    simulation_length_ns = 10.0 / 100
-    report_interval_ps = 50.0 / 100
+    simulation_length_ns = 10.0 / 10
+    report_interval_ps = 50.0 / 2
     dt_ps = 0.002
     temperature_kelvin = 300.0
     heat_bath_friction_coef = 1.0

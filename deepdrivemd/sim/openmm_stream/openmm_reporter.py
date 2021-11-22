@@ -91,7 +91,8 @@ class ContactMapReporter(object):
             [[x[0]._value, x[1]._value, x[2]._value] for x in velocities]
         ).astype(np.float32)
 
-        m = hashlib.md5()
+        # m = hashlib.md5()
+        m = hashlib.sha512()
         m.update(positions.tostring())
         md5 = m.hexdigest()
         md5 = hash2intarray(md5)

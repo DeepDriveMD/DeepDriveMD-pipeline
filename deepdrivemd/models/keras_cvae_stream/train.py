@@ -14,6 +14,7 @@ import sys
 import itertools
 from typing import List, Tuple
 from deepdrivemd.data.stream.enumerations import DataStructure
+import math
 
 
 def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
@@ -141,16 +142,20 @@ def main(cfg: KerasCVAEModelConfig):
             cvae = build_model(cfg)
 
         with Timer("ml_train"):
-            cvae.train(
-                cm_data_train,
-                validation_data=cm_data_val,
-                batch_size=cfg.batch_size,
-                epochs=cfg.epochs,
-                checkpoint_path=cfg.checkpoint_dir,
-                use_model_checkpoint=cfg.use_model_checkpoint,
-            )
+            try:
+                cvae.train(
+                    cm_data_train,
+                    validation_data=cm_data_val,
+                    batch_size=cfg.batch_size,
+                    epochs=cfg.epochs,
+                    checkpoint_path=cfg.checkpoint_dir,
+                    use_model_checkpoint=cfg.use_model_checkpoint,
+                )
+                loss = cvae.history.val_losses[-1]
+            except Exception as e:
+                print(e)
+                loss = math.inf
 
-        loss = cvae.history.val_losses[-1]
         print("loss = ", loss)
         best_model = f"{cfg.checkpoint_dir}/best.h5"
 

@@ -41,7 +41,7 @@ from simtk.openmm.app.pdbfile import PDBFile
 
 import adios2
 
-pool = Pool(38)
+pool = Pool(39)
 
 
 def clear_gpu():
@@ -274,7 +274,9 @@ def cluster(
     return eps, min_samples
 
 
-def write_pdb_frame(frame: np.ndarray, original_pdb: str, output_pdb_fn: str):
+def write_pdb_frame(
+    frame: np.ndarray, original_pdb: Path, output_pdb_fn: str, ligand: int
+):
     """Write positions into pdb file.
 
     Parameters
@@ -287,12 +289,42 @@ def write_pdb_frame(frame: np.ndarray, original_pdb: str, output_pdb_fn: str):
         Where to write an outlier.
     """
     pdb = PDBFile(str(original_pdb))
+    print(
+        "write_pdb_frame:  original_pdb = ",
+        original_pdb,
+        " frame.shape = ",
+        frame.shape,
+        " ligand = ",
+        ligand,
+    )
+    sys.stdout.flush()
     with open(str(output_pdb_fn), "w") as f:
-        PDBFile.writeFile(pdb.getTopology(), frame, f)
+        try:
+            PDBFile.writeFile(pdb.getTopology(), frame, f)
+        except Exception as e:
+            print(
+                e,
+                "\n",
+                "original_pdb = ",
+                str(original_pdb),
+                "frame.shape = ",
+                frame.shape,
+                "output_pdb_fn = ",
+                str(output_pdb_fn),
+                "ligand = ",
+                ligand,
+                file=sys.stderr,
+            )
+            sys.stdout.flush()
+            sys.stderr.flush()
+            raise e
         f.flush()
         f.flush()
 
     del pdb
+
+    sys.stdout.flush()
+    sys.stderr.flush()
 
     """
     print('output_pdb_fn: ', output_pdb_fn, subprocess.getstatusoutput(f"ls -l {output_pdb_fn}"),
@@ -335,20 +367,30 @@ def write_top_outliers(
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         dirs = top[5]
+        print("dirs=")
+        print(dirs)
         table = pd.read_csv(cfg.multi_ligand_table)
         for p, v, m, d in zip(positions, velocities, md5s, dirs):
             print("d=", d)
             sys.stdout.flush()
             d = int(d)
+            print("   d=", d)
             topology_file = table["pdb"][d]
             tdir = table["tdir"][d]
             outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
             outlier_v_file = f"{tmp_dir}/{m}.npy"
-            cfg.init_pdb_file = f"{tdir}/system/{topology_file}"
+            init_pdb_file = Path(f"{tdir}/system/{topology_file}")
+
             pp.append(
-                pool.apipe(write_pdb_frame, p, cfg.init_pdb_file, outlier_pdb_file)
+                pool.apipe(
+                    write_pdb_frame, p.copy(), init_pdb_file, outlier_pdb_file, d
+                )
             )
             pp.append(pool.apipe(np.save, outlier_v_file, v))
+            """
+            write_pdb_frame(p, init_pdb_file, outlier_pdb_file)
+            np.save(outlier_v_file, v)
+            """
             task_file = f"{tmp_dir}/{m}.txt"
             with open(task_file, "w") as f:
                 f.write(str(d))
@@ -365,6 +407,10 @@ def write_top_outliers(
     for p in pp:
         zz = p.get()
         print(zz)
+
+    sys.stdout.flush()
+    sys.stderr.flush()
+
     check_output(tmp_dir)
 
 
@@ -597,7 +643,7 @@ def main(cfg: OutlierDetectionConfig):
         )
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-        variable_list.append(StreamVariable("dir", str, DataStructure.string))
+        variable_list.append(StreamVariable("ligand", np.int32, DataStructure.scalar))
 
     mystreams = Streams(
         adios_files_list,
@@ -909,7 +955,7 @@ def project_tsne_2D(cfg: OutlierDetectionConfig):
 
     tsne2 = TSNE(n_components=2)
     emb = []
-    for i in range(10):
+    for i in range(9):
         with open(cfg.output_path / f"embeddings_cvae_{i}.npy", "rb") as f:
             emb.append(np.load(f))
     embeddings_cvae = np.concatenate(emb)

@@ -6,14 +6,22 @@ run2:
 	bin/run.sh lassen-keras-dbscan_stream
 run3:	
 	bin/run.sh lassen-keras-dbscan_stream_noutliers
+run3m:	
+	bin/run.sh lassen-keras-dbscan_stream_noutliers_mini
 run4:	
 	bin/run.sh lassen-keras-dbscan_stream_random_outliers
+run4m:
+	bin/run.sh lassen-keras-dbscan_stream_random_outliers_mini
 run5:
 	bin/run.sh lassen-keras-dbscan_stream_greedy
+run5m:
+	bin/run.sh lassen-keras-dbscan_stream_greedy_mini
 run6:
 	bin/run.sh lassen-keras-dbscan_stream_smoothended_rec
 run7:
 	bin/run.sh lassen-keras-dbscan_stream_insRec_OM_region
+run7m:
+	bin/run.sh lassen-keras-dbscan_stream_insRec_OM_region_mini
 run8:
 	bin/run.sh lassen-keras-dbscan_stream_spike
 run9:
