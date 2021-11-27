@@ -76,7 +76,7 @@ def next_input(
     """
 
     with Timer("ml_read"):
-        cm_data_input = streams.next()[0]
+        cm_data_input = streams.next()["contact_map"]
     cm_data_input = np.expand_dims(cm_data_input, axis=-1)
 
     cfg.initial_shape = cm_data_input.shape[1:3]

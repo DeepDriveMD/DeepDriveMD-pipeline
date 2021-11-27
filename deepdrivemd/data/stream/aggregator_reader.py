@@ -251,6 +251,14 @@ class Streams:
                     # cache[fn] = cache[fn][-remain:] + nextbatch[j + 1]
                     cache[fn] = cache[fn][-remain:] + nextbatch[v]
 
+        output = {}
+        print(f"vnames = {self.vnames}")
+        for v in self.vnames:
+            cname = "c_" + v
+            cache = getattr(self, cname)
+            output[v] = np.concatenate(list(cache.values()))
+
+        """
         output = []
         print(f"vnames = {self.vnames}")
         for v in self.vnames:
@@ -259,5 +267,6 @@ class Streams:
             output.append(
                 np.concatenate(list(cache.values()))
             )  # is it in the same order accross variables?
+        """
 
         return output

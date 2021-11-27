@@ -169,7 +169,7 @@ def predict(
     cfg : OutlierDetectionConfig
     model_path : str
         Path to the published model.
-    cvae_input : Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray]]
+    cvae_input : Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray]] ### Dictionary
         Each list corresponds to the variable described by `variable_list` in `main` function. In particular, the first one contains contact maps and only those are used in `predict()`.
     batch_size : int
         Batch size used to project input to the middle layer of the autoencoder.
@@ -178,7 +178,8 @@ def predict(
     np.ndarray
         The latent space representation of the input.
     """
-    input = np.expand_dims(cvae_input[0], axis=-1)
+    # input = np.expand_dims(cvae_input[0], axis=-1)
+    input = np.expand_dims(cvae_input["contact_map"], axis=-1)
 
     cfg.initial_shape = input.shape[1:3]
     cfg.final_shape = list(input.shape[1:3]) + list(np.array([1]))
@@ -444,7 +445,9 @@ def publish(tmp_dir: Path, published_dir: Path):
 
 def top_outliers(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    cvae_input: Tuple[
+        np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
+    ],  # Dict
     outlier_list: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
@@ -465,10 +468,10 @@ def top_outliers(
          indices of outliers, sorted in ascending order by rmsd
     """
     outlier_list = list(outlier_list[0])
-    positions = cvae_input[1][outlier_list]
-    velocities = cvae_input[3][outlier_list]
-    md5s = cvae_input[2][outlier_list]
-    rmsds = cvae_input[4][outlier_list]
+    positions = cvae_input["positions"][outlier_list]
+    velocities = cvae_input["velocities"][outlier_list]
+    md5s = cvae_input["md5"][outlier_list]
+    rmsds = cvae_input["rmsd"][outlier_list]
 
     z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
     z.sort(key=lambda x: x[3])
@@ -480,7 +483,9 @@ def top_outliers(
 
 def random_outliers(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    cvae_input: Tuple[
+        np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
+    ],  # Dict
     outlier_list: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
@@ -501,16 +506,16 @@ def random_outliers(
          indices of outliers in a random order.
     """
     outlier_list = list(outlier_list[0])
-    positions = cvae_input[1][outlier_list]
-    velocities = cvae_input[3][outlier_list]
-    md5s = cvae_input[2][outlier_list]
+    positions = cvae_input["positions"][outlier_list]
+    velocities = cvae_input["velocities"][outlier_list]
+    md5s = cvae_input["md5"][outlier_list]
     if cfg.compute_rmsd:
-        rmsds = cvae_input[4][outlier_list]
+        rmsds = cvae_input["rmsd"][outlier_list]
     else:
         rmsds = np.array([-1.0] * len(outlier_list))
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-        dirs = cvae_input[-1][outlier_list]
+        dirs = cvae_input["ligand"][outlier_list]
         z = list(zip(positions, velocities, md5s, rmsds, outlier_list, dirs))
     else:
         z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
@@ -532,7 +537,9 @@ def run_lof(data: np.ndarray) -> np.ndarray:
 
 def top_lof(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    cvae_input: Tuple[
+        np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
+    ],  # Dict
     cm_predict: np.array,
     outlier_list: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -542,17 +549,17 @@ def top_lof(
     lof_scores = run_lof(projections)
     print("lof_scores = ", lof_scores)
     sys.stdout.flush()
-    positions = cvae_input[1][outlier_list]
-    velocities = cvae_input[3][outlier_list]
-    md5s = cvae_input[2][outlier_list]
+    positions = cvae_input["positions"][outlier_list]
+    velocities = cvae_input["velocities"][outlier_list]
+    md5s = cvae_input["md5"][outlier_list]
 
     if cfg.compute_rmsd:
-        rmsds = cvae_input[4][outlier_list]
+        rmsds = cvae_input["rmsd"][outlier_list]
     else:
         rmsds = np.array([-1.0] * len(outlier_list))
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-        dirs = cvae_input[-1][outlier_list]
+        dirs = cvae_input["ligand"][outlier_list]
         z = list(
             zip(positions, velocities, md5s, rmsds, outlier_list, dirs, lof_scores)
         )
@@ -568,7 +575,9 @@ def top_lof(
 
 def select_best_random(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    cvae_input: Tuple[
+        np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
+    ],  # Dict
 ) -> List[int]:
     """Sort cvae_input by rmsd, selects :obj:`2*cfg.num_sim` best entries, out of them
     randomly select :obj:`cfg.num_sim`, return the corresponding indices.
@@ -589,7 +598,7 @@ def select_best_random(
     ----
     This is used when no outliers are found.
     """
-    rmsds = cvae_input[4]
+    rmsds = cvae_input["rmsd"]
     z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])
     sorted_index = list(map(lambda x: x[1], z))[2 * cfg.num_sim :]
     sorted_index = random.sample(sorted_index, cfg.num_sim)
@@ -598,7 +607,9 @@ def select_best_random(
 
 def select_best(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    cvae_input: Tuple[
+        np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
+    ],  # Dict
 ) -> List[int]:
     """Sort cvae_input by rmsd, selects best :obj:`cfg.num_sim`, return
     the corresponding indices.
@@ -615,7 +626,7 @@ def select_best(
         List of :obj:`cfg.num_sim` indices for best traversed states among
         :obj:`lastN` from each aggregator.
     """
-    rmsds = cvae_input[4]
+    rmsds = cvae_input["rmsd"]
     z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])
     sorted_index = list(map(lambda x: x[1], z))[cfg.num_sim :]
     return sorted_index
@@ -701,7 +712,7 @@ def main(cfg: OutlierDetectionConfig):
                     outlier_list = [
                         list(
                             np.random.choice(
-                                np.arange(len(cvae_input[0])),
+                                np.arange(len(cvae_input["contact_map"])),
                                 cfg.num_sim,
                                 replace=False,
                             )
@@ -861,18 +872,18 @@ def project_mini(cfg: OutlierDetectionConfig):
         cvae_input = read_lastN([bp], lastN)
 
         if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
-            zcentroid = cvae_input[1]
+            zcentroid = cvae_input["zcentroid"]
             with open(cfg.output_path / f"zcentroid_{i}.npy", "wb") as f:
                 np.save(f, zcentroid)
 
         if cfg.compute_rmsd:
-            rmsds = cvae_input[1]  # cvae_input[2]
+            rmsds = cvae_input["rmsd"]  # cvae_input[2]
             with open(cfg.output_path / f"rmsd_{i}.npy", "wb") as f:
                 np.save(f, rmsds)
 
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-            ligand = cvae_input[2]
-            sim = cvae_input[3]
+            ligand = cvae_input["ligand"]
+            sim = cvae_input["dir"]
             for j in range(len(ligand)):
                 print(f"ligand[{j}] = {ligand[j]}")
                 if ligand[j] == -1:
@@ -908,7 +919,7 @@ def project(cfg: OutlierDetectionConfig):
         cvae_input = read_lastN(adios_files_list, lastN)
 
     if cfg.compute_rmsd:
-        rmsds = cvae_input[1]
+        rmsds = cvae_input["rmsd"]
         with open(cfg.output_path / "rmsd.npy", "wb") as f:
             np.save(f, rmsds)
 

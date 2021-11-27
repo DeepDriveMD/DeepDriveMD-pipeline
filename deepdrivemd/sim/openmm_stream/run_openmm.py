@@ -93,13 +93,25 @@ def next_outlier(
     positions_pdb = cfg.current_dir / f"{md5}.pdb"
     velocities_npy = cfg.current_dir / f"{md5}.npy"
 
+    outputs = {
+        "positions_pdb": positions_pdb,
+        "velocities_npy": velocities_npy,
+        "rmsd": rmsd,
+        "md5": md5,
+    }
+
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         with open(copied_task) as f:
             task_id = int(f.read())
-            cfg.ligand = task_id
+        cfg.ligand = task_id
+        outputs["ligand"] = task_id
+
+    return outputs
+    """
         return positions_pdb, velocities_npy, rmsd, md5, task_id
     else:
         return positions_pdb, velocities_npy, rmsd, md5
+    """
 
 
 def prepare_simulation(
@@ -127,9 +139,16 @@ def prepare_simulation(
     if outlier is not None:
         print("There are outliers")
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-            positions_pdb, velocities_npy, rmsd, md5, task = outlier
+            positions_pdb, velocities_npy, ligand = (
+                outlier["positions_pdb"],
+                outlier["velocities_npy"],
+                outlier["ligand"],
+            )
         else:
-            positions_pdb, velocities_npy, rmsd, md5 = outlier
+            positions_pdb, velocities_npy = (
+                outlier["positions_pdb"],
+                outlier["velocities_npy"],
+            )
         while True:
             try:
                 positions = pmd.load_file(str(positions_pdb)).positions
@@ -141,7 +160,7 @@ def prepare_simulation(
                 time.sleep(5)
 
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-            init_multi_ligand(cfg, task)
+            init_multi_ligand(cfg, ligand)
             with Timer("molecular_dynamics_SimulationContext"):
                 ctx = SimulationContext(cfg)
                 print("ctx = ", ctx)
