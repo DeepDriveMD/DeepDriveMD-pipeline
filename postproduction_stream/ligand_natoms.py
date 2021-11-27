@@ -1,6 +1,6 @@
 import adios2
 
-bpfile = "/p/gpfs1/yakushin/Outputs/306m/aggregation_runs/stage0000/task0000/agg.bp/"
+bpfile = "/p/gpfs1/yakushin/Outputs/306/aggregation_runs/stage0000/task0000/agg.bp/"
 
 with adios2.open(bpfile, "r") as fh:
     #    print(dir(fh))

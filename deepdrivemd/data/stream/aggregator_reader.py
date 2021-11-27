@@ -137,9 +137,17 @@ class AdiosReader:
                 break
             for v in self.variables:
                 v.next(ARW)
+        """
         output = [i]
         for v in self.variables:
             output.append(v.total.copy())
+
+        return output
+        """
+
+        output = {"steps_read": i}
+        for v in self.variables:
+            output[v.name] = v.total.copy()
 
         return output
 
@@ -226,21 +234,22 @@ class Streams:
         for fn in self.readers:
             nextbatch = self.readers[fn].next(batch)
 
-            i = nextbatch[0]
-            print(
-                f"lastN = {lastN}, batch = {batch}, nextbatch[0] = {i}, len(nextbatch[1]) = {len(nextbatch[1])}"
-            )
+            # i = nextbatch[0]
+            i = nextbatch["steps_read"]
+            print(f"lastN = {lastN}, batch = {batch}, i = {i}")
             if i >= lastN:
                 for j, v in enumerate(self.vnames):
                     cname = "c_" + v
                     cache = getattr(self, cname)
-                    cache[fn] = nextbatch[j + 1][-lastN:]
+                    # cache[fn] = nextbatch[j + 1][-lastN:]
+                    cache[fn] = nextbatch[v][-lastN:]
             else:
                 remain = lastN - i
                 for j, v in enumerate(self.vnames):
                     cname = "c_" + v
                     cache = getattr(self, cname)
-                    cache[fn] = cache[fn][-remain:] + nextbatch[j + 1]
+                    # cache[fn] = cache[fn][-remain:] + nextbatch[j + 1]
+                    cache[fn] = cache[fn][-remain:] + nextbatch[v]
 
         output = []
         print(f"vnames = {self.vnames}")

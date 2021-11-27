@@ -400,7 +400,7 @@ def write_top_outliers(
             outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
             outlier_v_file = f"{tmp_dir}/{m}.npy"
             pp.append(
-                pool.apipe(write_pdb_frame, p, cfg.init_pdb_file, outlier_pdb_file)
+                pool.apipe(write_pdb_frame, p, cfg.init_pdb_file, outlier_pdb_file, -1)
             )
             pp.append(pool.apipe(np.save, outlier_v_file, v))
 
@@ -955,11 +955,23 @@ def project_tsne_2D(cfg: OutlierDetectionConfig):
 
     tsne2 = TSNE(n_components=2)
     emb = []
+    rmsds = []
+    ligands = []
     for i in range(9):
         with open(cfg.output_path / f"embeddings_cvae_{i}.npy", "rb") as f:
             emb.append(np.load(f))
-    embeddings_cvae = np.concatenate(emb)
+        with open(cfg.output_path / f"rmsd_{i}.npy", "rb") as f:
+            rmsds.append(np.load(f))
+        with open(cfg.output_path / f"ligand_{i}.npy", "rb") as f:
+            ligands.append(np.load(f))
 
+    embeddings_cvae = np.concatenate(emb)
+    RMSDS = np.concatenate(rmsds)
+    with open(cfg.output_path / "rmsds.npy", "wb") as f:
+        np.save(f, RMSDS)
+    LIGANDS = np.concatenate(ligands)
+    with open(cfg.output_path / "ligands.npy", "wb") as f:
+        np.save(f, LIGANDS)
     with Timer("project_TSNE_2D"):
         tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
 
