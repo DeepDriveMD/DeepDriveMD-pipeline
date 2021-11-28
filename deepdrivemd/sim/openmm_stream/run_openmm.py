@@ -107,11 +107,6 @@ def next_outlier(
         outputs["ligand"] = task_id
 
     return outputs
-    """
-        return positions_pdb, velocities_npy, rmsd, md5, task_id
-    else:
-        return positions_pdb, velocities_npy, rmsd, md5
-    """
 
 
 def prepare_simulation(

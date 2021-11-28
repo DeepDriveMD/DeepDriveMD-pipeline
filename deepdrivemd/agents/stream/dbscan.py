@@ -13,10 +13,7 @@ from pathlib import Path
 import pandas as pd
 from sklearn.neighbors import LocalOutlierFactor
 
-# from multiprocessing import Process, Pool
 from pathos.multiprocessing import ProcessingPool as Pool
-
-# import math
 
 from deepdrivemd.utils import Timer, timer, t1Dto2D
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
@@ -178,7 +175,7 @@ def predict(
     np.ndarray
         The latent space representation of the input.
     """
-    # input = np.expand_dims(cvae_input[0], axis=-1)
+
     input = np.expand_dims(cvae_input["contact_map"], axis=-1)
 
     cfg.initial_shape = input.shape[1:3]
@@ -327,15 +324,6 @@ def write_pdb_frame(
     sys.stdout.flush()
     sys.stderr.flush()
 
-    """
-    print('output_pdb_fn: ', output_pdb_fn, subprocess.getstatusoutput(f"ls -l {output_pdb_fn}"),
-          subprocess.getstatusoutput(f"md5sum {output_pdb_fn}"),
-          subprocess.getstatusoutput("free -h"), ', parent process: ', os.getppid(),
-          ', process id: ', os.getpid(), ', core: ',
-          open("/proc/{pid}/stat".format(pid=os.getpid()), 'rb').read().split()[-14] )
-    sys.stdout.flush()
-    """
-
 
 def check_output(dir):
     print("=" * 30)
@@ -388,10 +376,6 @@ def write_top_outliers(
                 )
             )
             pp.append(pool.apipe(np.save, outlier_v_file, v))
-            """
-            write_pdb_frame(p, init_pdb_file, outlier_pdb_file)
-            np.save(outlier_v_file, v)
-            """
             task_file = f"{tmp_dir}/{m}.txt"
             with open(task_file, "w") as f:
                 f.write(str(d))
@@ -680,16 +664,6 @@ def main(cfg: OutlierDetectionConfig):
         print(f"outlier iteration {j}")
 
         timer("outlier_search_iteration", 1)
-
-        """
-        with Timer("outlier_read"):
-            cvae_input = mystreams.next()
-            print("len(cvae_input) = ", len(cvae_input))
-            print("type(cvae_input[-1]) = ", type(cvae_input[-1]))
-            sys.stdout.flush()
-            print("cvae_input[-1].shape = ", cvae_input[-1].shape)
-            sys.stdout.flush()
-        """
 
         with Timer("outlier_predict"):
             cm_predict = predict(cfg, model_path, cvae_input)

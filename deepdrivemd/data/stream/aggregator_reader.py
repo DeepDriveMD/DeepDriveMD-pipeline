@@ -137,13 +137,6 @@ class AdiosReader:
                 break
             for v in self.variables:
                 v.next(ARW)
-        """
-        output = [i]
-        for v in self.variables:
-            output.append(v.total.copy())
-
-        return output
-        """
 
         output = {"steps_read": i}
         for v in self.variables:
@@ -234,21 +227,18 @@ class Streams:
         for fn in self.readers:
             nextbatch = self.readers[fn].next(batch)
 
-            # i = nextbatch[0]
             i = nextbatch["steps_read"]
             print(f"lastN = {lastN}, batch = {batch}, i = {i}")
             if i >= lastN:
                 for j, v in enumerate(self.vnames):
                     cname = "c_" + v
                     cache = getattr(self, cname)
-                    # cache[fn] = nextbatch[j + 1][-lastN:]
                     cache[fn] = nextbatch[v][-lastN:]
             else:
                 remain = lastN - i
                 for j, v in enumerate(self.vnames):
                     cname = "c_" + v
                     cache = getattr(self, cname)
-                    # cache[fn] = cache[fn][-remain:] + nextbatch[j + 1]
                     cache[fn] = cache[fn][-remain:] + nextbatch[v]
 
         output = {}
@@ -257,16 +247,5 @@ class Streams:
             cname = "c_" + v
             cache = getattr(self, cname)
             output[v] = np.concatenate(list(cache.values()))
-
-        """
-        output = []
-        print(f"vnames = {self.vnames}")
-        for v in self.vnames:
-            cname = "c_" + v
-            cache = getattr(self, cname)
-            output.append(
-                np.concatenate(list(cache.values()))
-            )  # is it in the same order accross variables?
-        """
 
         return output

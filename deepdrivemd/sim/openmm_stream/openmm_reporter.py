@@ -1,13 +1,11 @@
 import simtk.unit as u
 
-# import os
 from MDAnalysis.analysis import distances, rms
 import MDAnalysis
 import numpy as np
 from deepdrivemd.utils import t2Dto1D, hash2intarray, timer
 from typing import Dict
 
-# import adios2
 import hashlib
 import sys
 
@@ -22,23 +20,10 @@ class ContactMapReporter(object):
         print("ContactMapRepoter constructor")
         self._adios_stream = cfg._adios_stream
 
-        """
-        stream_name = os.path.basename(cfg.output_path)
-
-        self._adios_stream = adios2.open(
-            name=str(cfg.bp_file),
-            mode="w",
-            config_file=str(cfg.adios_cfg),
-            io_in_config_file=stream_name,
-        )
-        """
-
         self.step = 0
         self.cfg = cfg
 
         if cfg.compute_zcentroid or cfg.compute_rmsd:
-            # print("cfg.init_pdb_file = ", self.cfg.init_pdb_file)
-            # sys.stdout.flush()
             self.universe_init = MDAnalysis.Universe(self.cfg.init_pdb_file)
         if cfg.compute_zcentroid:
             self.heavy_atoms = self.universe_init.select_atoms(self.cfg.zcentroid_atoms)
@@ -50,9 +35,6 @@ class ContactMapReporter(object):
             ).positions.copy()
 
     def __del__(self):
-        """
-        self._adios_stream.close()
-        """
         print("ContactMapRepoter destructor")
 
     def describeNextReport(self, simulation):
@@ -91,7 +73,6 @@ class ContactMapReporter(object):
             [[x[0]._value, x[1]._value, x[2]._value] for x in velocities]
         ).astype(np.float32)
 
-        # m = hashlib.md5()
         m = hashlib.sha512()
         m.update(positions.tostring())
         md5 = m.hexdigest()
