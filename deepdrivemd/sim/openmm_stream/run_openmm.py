@@ -16,7 +16,7 @@ import numpy as np
 import subprocess
 import itertools
 from deepdrivemd.sim.openmm.run_openmm import SimulationContext
-from typing import Tuple
+from typing import Dict, Union
 import pandas as pd
 import adios2
 
@@ -33,7 +33,7 @@ def configure_reporters(
 
 def next_outlier(
     cfg: OpenMMConfig, sim: omm.app.Simulation
-) -> Tuple[str, str, float, str]:
+) -> Dict[str, Union[int, float, str, np.array]]:
     """Get the next outlier to use as an initial state.
 
     Parameters
@@ -43,8 +43,9 @@ def next_outlier(
 
     Returns
     -------
-    Tuple[str, str, float, str]
-        path to pdb file with positions, path to numpy file with velocities, rmsd, md5sum
+    Dict[str, Union[np.array, str, int, float, None]]
+        path to pdb file with positions, path to numpy file with velocities, rmsd, md5sum, etc. depending on configuration.
+        The key describes what is returned.
 
     """
 
