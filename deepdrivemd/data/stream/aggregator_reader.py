@@ -2,7 +2,7 @@ import adios2
 import numpy as np
 from deepdrivemd.utils import t1Dto2D
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Union
 from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
 from deepdrivemd.data.stream.enumerations import DataStructure
 
@@ -109,7 +109,7 @@ class AdiosReader:
         self.io.RemoveAllVariables()
         self.adios.RemoveAllIOs()
 
-    def next(self, N: int) -> List:
+    def next(self, N: int) -> Dict[str, Union[np.array, str, int, float]]:
         """Read the next `N` steps of all variables.
 
         Parameters
@@ -119,9 +119,8 @@ class AdiosReader:
 
         Returns
         -------
-        List[int, List[np.ndarray], ...]
-             the first element is the actual number of steps read,
-             subsequent elements are lists of numpy arrays for each variable, for each time step
+        Dict[str, Union[np.array, str, int, float]]
+            values for different variables whose names are used as keys
         """
 
         vvv = {}
@@ -212,14 +211,13 @@ class Streams:
 
     def next(
         self,
-    ) -> List:
+    ) -> Dict[str, Union[np.array, int, float, str]]:
         """Provide `lastN` steps from each aggregator
 
         Returns
         -------
-        List[List[np.ndarray]*len(variables)]
-            A list of lists of np.ndarray. Each sublist corresponds
-            to one variables and all the aggregators.
+        Dict[str, Union[np.array, int, float, str]]
+            values for the the variables whose names are used as keys
         """
 
         lastN = self.lastN

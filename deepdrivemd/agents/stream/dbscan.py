@@ -7,7 +7,7 @@ import sys
 import os
 import argparse
 import itertools
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Union
 from numba import cuda
 from pathlib import Path
 import pandas as pd
@@ -150,13 +150,7 @@ def dirs(cfg: OutlierDetectionConfig) -> Tuple[str, str, str]:
 def predict(
     cfg: OutlierDetectionConfig,
     model_path: str,
-    cvae_input: Tuple[
-        List[np.ndarray],
-        List[np.ndarray],
-        List[np.ndarray],
-        List[np.ndarray],
-        List[np.ndarray],
-    ],
+    cvae_input: Dict[str, Union[str, int, float, np.ndarray]],
     batch_size: int = 32,
 ) -> np.ndarray:
     """Project contact maps into the middle layer of CVAE
@@ -166,8 +160,8 @@ def predict(
     cfg : OutlierDetectionConfig
     model_path : str
         Path to the published model.
-    cvae_input : Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray]] ### Dictionary
-        Each list corresponds to the variable described by `variable_list` in `main` function. In particular, the first one contains contact maps and only those are used in `predict()`.
+    cvae_input : Dict[str, Union[str, int, float, np.ndarray],
+        positions, velocities, etc
     batch_size : int
         Batch size used to project input to the middle layer of the autoencoder.
     Returns
@@ -337,7 +331,7 @@ def check_output(dir):
 def write_top_outliers(
     cfg: OutlierDetectionConfig,
     tmp_dir: str,
-    top: Tuple[np.ndarray, np.ndarray, np.ndarray],
+    top: Dict[str, Union[str, int, float, np.ndarray]],
 ):
     """Save to PDB files top outliers.
 
@@ -346,16 +340,16 @@ def write_top_outliers(
     cfg : OutlierDetectionConfig
     tmp_dir : str
           Temporary directory to write outliers to.
-    top : Tuple[np.ndarray, np.ndarray, np.ndarray]
-          Top :obj:`N` positions, velocities, md5sums where
+    top : Dict[str, Union[str, int, float, np.ndarray]]
+          Top :obj:`N` positions, velocities, md5sums, etc.
           :obj:`N` is equal to the number of the simulations.
     """
-    positions, velocities, md5s = top[:3]
+    positions, velocities, md5s = top["positions"], top["velocities"], top["md5s"]
 
     pp = []
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-        dirs = top[5]
+        dirs = top["ligand"]  # top[5]
         print("dirs=")
         print(dirs)
         table = pd.read_csv(cfg.multi_ligand_table)
@@ -399,11 +393,13 @@ def write_top_outliers(
     check_output(tmp_dir)
 
 
-def write_db(top: Path, tmp_dir: Path) -> OutlierDB:
+def write_db(
+    top: Dict[str, Union[str, int, float, np.ndarray]], tmp_dir: Path
+) -> OutlierDB:
     """Create and save a database of outliers to be used by simulation."""
     outlier_db_fn = f"{tmp_dir}/OutlierDB.pickle"
-    outlier_files = list(map(lambda x: f"{tmp_dir}/{x}.pdb", top[2]))
-    rmsds = top[3]
+    outlier_files = list(map(lambda x: f"{tmp_dir}/{x}.pdb", top["md5s"]))
+    rmsds = top["rmsds"]
     db = OutlierDB(tmp_dir, list(zip(rmsds, outlier_files)))
     with open(outlier_db_fn, "wb") as f:
         pickle.dump(db, f)
@@ -429,11 +425,9 @@ def publish(tmp_dir: Path, published_dir: Path):
 
 def top_outliers(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[
-        np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
-    ],  # Dict
+    cvae_input: Dict[str, Union[np.ndarray, str, int, float]],
     outlier_list: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> Dict[str, Union[np.ndarray, str, int, float]]:
     """
     Find top :obj:num_sim` outliers sorted by :obj:`rmsd`.
 
@@ -462,16 +456,16 @@ def top_outliers(
     z = z[: cfg.num_sim]
     z = list(zip(*z))
 
-    return z
+    keys = ["positions", "velocities", "md5s", "rmsds", "outliers"]
+
+    return dict(zip(keys, z))
 
 
 def random_outliers(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[
-        np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
-    ],  # Dict
+    cvae_input: Dict[str, Union[np.ndarray, str, int, float]],
     outlier_list: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> Dict[str, Union[np.ndarray, str, int, float]]:
     """
     Find :obj:`num_sim` outliers in a random order. Can be used in the absense of :obj:`rmsd`.
 
@@ -485,9 +479,8 @@ def random_outliers(
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
-         Positions, velocities, md5sums, rmsds, outlier
-         indices of outliers in a random order.
+    Dict[str, Union[np.ndarray, str, int, float]]
+         Positions, velocities, md5sums, rmsds, outlier, etc
     """
     outlier_list = list(outlier_list[0])
     positions = cvae_input["positions"][outlier_list]
@@ -501,15 +494,17 @@ def random_outliers(
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         dirs = cvae_input["ligand"][outlier_list]
         z = list(zip(positions, velocities, md5s, rmsds, outlier_list, dirs))
+        keys = ["positions", "velocities", "md5s", "rmsds", "outliers", "dirs"]
     else:
         z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
+        keys = ["positions", "velocities", "md5s", "rmsds", "outliers"]
     indices = np.arange(len(z))
     np.random.shuffle(indices)
     indices = indices[: cfg.num_sim]
     z = [z[i] for i in indices]
     z = list(zip(*z))
 
-    return z
+    return dict(zip(keys, z))
 
 
 def run_lof(data: np.ndarray) -> np.ndarray:
@@ -521,12 +516,10 @@ def run_lof(data: np.ndarray) -> np.ndarray:
 
 def top_lof(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[
-        np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
-    ],  # Dict
+    cvae_input: Dict[str, Union[np.ndarray, str, int, float]],
     cm_predict: np.array,
     outlier_list: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> Dict[str, Union[np.ndarray, str, int, float]]:
 
     outlier_list = list(outlier_list[0])
     projections = cm_predict[outlier_list]
@@ -548,20 +541,19 @@ def top_lof(
             zip(positions, velocities, md5s, rmsds, outlier_list, dirs, lof_scores)
         )
         z.sort(key=lambda x: x[6])
+        keys = ["positions", "velocities", "md5s", "rmsds", "outliers", "dirs", "lofs"]
     else:
         z = list(zip(positions, velocities, md5s, rmsds, outlier_list, lof_scores))
         z.sort(key=lambda x: x[5])
-
+        keys = ["positions", "velocities", "md5s", "rmsds", "outliers", "lofs"]
     z = z[: cfg.num_sim]
     z = list(zip(*z))
-    return z
+    return dict(zip(keys, z))
 
 
 def select_best_random(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[
-        np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
-    ],  # Dict
+    cvae_input: Dict[str, Union[np.ndarray, str, int, float]],
 ) -> List[int]:
     """Sort cvae_input by rmsd, selects :obj:`2*cfg.num_sim` best entries, out of them
     randomly select :obj:`cfg.num_sim`, return the corresponding indices.
@@ -569,8 +561,8 @@ def select_best_random(
     Parameters
     ----------
     cfg : OutlierDetectionConfig
-    cvae_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
-        steps, positions, velocities, md5sums, rmsds
+    cvae_input : Dict[str, Union[np.ndarray, str, int, float]]
+        steps, positions, velocities, md5sums, rmsds, etc.
 
     Returns
     -------
@@ -591,9 +583,7 @@ def select_best_random(
 
 def select_best(
     cfg: OutlierDetectionConfig,
-    cvae_input: Tuple[
-        np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray
-    ],  # Dict
+    cvae_input: Dict[str, Union[np.ndarray, str, int, float]],
 ) -> List[int]:
     """Sort cvae_input by rmsd, selects best :obj:`cfg.num_sim`, return
     the corresponding indices.
@@ -601,8 +591,8 @@ def select_best(
     Parameters
     ----------
     cfg : OutlierDetectionConfig
-    cvae_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
-        steps, positions, velocities, md5sums, rmsds
+    cvae_input : Dict[str, Union[np.ndarray, str, int, float]]
+        steps, positions, velocities, md5sums, rmsds, etc.
 
     Returns
     -------
@@ -704,7 +694,7 @@ def main(cfg: OutlierDetectionConfig):
             print("Using top outliers sorted by rmsd")
             top = top_outliers(cfg, cvae_input, outlier_list)
 
-        print("top outliers = ", top[3])
+        print("top outliers = ", top["outliers"])
 
         with Timer("outlier_write"):
             write_top_outliers(cfg, tmp_dir, top)
