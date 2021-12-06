@@ -349,7 +349,7 @@ def write_top_outliers(
     pp = []
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-        dirs = top["ligand"]  # top[5]
+        dirs = top["dirs"]  # top[5]
         print("dirs=")
         print(dirs)
         table = pd.read_csv(cfg.multi_ligand_table)
@@ -441,7 +441,7 @@ def top_outliers(
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+    Dict[str, Union[np.ndarray, str, int, float]]
          Positions, velocities, md5sums, rmsds, outlier
          indices of outliers, sorted in ascending order by rmsd
     """
