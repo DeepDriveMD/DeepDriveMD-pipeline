@@ -803,19 +803,19 @@ def read_lastN(
         print(variable_lists["rmsd"].shape)
     sys.stdout.flush()
 
-    result = [variable_lists["contact_map"]]
+    result = {"contact_map": variable_lists["contact_map"]}
 
     if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
-        result.append(np.concatenate(variable_lists["zcentroid"]))
+        result["zcentroid"] = np.concatenate(variable_lists["zcentroid"])
 
     if cfg.compute_rmsd:
-        result.append(np.concatenate(variable_lists["rmsd"]))
+        result["rmsds"] = np.concatenate(variable_lists["rmsd"])
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-        result.append(np.concatenate(variable_lists["ligand"]))
-        result.append(np.concatenate(variable_lists["dir"]))
+        result["dirs"] = np.concatenate(variable_lists["dir"])
+        result["ligand"] = np.concatenate(variable_lists["ligand"])
 
-    return tuple(result)
+    return result
 
 
 def project_mini(cfg: OutlierDetectionConfig):
@@ -841,13 +841,13 @@ def project_mini(cfg: OutlierDetectionConfig):
                 np.save(f, zcentroid)
 
         if cfg.compute_rmsd:
-            rmsds = cvae_input["rmsd"]  # cvae_input[2]
+            rmsds = cvae_input["rmsds"]
             with open(cfg.output_path / f"rmsd_{i}.npy", "wb") as f:
                 np.save(f, rmsds)
 
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
             ligand = cvae_input["ligand"]
-            sim = cvae_input["dir"]
+            sim = cvae_input["dirs"]
             for j in range(len(ligand)):
                 print(f"ligand[{j}] = {ligand[j]}")
                 if ligand[j] == -1:

@@ -68,7 +68,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     use_outliers: bool = True
     use_random_outliers: bool = False
     compute_rmsd: bool = True
-    compute_zcentroid: bool = True
+    compute_zcentroid: bool = False
     final_shape: List[int] = [28, 28, 1]
     outlier_selection: str = "rmsd"
     multi_ligand_table: Path = Path()
