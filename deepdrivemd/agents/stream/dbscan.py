@@ -97,7 +97,7 @@ def wait_for_input(cfg: OutlierDetectionConfig) -> List[str]:
         List of aggregated bp files.
     """
     while True:
-        bpfiles = glob.glob(str(cfg.agg_dir / "*/*/agg.bp"))
+        bpfiles = glob.glob(str(cfg.agg_dir / "*/*/agg.bp*"))
         if len(bpfiles) == cfg.num_agg:
             break
         print(f"Waiting for {cfg.num_agg} agg.bp files")
@@ -105,6 +105,9 @@ def wait_for_input(cfg: OutlierDetectionConfig) -> List[str]:
 
     print(f"bpfiles = {bpfiles}")
 
+    time.sleep(60 * 5)
+
+    """
     # Wait for enough time steps in each bp file
     while True:
         enough = True
@@ -129,6 +132,7 @@ def wait_for_input(cfg: OutlierDetectionConfig) -> List[str]:
             break
         else:
             time.sleep(cfg.timeout2)
+    """
 
     return bpfiles
 
@@ -176,7 +180,6 @@ def predict(
     cfg.final_shape = list(input.shape[1:3]) + list(np.array([1]))
 
     cvae = build_model(cfg, model_path)
-
     cm_predict = cvae.return_embeddings(input, batch_size)
     del cvae
     clear_gpu()
@@ -614,6 +617,7 @@ def main(cfg: OutlierDetectionConfig):
 
     with Timer("wait_for_input"):
         adios_files_list = wait_for_input(cfg)
+        adios_files_list = list(map(lambda x: x.replace(".sst", ""), adios_files_list))
 
     variable_list = [
         StreamContactMapVariable("contact_map", np.uint8, DataStructure.array),
@@ -640,7 +644,12 @@ def main(cfg: OutlierDetectionConfig):
     )
 
     with Timer("outlier_read"):
-        cvae_input = mystreams.next()
+        while True:
+            cvae_input = mystreams.next()
+            if len(cvae_input[list(cvae_input.keys())[0]]) < 10:
+                time.sleep(30)
+            else:
+                break
 
     with Timer("wait_for_model"):
         model_path = str(wait_for_model(cfg))

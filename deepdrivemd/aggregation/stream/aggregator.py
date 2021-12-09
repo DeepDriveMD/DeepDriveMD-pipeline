@@ -83,6 +83,7 @@ def aggregate(
         int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]
     ],
     aggregator_stream: adios2.adios2.Engine,
+    aggregator_stream_cm: adios2.adios2.Engine,
 ):
     """Read adios streams from a subset of simulations handled by this
     aggregator and write them to adios file to be used by machine learning and outlier search.
@@ -115,6 +116,10 @@ def aggregate(
         "positions": (np.float32, DataStructure.array),
         "velocities": (np.float32, DataStructure.array),
         "md5": (str, DataStructure.scalar),
+    }
+
+    variablesW_cm = {
+        "contact_map": (np.uint8, DataStructure.array),
     }
 
     if cfg.compute_rmsd:
@@ -151,6 +156,7 @@ def aggregate(
             if status:
                 ARW.d_md5 = intarray2hash(ARW.d_md5)
                 ARW.write_step(aggregator_stream, variablesW, end_step=False)
+                ARW.write_step(aggregator_stream_cm, variablesW_cm, end_step=True)
                 aggregator_stream.write("dir", str(sim_task_id), end_step=True)
             else:
                 print(f"NotReady in simulation {sim_task_id}")
@@ -186,7 +192,17 @@ if __name__ == "__main__":
         io_in_config_file="AggregatorOutput",
     )
 
-    aggregate(cfg, connections, aggregator_stream)
+    bpaggregator_cm = str(cfg.output_path / "agg_cm.bp")
+
+    aggregator_stream_cm = adios2.open(
+        name=bpaggregator_cm,
+        mode="w",
+        config_file=str(cfg.adios_xml_agg),
+        io_in_config_file="AggregatorOutput",
+    )
+
+    aggregate(cfg, connections, aggregator_stream, aggregator_stream_cm)
 
     # Currently there is an infinite loop in aggregate() and this statement should never be reached.
     aggregator_stream.close()
+    aggregator_stream_cm.close()

@@ -96,6 +96,15 @@ class AdiosReader:
         stream_name : str
             name of a stream in `adios.xml` file
         """
+
+        print("config=", str(config))
+        print("fn=", fn)
+        print("stream_name=", stream_name)
+        print("variables=", str(variables))
+        import sys
+
+        sys.stdout.flush()
+
         self.adios = adios2.ADIOS(str(config), True)
         self.io = self.adios.DeclareIO(stream_name)
         self.stream = self.io.Open(fn, adios2.Mode.Read)

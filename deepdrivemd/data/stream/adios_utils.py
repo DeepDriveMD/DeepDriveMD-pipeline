@@ -104,11 +104,14 @@ class AdiosStreamStepRW:
              meaning that the step writing is done; otherwise, terminating the step should be done
              outside of the method
         """
-        for v in variables:
+
+        vnames = list(variables.keys())
+
+        for v in vnames:
             dname = "d_" + v
             structure_type = variables[v][1]
             data = getattr(self, dname)
-            end = end_step and v == variables[-1]
+            end = end_step and v == vnames[-1]
 
             if structure_type == DataStructure.scalar:
                 wstream.write(v, data, end_step=end)

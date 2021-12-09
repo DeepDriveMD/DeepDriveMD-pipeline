@@ -28,7 +28,9 @@ def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
 
     # Wait for enough bpfiles
     while True:
-        bpfiles = glob.glob(str(cfg.agg_dir / "*/*/agg.bp"))
+        bpfiles = glob.glob(str(cfg.agg_dir / "*/*/agg_cm.bp*"))
+        print(bpfiles)
+        sys.stdout.flush()
         if len(bpfiles) == cfg.num_agg:
             break
         print(f"Waiting for {cfg.num_agg} agg.bp files")
@@ -36,6 +38,9 @@ def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
 
     print(f"bpfiles = {bpfiles}")
 
+    time.sleep(60 * 5)
+
+    """
     # Wait for enough time steps in each bp file
     while True:
         enough = True
@@ -54,13 +59,13 @@ def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
                 enough = False
             if steps < cfg.min_step_increment:
                 enough = False
-                print(f"Waiting, steps = {steps}, {bp}")
+                print(f"Waiting, steps = {steps}, {bp}"); sys.stdout.flush()
                 break
         if enough:
             break
         else:
             time.sleep(cfg.timeout2)
-
+    """
     return bpfiles
 
 
@@ -123,12 +128,22 @@ def main(cfg: KerasCVAEModelConfig):
     with Timer("ml_wait_for_input"):
         bpfiles = wait_for_input(cfg)
 
+    print(bpfiles)
+    print(cfg.adios_xml_agg)
+    print(cfg.max_steps)
+    print(cfg.read_batch)
+    sys.stdout.flush()
+
+    bpfiles = list(map(lambda x: x.replace(".sst", ""), bpfiles))
+
     streams = Streams(
         bpfiles,
         [StreamContactMapVariable("contact_map", np.uint8, DataStructure.array)],
         lastN=cfg.max_steps,
         config=cfg.adios_xml_agg,
         batch=cfg.read_batch,
+        stream_name="AggregatorOutput",
+        # change for different aggregators
     )
 
     # Infinite loop of CVAE training

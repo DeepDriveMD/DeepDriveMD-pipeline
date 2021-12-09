@@ -17,7 +17,7 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/p/gpfs1/yakushin/Outputs/3"
+    experiment_directory = "/p/gpfs1/yakushin/Outputs/3b"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
