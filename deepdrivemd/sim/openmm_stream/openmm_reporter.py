@@ -9,6 +9,8 @@ from typing import Dict
 import hashlib
 import sys
 
+import adios2
+
 
 class ContactMapReporter(object):
     """Periodically reports the results of the openmm simulation"""
@@ -34,8 +36,16 @@ class ContactMapReporter(object):
                 self.cfg.mda_selection
             ).positions.copy()
 
+        self._adios_file = adios2.open(
+            name=str(self.cfg.current_dir) + "/trajectory.bp",
+            mode="w",
+            config_file=str(cfg.adios_xml_file),
+            io_in_config_file="Trajectory",
+        )
+
     def __del__(self):
         print("ContactMapRepoter destructor")
+        self._adios_file.close()
 
     def describeNextReport(self, simulation):
         steps = self._reportInterval - simulation.currentStep % self._reportInterval
@@ -139,3 +149,9 @@ class ContactMapReporter(object):
                 k, v, list(v.shape), [0] * len(v.shape), list(v.shape)
             )
         self._adios_stream.end_step()
+
+        for k, v in output.items():
+            self._adios_file.write(
+                k, v, list(v.shape), [0] * len(v.shape), list(v.shape)
+            )
+        self._adios_file.end_step()

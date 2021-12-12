@@ -227,11 +227,13 @@ if __name__ == "__main__":
 
     cfg.adios_xml_sim = Path(cfg.config_directory) / "adios_sim.xml"
     cfg.adios_xml_agg = Path(cfg.config_directory) / "adios_agg.xml"
+    cfg.adios_xml_file = Path(cfg.config_directory) / "adios_file.xml"
 
     cfg.agent_stage.task_config.adios_xml_agg = cfg.adios_xml_agg
     cfg.aggregation_stage.task_config.adios_xml_agg = cfg.adios_xml_agg
     cfg.machine_learning_stage.task_config.adios_xml_agg = cfg.adios_xml_agg
     cfg.molecular_dynamics_stage.task_config.adios_xml_sim = cfg.adios_xml_sim
+    cfg.molecular_dynamics_stage.task_config.adios_xml_file = cfg.adios_xml_file
 
     reporter = ru.Reporter(name="radical.entk")
     reporter.title(cfg.title)

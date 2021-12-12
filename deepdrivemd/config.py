@@ -237,6 +237,7 @@ class ExperimentConfig(BaseSettings):
 class StreamingExperimentConfig(ExperimentConfig):
     adios_xml_sim: Path
     adios_xml_agg: Path
+    adios_xml_file: Path
     config_directory: Path
     software_directory: Path
     init_pdb_file: Path

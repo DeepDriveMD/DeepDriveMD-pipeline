@@ -130,6 +130,7 @@ def prepare_simulation(
     sim_dir = cfg.output_path / str(iteration)
     sim_dir.mkdir(exist_ok=True)
     cfg.current_dir = sim_dir
+    print("In prepare_simulation cfg.current_dir = ", str(cfg.current_dir))
 
     outlier = next_outlier(cfg, sim)
     if outlier is not None:
@@ -157,6 +158,7 @@ def prepare_simulation(
 
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
             init_multi_ligand(cfg, ligand)
+            """
             with Timer("molecular_dynamics_SimulationContext"):
                 ctx = SimulationContext(cfg)
                 print("ctx = ", ctx)
@@ -184,6 +186,34 @@ def prepare_simulation(
 
             with Timer("molecular_dynamics_configure_reporters"):
                 configure_reporters(sim, ctx, cfg, cfg.report_steps)
+            """
+
+        with Timer("molecular_dynamics_SimulationContext"):
+            ctx = SimulationContext(cfg)
+            print("ctx = ", ctx)
+            print("dir(ctx) = ", dir(ctx))
+
+        with Timer("molecular_dynamics_configure_simulation"):
+            dt_ps = cfg.dt_ps * u.picoseconds
+            temperature_kelvin = cfg.temperature_kelvin * u.kelvin
+            print("positions_pdb = ", positions_pdb)
+            print("ctx.top_file = ", ctx.top_file)
+            try:
+                del sim
+            except Exception as e:
+                print(e)
+                pass
+            sim = configure_simulation(
+                pdb_file=str(positions_pdb),  # ctx.pdb_file,
+                top_file=ctx.top_file,
+                solvent_type=cfg.solvent_type,
+                gpu_index=0,
+                dt_ps=dt_ps,
+                temperature_kelvin=temperature_kelvin,
+                heat_bath_friction_coef=cfg.heat_bath_friction_coef,
+            )
+        with Timer("molecular_dynamics_configure_reporters"):
+            configure_reporters(sim, ctx, cfg, cfg.report_steps)
 
         sim.context.setPositions(positions)
         if random.random() < cfg.copy_velocities_p:
@@ -197,6 +227,32 @@ def prepare_simulation(
         return True, sim
     else:
         print("There are no outliers")
+
+        with Timer("molecular_dynamics_SimulationContext"):
+            ctx = SimulationContext(cfg)
+            print("ctx = ", ctx)
+            print("dir(ctx) = ", dir(ctx))
+
+        with Timer("molecular_dynamics_configure_simulation"):
+            dt_ps = cfg.dt_ps * u.picoseconds
+            temperature_kelvin = cfg.temperature_kelvin * u.kelvin
+            try:
+                del sim
+            except Exception as e:
+                print(e)
+                pass
+            sim = configure_simulation(
+                pdb_file=ctx.pdb_file,
+                top_file=ctx.top_file,
+                solvent_type=cfg.solvent_type,
+                gpu_index=0,
+                dt_ps=dt_ps,
+                temperature_kelvin=temperature_kelvin,
+                heat_bath_friction_coef=cfg.heat_bath_friction_coef,
+            )
+        with Timer("molecular_dynamics_configure_reporters"):
+            configure_reporters(sim, ctx, cfg, cfg.report_steps)
+
         return False, sim
 
 
@@ -241,6 +297,10 @@ def run_simulation(cfg: OpenMMConfig):
     simulation_length_ns = cfg.simulation_length_ns * u.nanoseconds
     temperature_kelvin = cfg.temperature_kelvin * u.kelvin
 
+    sim_dir = cfg.output_path / "0"
+    sim_dir.mkdir(exist_ok=True)
+    cfg.current_dir = sim_dir
+
     # Handle files
     with Timer("molecular_dynamics_SimulationContext"):
         ctx = SimulationContext(cfg)
@@ -273,9 +333,13 @@ def run_simulation(cfg: OpenMMConfig):
         # Run simulation for nsteps
         print(f"Simulation iteration {iteration}")
         sys.stdout.flush()
+
         with Timer("molecular_dynamics_step"):
             sim.step(nsteps)
-        _, sim = prepare_simulation(cfg, iteration, sim)
+
+        subprocess.getstatusoutput(f"touch {str(cfg.current_dir)}/done")
+
+        _, sim = prepare_simulation(cfg, iteration + 1, sim)
 
 
 def adios_configuration(cfg: OpenMMConfig):
