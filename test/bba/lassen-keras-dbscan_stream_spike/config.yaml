@@ -1,4 +1,5 @@
 adios_xml_agg: set_by_deepdrivemd
+adios_xml_file: set_by_deepdrivemd
 adios_xml_sim: set_by_deepdrivemd
 config_directory: set_by_deepdrivemd
 cpus_per_node: 40
@@ -87,7 +88,7 @@ agent_stage:
     initial_shape:
     - 3072
     - 3072
-    lastN: 50
+    lastN: 150
     latent_dim: 10
     min_step_increment: 50
     num_agg: 10
@@ -99,7 +100,7 @@ agent_stage:
     output_path: set_by_deepdrivemd
     project_gpu: false
     project_lastN: 50000
-    read_batch: 50
+    read_batch: 150
     ref_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/spike/system/closed_wrapped.pdb
     shuffle: true
     split_pct: 0.8
@@ -205,7 +206,7 @@ machine_learning_stage:
     dense_layers: 1
     dense_neurons:
     - 128
-    epochs: 150
+    epochs: 30
     experiment_directory: set_by_deepdrivemd
     final_shape:
     - 3072
@@ -216,12 +217,12 @@ machine_learning_stage:
     - 3072
     latent_dim: 10
     max_loss: 16500000
-    max_steps: 100
+    max_steps: 300
     min_step_increment: 40
     num_agg: 10
     output_path: set_by_deepdrivemd
     published_model_dir: set_by_deepdrivemd
-    read_batch: 40
+    read_batch: 120
     reinit: false
     shuffle: true
     split_pct: 0.8
@@ -256,6 +257,7 @@ molecular_dynamics_stage:
   - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
   - export OMP_PROC_BIND=false
   task_config:
+    adios_xml_file: set_by_deepdrivemd
     adios_xml_sim: set_by_deepdrivemd
     bp_file: set_by_deepdrivemd
     compute_rmsd: true

@@ -27,6 +27,7 @@ class Header(BaseModel):
     config_directory = "set_by_deepdrivemd"
     adios_xml_sim = "set_by_deepdrivemd"
     adios_xml_agg = "set_by_deepdrivemd"
+    adios_xml_file = "set_by_deepdrivemd"
 
 
 header = Header()
@@ -85,6 +86,7 @@ class TaskConfigMD(BaseModel):
     next_outlier_policy = 1
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
+    adios_xml_file = header.adios_xml_file
     compute_rmsd = True
     divisibleby = 1024
     compute_zcentroid = False
@@ -180,10 +182,10 @@ class TaskConfigML(CVAE):
     stage_idx = 0
     task_idx = 0
     output_path = "set_by_deepdrivemd"
-    epochs = 150
+    epochs = 30
     batch_size = 32 * 2
     min_step_increment = 40
-    max_steps = 100
+    max_steps = 100 * 3
     max_loss = 165000 * 100
     num_agg = agg.num_tasks
     timeout1 = 30
@@ -194,7 +196,7 @@ class TaskConfigML(CVAE):
     adios_xml_agg = header.adios_xml_agg
     reinit = False
     use_model_checkpoint = True
-    read_batch = 40
+    read_batch = 40 * 3
 
 
 task_config_ml = TaskConfigML()
@@ -245,7 +247,7 @@ class TaskConfigAgent(CVAE):
     timeout1 = 30
     timeout2 = 10
     best_model = f"{header.experiment_directory}/machine_learning_runs/stage0000/task0000/published_model/best.h5"
-    lastN = 50
+    lastN = 50 * 3
     outlier_count = 120
     outlier_max = 5000
     outlier_min = 500
@@ -253,7 +255,7 @@ class TaskConfigAgent(CVAE):
     ref_pdb_file = f"{header.ref_pdb_file}"
     init_eps = 1.3
     init_min_samples = 10
-    read_batch = 50
+    read_batch = 50 * 3
     num_sim = md.num_tasks
     project_lastN = 50 * 1000
     project_gpu = False

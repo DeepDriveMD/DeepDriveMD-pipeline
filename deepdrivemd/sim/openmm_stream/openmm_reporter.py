@@ -3,7 +3,9 @@ import simtk.unit as u
 from MDAnalysis.analysis import distances, rms
 import MDAnalysis
 import numpy as np
-from deepdrivemd.utils import t2Dto1D, hash2intarray, timer
+from deepdrivemd.utils import hash2intarray, timer
+
+# from deepdrivemd.utils import t2Dto1D
 from typing import Dict
 
 import hashlib
@@ -101,8 +103,8 @@ class ContactMapReporter(object):
         contact_map = distances.contact_matrix(
             positions_ca, cutoff=self.cfg.threshold, returntype="numpy", box=None
         ).astype("uint8")
-        contact_map = t2Dto1D(contact_map)
-        contact_map = np.packbits(contact_map)
+        # contact_map = t2Dto1D(contact_map)
+        # contact_map = np.packbits(contact_map)
 
         step = np.array([step], dtype=np.int32)
 

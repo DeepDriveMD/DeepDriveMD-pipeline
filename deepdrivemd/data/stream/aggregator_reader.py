@@ -1,6 +1,7 @@
 import adios2
 import numpy as np
-from deepdrivemd.utils import t1Dto2D
+
+# from deepdrivemd.utils import t1Dto2D
 from pathlib import Path
 from typing import List, Dict, Union
 from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
@@ -60,8 +61,8 @@ class StreamContactMapVariable(StreamVariable):
 
     def next(self, ARW):
         var = getattr(ARW, "d_" + self.name)
-        var = np.unpackbits(var)
-        var = t1Dto2D(var)
+        # var = np.unpackbits(var)
+        # var = t1Dto2D(var)
         self.total.append(var)
 
 

@@ -341,6 +341,18 @@ class CVAE(object):
                 )
             )
 
+        data_D = (
+            tf.data.Dataset.from_tensor_slices((data, data))
+            .batch(batch_size)
+            .prefetch(1)
+        )
+        validation_data_D = (
+            tf.data.Dataset.from_tensor_slices((validation_data, validation_data))
+            .batch(batch_size)
+            .prefetch(1)
+        )
+
+        """
         self.model.fit(
             data,
             data,
@@ -348,6 +360,16 @@ class CVAE(object):
             epochs=epochs,
             shuffle=True,
             validation_data=(validation_data, validation_data),
+            callbacks=callbacks,
+            **kwargs,
+        )
+        """
+
+        self.model.fit(
+            data_D,
+            epochs=epochs,
+            shuffle=True,
+            validation_data=validation_data_D,
             callbacks=callbacks,
             **kwargs,
         )
