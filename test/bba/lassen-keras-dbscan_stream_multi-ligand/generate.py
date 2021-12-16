@@ -27,6 +27,7 @@ class Header(BaseModel):
     config_directory = "set_by_deepdrivemd"
     adios_xml_sim = "set_by_deepdrivemd"
     adios_xml_agg = "set_by_deepdrivemd"
+    adios_xml_file = "set_by_deepdrivemd"
     multi_ligand_table = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv"
     )
@@ -86,6 +87,7 @@ class TaskConfigMD(BaseModel):
     next_outlier_policy = 1
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
+    adios_xml_file = header.adios_xml_file
     compute_rmsd = True
     divisibleby = 32
     multi_ligand_table = header.multi_ligand_table

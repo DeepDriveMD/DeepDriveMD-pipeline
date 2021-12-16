@@ -1,8 +1,11 @@
 <?xml version="1.0"?>
 <adios-config>
-    <io name="AggregatorOutput">
-        <engine type="BPFile">
-        <parameter key="FlushStepsCount" value="20"/>
-        </engine>
-    </io>
+  <io name="AggregatorOutput">
+    <engine type="SST">
+      <parameter key="OpenTimeoutSecs" value="20"/>
+      <parameter key="RendezvousReaderCount" value="1"/>
+      <parameter key="QueueLimit" value="50000"/>
+      <parameter key="QueueFullPolicy" value="Block"/>
+    </engine>
+  </io>
 </adios-config>

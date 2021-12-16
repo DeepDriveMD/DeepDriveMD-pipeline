@@ -15,7 +15,8 @@ from sklearn.neighbors import LocalOutlierFactor
 
 from pathos.multiprocessing import ProcessingPool as Pool
 
-from deepdrivemd.utils import Timer, timer, t1Dto2D
+# from deepdrivemd.utils import t1Dto2D
+from deepdrivemd.utils import Timer, timer
 from deepdrivemd.agents.stream.config import OutlierDetectionConfig
 import tensorflow.keras.backend as K
 from deepdrivemd.data.stream.enumerations import DataStructure
@@ -178,6 +179,9 @@ def predict(
 
     cfg.initial_shape = input.shape[1:3]
     cfg.final_shape = list(input.shape[1:3]) + list(np.array([1]))
+
+    print(f"input.shape = {input.shape}")
+    sys.stdout.flush()
 
     cvae = build_model(cfg, model_path)
     cm_predict = cvae.return_embeddings(input, batch_size)
@@ -798,6 +802,7 @@ def read_lastN(
         variable_lists[vl] = np.vstack(variable_lists[vl])
         print(len(variable_lists[vl]))
 
+    """
     variable_lists["contact_map"] = np.array(
         list(
             map(
@@ -806,6 +811,7 @@ def read_lastN(
             )
         )
     )
+    """
 
     print(variable_lists["contact_map"].shape)
     if cfg.compute_rmsd:
@@ -828,8 +834,15 @@ def read_lastN(
 
 
 def project_mini(cfg: OutlierDetectionConfig):
-    with Timer("wait_for_input"):
-        adios_files_list = wait_for_input(cfg)
+    # with Timer("wait_for_input"):
+    #    adios_files_list = wait_for_input(cfg)
+
+    ddd = os.path.dirname(cfg.agg_dir)
+
+    adios_files_list = glob.glob(
+        f"{ddd}/molecular_dynamics_runs/stage0000/task0*/*/trajectory.bp"
+    )
+
     with Timer("wait_for_model"):
         model_path = str(wait_for_model(cfg))
         print("model_path = ", model_path)
@@ -940,22 +953,26 @@ def project_tsne_2D(cfg: OutlierDetectionConfig):
     tsne2 = TSNE(n_components=2)
     emb = []
     rmsds = []
-    ligands = []
-    for i in range(9):
+    # ligands = []
+    embs = glob.glob(str(cfg.output_path) + "/embeddings_cvae_*.npy")
+    for i in range(len(embs)):
         with open(cfg.output_path / f"embeddings_cvae_{i}.npy", "rb") as f:
             emb.append(np.load(f))
         with open(cfg.output_path / f"rmsd_{i}.npy", "rb") as f:
             rmsds.append(np.load(f))
+        """
         with open(cfg.output_path / f"ligand_{i}.npy", "rb") as f:
             ligands.append(np.load(f))
-
+        """
     embeddings_cvae = np.concatenate(emb)
     RMSDS = np.concatenate(rmsds)
     with open(cfg.output_path / "rmsds.npy", "wb") as f:
         np.save(f, RMSDS)
+    """
     LIGANDS = np.concatenate(ligands)
     with open(cfg.output_path / "ligands.npy", "wb") as f:
         np.save(f, LIGANDS)
+    """
     with Timer("project_TSNE_2D"):
         tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
 

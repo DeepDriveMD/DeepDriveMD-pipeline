@@ -31,6 +31,7 @@ class Header(BaseModel):
     config_directory = "set_by_deepdrivemd"
     adios_xml_sim = "set_by_deepdrivemd"
     adios_xml_agg = "set_by_deepdrivemd"
+    adios_xml_file = "set_by_deepdrivemd"
 
 
 header = Header()
@@ -87,6 +88,7 @@ class TaskConfigMD(BaseModel):
     next_outlier_policy = 1
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
+    adios_xml_file = header.adios_xml_file
 
 
 task_config_md = TaskConfigMD()

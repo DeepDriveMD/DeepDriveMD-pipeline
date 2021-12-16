@@ -31,6 +31,7 @@ class Header(BaseModel):
     config_directory = "set_by_deepdrivemd"
     adios_xml_sim = "set_by_deepdrivemd"
     adios_xml_agg = "set_by_deepdrivemd"
+    adios_xml_file = "set_by_deepdrivemd"
 
 
 header = Header()
@@ -86,6 +87,7 @@ class TaskConfigMD(BaseModel):
     copy_velocities_p = 0.5
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
+    adios_xml_file = header.adios_xml_file
     compute_rmsd = True
     init_pdb_file = header.init_pdb_file
 
