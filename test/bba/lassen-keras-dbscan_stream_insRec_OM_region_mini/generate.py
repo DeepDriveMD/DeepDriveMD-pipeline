@@ -12,7 +12,7 @@ class Header(BaseModel):
     queue = "pbatch"
     schema_ = "local"
     project = "cv19-a01"
-    walltime_min = 60 * 12
+    walltime_min = 60 * 2
     max_iteration = 4
     cpus_per_node = 40
     gpus_per_node = 4

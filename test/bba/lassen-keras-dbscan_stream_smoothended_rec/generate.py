@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 class Header(BaseModel):
-    title = "BBA integration test"
+    title = "smoothended_rec mini"
     resource = "llnl.lassen"
     queue = "pbatch"
     schema_ = "local"
@@ -69,7 +69,7 @@ class TaskConfigMD(BaseModel):
     solvent_type = "explicit"
     top_suffix: str = ".top"
     simulation_length_ns = 10.0 / 20
-    report_interval_ps = 50.0 / 20
+    report_interval_ps = 50.0
     dt_ps = 0.002
     temperature_kelvin = 300.0
     heat_bath_friction_coef = 1.0

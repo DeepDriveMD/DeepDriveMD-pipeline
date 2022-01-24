@@ -17,7 +17,7 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/19"
+    experiment_directory = "/p/gpfs1/yakushin/Outputs/19"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
@@ -87,6 +87,7 @@ class TaskConfigMD(BaseModel):
     adios_xml_file = header.adios_xml_file
     compute_rmsd = False
     divisibleby = 256
+    init_pdb_file = header.init_pdb_file
 
 
 task_config_md = TaskConfigMD()
@@ -109,7 +110,7 @@ class MD(BaseModel):
     arguments = [f"{header.software_directory}/sim/openmm_stream/run_openmm.py"]
     cpu_reqs = cpu_req_md.dict()
     gpu_reqs = gpu_req_md.dict()
-    num_tasks = 12
+    num_tasks = 120
     task_config = task_config_md.dict()
 
 
@@ -132,7 +133,7 @@ class TaskConfigAgg(BaseModel):
     task_idx = 0
     output_path = "set_by_deepdrivemd"
     node_local_path = "set_by_deepdrivemd"
-    num_tasks = 1
+    num_tasks = 10
     n_sim = md.num_tasks
     sleeptime_bpfiles = 30
     adios_xml_agg = header.adios_xml_agg

@@ -3,7 +3,7 @@ adios_xml_file: set_by_deepdrivemd
 adios_xml_sim: set_by_deepdrivemd
 config_directory: set_by_deepdrivemd
 cpus_per_node: 40
-experiment_directory: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/14
+experiment_directory: /p/gpfs1/yakushin/Outputs/14
 gpus_per_node: 4
 hardware_threads_per_cpu: 4
 init_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb
@@ -43,8 +43,9 @@ agent_stage:
   - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
   task_config:
     adios_xml_agg: set_by_deepdrivemd
-    agg_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/14/aggregation_runs
-    best_model: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/14/machine_learning_runs/stage0000/task0000/published_model/best.h5
+    agg_dir: /p/gpfs1/yakushin/Outputs/14/aggregation_runs
+    best_model: /p/gpfs1/yakushin/Outputs/14/machine_learning_runs/stage0000/task0000/published_model/best.h5
+    compute_rmsd: true
     conv_filter_shapes:
     - - 3
       - 3
@@ -105,6 +106,7 @@ agent_stage:
     timeout1: 30
     timeout2: 10
     use_outliers: true
+    use_random_outliers: false
 aggregation_stage:
   arguments:
   - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/aggregation/stream/aggregator.py
@@ -132,6 +134,7 @@ aggregation_stage:
   skip_aggregation: false
   task_config:
     adios_xml_agg: set_by_deepdrivemd
+    compute_rmsd: true
     experiment_directory: set_by_deepdrivemd
     n_sim: 120
     node_local_path: set_by_deepdrivemd
@@ -165,7 +168,7 @@ machine_learning_stage:
   - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
   task_config:
     adios_xml_agg: set_by_deepdrivemd
-    agg_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/14/aggregation_runs/
+    agg_dir: /p/gpfs1/yakushin/Outputs/14/aggregation_runs/
     batch_size: 32
     checkpoint_dir: set_by_deepdrivemd
     conv_filter_shapes:
@@ -250,11 +253,13 @@ molecular_dynamics_stage:
     adios_xml_file: set_by_deepdrivemd
     adios_xml_sim: set_by_deepdrivemd
     bp_file: set_by_deepdrivemd
+    compute_rmsd: true
     copy_velocities_p: 0.5
     dt_ps: 0.002
     experiment_directory: set_by_deepdrivemd
     heat_bath_friction_coef: 1.0
     in_memory: false
+    init_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb
     initial_pdb_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input
     lock: set_by_deepdrivemd
     mda_selection: protein and name CA
@@ -262,7 +267,7 @@ molecular_dynamics_stage:
     node_local_path: set_by_deepdrivemd
     openmm_selection:
     - CA
-    outliers_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/14/agent_runs/stage0000/task0000/published_outliers
+    outliers_dir: /p/gpfs1/yakushin/Outputs/14/agent_runs/stage0000/task0000/published_outliers
     output_path: set_by_deepdrivemd
     pdb_file: set_by_deepdrivemd
     reference_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb

@@ -17,7 +17,7 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/16"
+    experiment_directory = "/p/gpfs1/yakushin/Outputs/16"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
@@ -89,6 +89,7 @@ class TaskConfigMD(BaseModel):
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
     adios_xml_file = header.adios_xml_file
+    init_pdb_file = header.init_pdb_file
 
 
 task_config_md = TaskConfigMD()

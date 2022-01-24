@@ -16,7 +16,7 @@ resource: llnl.lassen
 schema_: local
 software_directory: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd
 title: BBA integration test
-walltime_min: 720
+walltime_min: 120
 
 agent_stage:
   arguments:

@@ -17,7 +17,7 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/usr/workspace/cv_ddmd/yakushin/Integration1/Outputs/14"
+    experiment_directory = "/p/gpfs1/yakushin/Outputs/14"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
@@ -89,6 +89,8 @@ class TaskConfigMD(BaseModel):
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
     adios_xml_file = header.adios_xml_file
+    compute_rmsd = True
+    init_pdb_file = header.init_pdb_file
 
 
 task_config_md = TaskConfigMD()
@@ -138,6 +140,7 @@ class TaskConfigAgg(BaseModel):
     n_sim = md.num_tasks
     sleeptime_bpfiles = 30
     adios_xml_agg = header.adios_xml_agg
+    compute_rmsd = task_config_md.compute_rmsd
 
 
 task_config_agg = TaskConfigAgg()
@@ -236,6 +239,8 @@ class TaskConfigAgent(CVAE):
     project_gpu = False
     adios_xml_agg = header.adios_xml_agg
     use_outliers = True
+    use_random_outliers = False
+    compute_rmsd = task_config_md.compute_rmsd
 
 
 task_config_agent = TaskConfigAgent()

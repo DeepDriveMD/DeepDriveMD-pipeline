@@ -3,16 +3,22 @@ import numpy as np
 from collections import Counter
 import sys
 import glob
+from pathlib import Path
 
-fns = glob.glob("../../Outputs/14/aggregation_runs/stage0000/task00*/agg.bp")
+dir_top = "/p/gpfs1/yakushin/Outputs"
+sim = sys.argv[1]
+dir_subtop = dir_top + "/" + sys.argv[1]
+fns = glob.glob(dir_subtop + "/aggregation_runs/stage0000/task00*/agg.bp")
 fns.sort()
+dir_output = dir_subtop + "/postproduction/trajectories"
+Path.mkdir(Path(dir_output), exist_ok=True)
 
 start = 0
 end = len(fns)
 
 try:
-    start = int(sys.argv[1])
-    end = int(sys.argv[2])
+    start = int(sys.argv[2])
+    end = int(sys.argv[3])
 except Exception as e:
     print(e)
 
@@ -53,8 +59,8 @@ for fn in fns[start:end]:
                 pp = p[selection]
                 print("pp.shape = ", pp.shape)
 
-                fn1 = f"{i}_{cc}_step.npy"
-                fn2 = f"{i}_{cc}_positions.npy"
+                fn1 = f"{dir_output}/{i}_{cc}_step.npy"
+                fn2 = f"{dir_output}/{i}_{cc}_positions.npy"
 
-                np.save(fn1, ss)
+                # np.save(fn1, ss)
                 np.save(fn2, pp)

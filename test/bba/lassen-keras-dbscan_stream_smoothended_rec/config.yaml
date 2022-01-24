@@ -15,7 +15,7 @@ ref_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smo
 resource: llnl.lassen
 schema_: local
 software_directory: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd
-title: BBA integration test
+title: smoothended_rec mini
 walltime_min: 180
 
 agent_stage:
@@ -273,7 +273,7 @@ molecular_dynamics_stage:
     output_path: set_by_deepdrivemd
     pdb_file: set_by_deepdrivemd
     reference_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/system/comp.pdb
-    report_interval_ps: 2.5
+    report_interval_ps: 50.0
     simulation_length_ns: 0.5
     solvent_type: explicit
     stage_idx: 0

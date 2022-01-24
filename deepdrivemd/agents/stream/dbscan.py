@@ -843,6 +843,8 @@ def project_mini(cfg: OutlierDetectionConfig):
         f"{ddd}/molecular_dynamics_runs/stage0000/task0*/*/trajectory.bp"
     )
 
+    adios_files_list = glob.glob(f"{ddd}/aggregation_runs/stage0000/task0*/agg.bp")
+
     with Timer("wait_for_model"):
         model_path = str(wait_for_model(cfg))
         print("model_path = ", model_path)
