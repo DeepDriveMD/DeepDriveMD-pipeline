@@ -52,6 +52,7 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     ligand: int = -1
     multi_ligand_table: Path = Path()
     adios_xml_file: Path = Path()
+    top_file1: Path = Path()
 
     @root_validator()
     def explicit_solvent_requires_top_suffix(cls, values: dict):

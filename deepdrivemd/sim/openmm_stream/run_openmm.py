@@ -23,12 +23,28 @@ import adios2
 
 def configure_reporters(
     sim: omm.app.Simulation,
-    ctx: SimulationContext,
+    # ctx: SimulationContext,
     cfg: OpenMMConfig,
     report_steps: int,
+    iteration: int = 0,
 ):
     cfg.reporter = ContactMapReporter(report_steps, cfg)
     sim.reporters.append(cfg.reporter)
+    """
+    log_file = os.path.dirname(ctx.log_file) + f"/{iteration}/" + os.path.basename(ctx.log_file)
+    sim.reporters.append(
+        omm.app.StateDataReporter(
+            log_file,
+            report_steps,
+            step=True,
+            time=True,
+            speed=True,
+            potentialEnergy=True,
+            temperature=True,
+            totalEnergy=True,
+        )
+    )
+    """
 
 
 def next_outlier(
@@ -132,6 +148,184 @@ def prepare_simulation(
     cfg.current_dir = sim_dir
     print("In prepare_simulation cfg.current_dir = ", str(cfg.current_dir))
 
+    if sim is None:
+        outlier = None
+    else:
+        outlier = next_outlier(cfg, sim)
+
+    if outlier is not None:
+        print("There are outliers")
+
+        if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
+            positions_pdb, velocities_npy, ligand = (
+                outlier["positions_pdb"],
+                outlier["velocities_npy"],
+                outlier["ligand"],
+            )
+            print("ligand=", ligand)
+        else:
+            positions_pdb, velocities_npy = (
+                outlier["positions_pdb"],
+                outlier["velocities_npy"],
+            )
+        """
+        cfg1 = cfg.copy()
+        in_dir = sim_dir / "input" / "system"
+        in_dir.mkdir(parents=True, exist_ok=True)
+        subprocess.getstatusoutput("ln -s {cfg.top_file1} {str(in_dir)/comp.top")
+        outlier_file = sim_dir / outlier["positions_pdb"]
+        subprocess.getstatusoutput("ln -s {str(outlier_file} {str(in_dir}/comp.pdb}")
+        cfg1.initial_pdb_dir = str(sim_dir / "input")
+        cfg1.top_file1 = in_dir / "comp.top"
+        """
+
+        """
+        if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
+            init_multi_ligand(cfg, ligand)
+        else:
+            init_input(cfg)
+        """
+
+        if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
+            with Timer("molecular_dynamics_SimulationContext"):
+                print("cfg.pdb_file = ", cfg.pdb_file)
+                print("cfg.top_file1 = ", cfg.top_file1)
+                ctx = SimulationContext(cfg)
+                print("ctx = ", ctx)
+                print("dir(ctx) = ", dir(ctx))
+                print("ctx.pdb_file = ", ctx.pdb_file)
+                print("ctx.top_file = ", ctx.top_file)
+
+        while True:
+            try:
+                positions = pmd.load_file(str(positions_pdb)).positions
+                # positions = pmd.load_file(ctx.top_file, xyz=str(positions_pdb)).positions
+                velocities = np.load(str(velocities_npy))
+                break
+            except Exception as e:
+                print("Exception ", e)
+                print(f"Waiting for {positions_pdb} and {velocities_npy}")
+                time.sleep(5)
+
+        if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
+            with Timer("molecular_dynamics_configure_simulation"):
+                dt_ps = cfg.dt_ps * u.picoseconds
+                temperature_kelvin = cfg.temperature_kelvin * u.kelvin
+                print("positions_pdb = ", positions_pdb)
+                print("ctx.top_file = ", ctx.top_file)
+                # cfg.pdb_file = str(positions_pdb)
+                try:
+                    del sim
+                except Exception as e:
+                    print(e)
+
+                sim = configure_simulation(
+                    pdb_file=ctx.pdb_file,  # str(positions_pdb),  # ctx.pdb_file,
+                    top_file=ctx.top_file,
+                    solvent_type=cfg.solvent_type,
+                    gpu_index=0,
+                    dt_ps=dt_ps,
+                    temperature_kelvin=temperature_kelvin,
+                    heat_bath_friction_coef=cfg.heat_bath_friction_coef,
+                )
+        with Timer("molecular_dynamics_configure_reporters"):
+            try:
+                sim.reporters.pop()
+            except Exception as e:
+                print(e)
+            configure_reporters(sim, cfg, cfg.report_steps, iteration)
+
+        """
+        print("="*20)
+        print(help(sim.context.setPositions))
+        print("="*20)
+        print(dir(sim.context))
+        print("="*20)
+        """
+
+        sim.context.setPositions(positions)
+
+        if random.random() < cfg.copy_velocities_p:
+            print("Copying velocities from outliers")
+            sim.context.setVelocities(velocities)
+        else:
+            print("Generating velocities randomly")
+            sim.context.setVelocitiesToTemperature(
+                cfg.temperature_kelvin * u.kelvin, random.randint(1, 10000)
+            )
+
+        """
+        sim.context.setVelocitiesToTemperature(
+            cfg.temperature_kelvin * u.kelvin, random.randint(1, 10000)
+        )
+        """
+
+        return True, sim
+    else:
+        print("There are no outliers")
+
+        if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
+            init_multi_ligand(cfg)
+        else:
+            init_input(cfg)
+
+        with Timer("molecular_dynamics_SimulationContext"):
+            ctx = SimulationContext(cfg)
+            print("ctx = ", ctx)
+            print("dir(ctx) = ", dir(ctx))
+
+        with Timer("molecular_dynamics_configure_simulation"):
+            dt_ps = cfg.dt_ps * u.picoseconds
+            temperature_kelvin = cfg.temperature_kelvin * u.kelvin
+            try:
+                del sim
+            except Exception as e:
+                print(e)
+                pass
+
+            sim = configure_simulation(
+                pdb_file=ctx.pdb_file,
+                top_file=ctx.top_file,
+                solvent_type=cfg.solvent_type,
+                gpu_index=0,
+                dt_ps=dt_ps,
+                temperature_kelvin=temperature_kelvin,
+                heat_bath_friction_coef=cfg.heat_bath_friction_coef,
+                # explicit_barostat="MonteCarloAnisotropicBarostat",  ### ifs
+            )
+            sim.context.setVelocitiesToTemperature(
+                cfg.temperature_kelvin * u.kelvin, random.randint(1, 10000)
+            )
+
+        with Timer("molecular_dynamics_configure_reporters"):
+            configure_reporters(sim, cfg, cfg.report_steps, iteration)
+
+        return False, sim
+
+
+def prepare_simulation1(
+    cfg: OpenMMConfig, iteration: int, sim: omm.app.Simulation
+) -> bool:
+    """Replace positions and, with `cfg.copy_velocities_p` probability, velocities
+    of the current simulation state from an outlier
+
+    Parameters
+    ----------
+    cfg : OpenMMConfig
+    iteration : int
+    sim: omm.app.Simulation
+
+    Returns
+    -------
+    bool
+         True if there is an outlier, False - otherwise
+    """
+    sim_dir = cfg.output_path / str(iteration)
+    sim_dir.mkdir(exist_ok=True)
+    cfg.current_dir = sim_dir
+    os.chdir(str(sim_dir))
+    print("In prepare_simulation cfg.current_dir = ", str(cfg.current_dir))
+
     outlier = next_outlier(cfg, sim)
     if outlier is not None:
         print("There are outliers")
@@ -156,38 +350,19 @@ def prepare_simulation(
                 print(f"Waiting for {positions_pdb} and {velocities_npy}")
                 time.sleep(5)
 
+        """Is it needed?
+           Should it be on top?
+           Should there will be also
+           else:
+              init(cfg)
+        """
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
             init_multi_ligand(cfg, ligand)
-            """
-            with Timer("molecular_dynamics_SimulationContext"):
-                ctx = SimulationContext(cfg)
-                print("ctx = ", ctx)
-                print("dir(ctx) = ", dir(ctx))
 
-            with Timer("molecular_dynamics_configure_simulation"):
-                dt_ps = cfg.dt_ps * u.picoseconds
-                temperature_kelvin = cfg.temperature_kelvin * u.kelvin
-                print("positions_pdb = ", positions_pdb)
-                print("ctx.top_file = ", ctx.top_file)
-                try:
-                    del sim
-                except Exception as e:
-                    print(e)
-                    pass
-                sim = configure_simulation(
-                    pdb_file=str(positions_pdb),  # ctx.pdb_file,
-                    top_file=ctx.top_file,
-                    solvent_type=cfg.solvent_type,
-                    gpu_index=0,
-                    dt_ps=dt_ps,
-                    temperature_kelvin=temperature_kelvin,
-                    heat_bath_friction_coef=cfg.heat_bath_friction_coef,
-                )
-
-            with Timer("molecular_dynamics_configure_reporters"):
-                configure_reporters(sim, ctx, cfg, cfg.report_steps)
-            """
-
+        """Should there be
+           del ctx
+           before creating a new one?
+        """
         with Timer("molecular_dynamics_SimulationContext"):
             ctx = SimulationContext(cfg)
             print("ctx = ", ctx)
@@ -212,8 +387,11 @@ def prepare_simulation(
                 temperature_kelvin=temperature_kelvin,
                 heat_bath_friction_coef=cfg.heat_bath_friction_coef,
             )
+            print("dir(sim)=", dir(sim))
+            print("type(sim)=", type(sim))
+            print("sim=", sim)
         with Timer("molecular_dynamics_configure_reporters"):
-            configure_reporters(sim, ctx, cfg, cfg.report_steps)
+            configure_reporters(sim, ctx, cfg, cfg.report_steps, iteration)
 
         sim.context.setPositions(positions)
         if random.random() < cfg.copy_velocities_p:
@@ -250,8 +428,9 @@ def prepare_simulation(
                 temperature_kelvin=temperature_kelvin,
                 heat_bath_friction_coef=cfg.heat_bath_friction_coef,
             )
+            """Should velocities be randomly generated?"""
         with Timer("molecular_dynamics_configure_reporters"):
-            configure_reporters(sim, ctx, cfg, cfg.report_steps)
+            configure_reporters(sim, ctx, cfg, cfg.report_steps, iteration)
 
         return False, sim
 
@@ -286,6 +465,7 @@ def init_multi_ligand(cfg: OpenMMConfig, task_id=None):
 
 
 def run_simulation(cfg: OpenMMConfig):
+
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
         init_multi_ligand(cfg)
     else:
@@ -295,8 +475,9 @@ def run_simulation(cfg: OpenMMConfig):
     dt_ps = cfg.dt_ps * u.picoseconds
     report_interval_ps = cfg.report_interval_ps * u.picoseconds
     simulation_length_ns = cfg.simulation_length_ns * u.nanoseconds
-    temperature_kelvin = cfg.temperature_kelvin * u.kelvin
+    # temperature_kelvin = cfg.temperature_kelvin * u.kelvin
 
+    """
     sim_dir = cfg.output_path / "0"
     sim_dir.mkdir(exist_ok=True)
     cfg.current_dir = sim_dir
@@ -317,16 +498,22 @@ def run_simulation(cfg: OpenMMConfig):
             heat_bath_friction_coef=cfg.heat_bath_friction_coef,
         )
 
+    """
+
     # Number of steps to run each simulation
     nsteps = int(simulation_length_ns / dt_ps)
 
     report_steps = int(report_interval_ps / dt_ps)
     cfg.report_steps = report_steps
     print("report_steps = ", report_steps)
-
+    """
     # Configure reporters to write output files
     with Timer("molecular_dynamics_configure_reporters"):
         configure_reporters(sim, ctx, cfg, report_steps)
+
+    """
+
+    _, sim = prepare_simulation(cfg, 0, None)
 
     # Infinite simulation loop
     for iteration in itertools.count(0):

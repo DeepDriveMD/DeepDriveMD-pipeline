@@ -69,7 +69,7 @@ class TaskConfigMD(BaseModel):
     solvent_type = "explicit"
     top_suffix: str = ".top"
     simulation_length_ns = 10.0 / 20
-    report_interval_ps = 50.0
+    report_interval_ps = 50.0 / 2
     dt_ps = 0.002
     temperature_kelvin = 300.0
     heat_bath_friction_coef = 1.0
@@ -80,7 +80,7 @@ class TaskConfigMD(BaseModel):
     in_memory = False
     bp_file = "set_by_deepdrivemd"
     outliers_dir = f"{header.experiment_directory}/agent_runs/stage0000/task0000/published_outliers"
-    copy_velocities_p = 0.5
+    copy_velocities_p = 1.0
     next_outlier_policy = 1
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim

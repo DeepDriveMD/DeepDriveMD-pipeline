@@ -241,6 +241,7 @@ class StreamingExperimentConfig(ExperimentConfig):
     config_directory: Path
     software_directory: Path
     init_pdb_file: Path
+    top_file1: Optional[Path]
     ref_pdb_file: Optional[Path]
     multi_ligand_table: Optional[Path]
     model_selection_stage: Optional[ModelSelectionStageConfig]

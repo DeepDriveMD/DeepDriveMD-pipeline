@@ -255,7 +255,7 @@ molecular_dynamics_stage:
     adios_xml_sim: set_by_deepdrivemd
     bp_file: set_by_deepdrivemd
     compute_rmsd: true
-    copy_velocities_p: 0.5
+    copy_velocities_p: 1.0
     divisibleby: 32
     dt_ps: 0.002
     experiment_directory: set_by_deepdrivemd
@@ -273,7 +273,7 @@ molecular_dynamics_stage:
     output_path: set_by_deepdrivemd
     pdb_file: set_by_deepdrivemd
     reference_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/system/comp.pdb
-    report_interval_ps: 50.0
+    report_interval_ps: 25.0
     simulation_length_ns: 0.5
     solvent_type: explicit
     stage_idx: 0
