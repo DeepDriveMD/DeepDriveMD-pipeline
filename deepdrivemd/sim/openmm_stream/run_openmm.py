@@ -163,6 +163,7 @@ def prepare_simulation(
                 outlier["ligand"],
             )
             print("ligand=", ligand)
+            init_multi_ligand(cfg, ligand)
         else:
             positions_pdb, velocities_npy = (
                 outlier["positions_pdb"],
@@ -228,11 +229,13 @@ def prepare_simulation(
                     temperature_kelvin=temperature_kelvin,
                     heat_bath_friction_coef=cfg.heat_bath_friction_coef,
                 )
-        with Timer("molecular_dynamics_configure_reporters"):
+        else:
             try:
                 sim.reporters.pop()
             except Exception as e:
                 print(e)
+
+        with Timer("molecular_dynamics_configure_reporters"):
             configure_reporters(sim, cfg, cfg.report_steps, iteration)
 
         """
