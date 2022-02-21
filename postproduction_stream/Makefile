@@ -28,4 +28,4 @@ tsne_2D: pdir
 	PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc:${PYTHONPATH} python ../deepdrivemd/agents/stream/dbscan.py -c ${out_dir}/${d}/agent_runs/stage0000/task0000/stage0000_task0000.yaml -T
 
 clean:
-	rm -f *~ *.out *.err *.csv *.npy
+	rm -rf *~ *.out *.err *.csv *.npy re.session*

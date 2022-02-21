@@ -4,6 +4,7 @@ from MDAnalysis.analysis import distances, rms
 import MDAnalysis
 import numpy as np
 from deepdrivemd.utils import hash2intarray, timer
+import datetime
 
 # from deepdrivemd.utils import t2Dto1D
 from typing import Dict
@@ -107,6 +108,7 @@ class ContactMapReporter(object):
         # contact_map = np.packbits(contact_map)
 
         step = np.array([step], dtype=np.int32)
+        gpstime = np.array([int(datetime.datetime.now().timestamp())], dtype=np.int32)
 
         output = {
             "md5": md5,
@@ -114,6 +116,7 @@ class ContactMapReporter(object):
             "positions": positions,
             "velocities": velocities,
             "contact_map": contact_map,
+            "gpstime": gpstime,
         }
 
         if self.cfg.compute_zcentroid:
@@ -147,6 +150,8 @@ class ContactMapReporter(object):
 
         """
         for k, v in output.items():
+            if k == "gpstime":
+                continue
             self._adios_stream.write(
                 k, v, list(v.shape), [0] * len(v.shape), list(v.shape)
             )
