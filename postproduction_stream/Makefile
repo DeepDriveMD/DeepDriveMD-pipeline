@@ -21,11 +21,11 @@ timers1:
 project: pdir
 	PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc:${PYTHONPATH} python ../deepdrivemd/agents/stream/dbscan.py -c ${out_dir}/${d}/agent_runs/stage0000/task0000/stage0000_task0000.yaml -p
 project_mini: pdir
-	PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc:${PYTHONPATH} python ../deepdrivemd/agents/stream/dbscan.py -c ${out_dir}/${d}/agent_runs/stage0000/task0000/stage0000_task0000.yaml -m
+	PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc:${PYTHONPATH} python ../deepdrivemd/agents/stream/dbscan.py -c ${out_dir}/${d}/agent_runs/stage0000/task0000/stage0000_task0000.yaml -m -b ${trajectory}
 tsne_3D: pdir
 	PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc:${PYTHONPATH} python ../deepdrivemd/agents/stream/dbscan.py -c ${out_dir}/${d}/agent_runs/stage0000/task0000/stage0000_task0000.yaml -t
 tsne_2D: pdir
 	PYTHONPATH=/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/misc:${PYTHONPATH} python ../deepdrivemd/agents/stream/dbscan.py -c ${out_dir}/${d}/agent_runs/stage0000/task0000/stage0000_task0000.yaml -T
 
 clean:
-	rm -rf *~ *.out *.err *.csv *.npy re.session*
+	rm -rf *~ *.out *.err *.csv *.npy re.session* *.log log.txt
