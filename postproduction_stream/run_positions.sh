@@ -8,7 +8,7 @@ which radical-stack
 hostname
 
 radical-stack
-
-python driver_embeddings.py -o $1 -n $2 -w $3 -z $4
+ 
+python driver_positions.py --output_dir $1 --nodes $2 --walltime $3
 
 

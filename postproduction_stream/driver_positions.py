@@ -2,7 +2,7 @@ from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 import glob
 import argparse
-import math
+
 
 if os.environ.get("RADICAL_ENTK_VERBOSE") is None:
     os.environ["RADICAL_ENTK_REPORT"] = "True"
@@ -16,44 +16,34 @@ except Exception as e:
     print(e)
 
 
-def generate_pipeline(trajectories, pattern, nodes):
+def generate_pipeline(trajectories, nodes):
     p = Pipeline()
     p.name = "Postproduction"
 
-    n_stages = int(math.ceil(len(trajectories) / (nodes * 39 * 4)))
-
-    for stage in range(n_stages):
-        s = Stage()
-        s.name = f"TrajectoryToRMSD{stage}"
-        start = stage * 39 * 4
-        end = min((stage + 1) * 39 * 4, len(trajectories))
-
-        for task in range(start, end):
-            tr = trajectories[task]
-            t = Task()
-            t.name = f"Task{task}"
-            t.executable = "/usr/workspace/cv_ddmd/conda1/powerai/bin/python"
-            t.arguments = [
-                "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/postproduction_stream/rmsd1.py",
-                tr,
-            ]
-            t.pre_exec = ["source /usr/workspace/cv_ddmd/software1/etc/powerai.sh"]
-            s.add_tasks(t)
-
-        p.add_stages(s)
-
     s = Stage()
-    s.name = "AggregateRMSD"
+    s.name = "Timers"
 
-    t = Task()
-    t.name = "Aggregate"
-    t.executable = "/usr/workspace/cv_ddmd/conda1/powerai/bin/python"
-    t.arguments = [
-        "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/postproduction_stream/rmsd1_agg.py",
-        "'" + pattern + "'",
-    ]
-    t.pre_exec = ["source /usr/workspace/cv_ddmd/software1/etc/powerai.sh"]
-    s.add_tasks(t)
+    n = len(trajectories)
+    print("n=", n)
+
+    for task in range(n):
+        tr = trajectories[task]
+        t = Task()
+        t.name = f"Task{task}"
+        t.executable = "/usr/workspace/cv_ddmd/conda1/powerai/bin/python"
+        t.arguments = [
+            "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/postproduction_stream/bp2np_positions.py",
+            tr,
+        ]
+        t.pre_exec = ["source /usr/workspace/cv_ddmd/software1/etc/powerai.sh"]
+        t.cpu_reqs = {
+            "processes": 1,
+            "threads_per_process": 4,
+            "process_type": "MPI",
+            "thread_type": "OpenMP",
+        }
+
+        s.add_tasks(t)
 
     p.add_stages(s)
 
@@ -110,7 +100,6 @@ if __name__ == "__main__":
         [
             generate_pipeline(
                 trajectories,
-                pattern.replace("trajectory.bp", "rmsd.csv"),
                 args.nodes,
             )
         ]

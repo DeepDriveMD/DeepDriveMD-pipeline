@@ -46,6 +46,7 @@ agent_stage:
     agg_dir: /p/gpfs1/yakushin/Outputs/305/aggregation_runs
     best_model: /p/gpfs1/yakushin/Outputs/305/machine_learning_runs/stage0000/task0000/published_model/best.h5
     compute_rmsd: true
+    compute_zcentroid: true
     conv_filter_shapes:
     - - 5
       - 5
@@ -136,6 +137,7 @@ aggregation_stage:
   task_config:
     adios_xml_agg: set_by_deepdrivemd
     compute_rmsd: true
+    compute_zcentroid: true
     experiment_directory: set_by_deepdrivemd
     n_sim: 120
     node_local_path: set_by_deepdrivemd
@@ -255,6 +257,7 @@ molecular_dynamics_stage:
     adios_xml_sim: set_by_deepdrivemd
     bp_file: set_by_deepdrivemd
     compute_rmsd: true
+    compute_zcentroid: true
     copy_velocities_p: 0.5
     divisibleby: 32
     dt_ps: 0.002

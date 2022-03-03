@@ -89,6 +89,7 @@ class TaskConfigMD(BaseModel):
     divisibleby = 32
     zcentroid_atoms = "resname CY8 and not name H*"
     init_pdb_file = f"{header.init_pdb_file}"
+    compute_zcentroid = True
 
 
 task_config_md = TaskConfigMD()
@@ -139,6 +140,7 @@ class TaskConfigAgg(BaseModel):
     sleeptime_bpfiles = 30
     adios_xml_agg = header.adios_xml_agg
     compute_rmsd = task_config_md.compute_rmsd
+    compute_zcentroid = task_config_md.compute_zcentroid
 
 
 task_config_agg = TaskConfigAgg()
@@ -240,6 +242,7 @@ class TaskConfigAgent(CVAE):
     use_random_outliers = True
     compute_rmsd = task_config_md.compute_rmsd
     outlier_selection = "lof"
+    compute_zcentroid = task_config_md.compute_zcentroid
 
 
 task_config_agent = TaskConfigAgent()

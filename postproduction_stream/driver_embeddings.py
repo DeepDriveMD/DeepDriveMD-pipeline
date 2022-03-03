@@ -72,6 +72,12 @@ def generate_pipeline(args):
     t.arguments = [
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/postproduction_stream/emb_agg.py",
         "'" + pattern_emb + "'",
+        args.compute_zcentroid,
+    ]
+    t.pre_exec = [
+        "module load gcc/7.3.1",
+        ". /etc/profile.d/conda.sh",
+        "conda activate /g/g15/yakushin/.conda/envs/TSNE",
     ]
     t.cpu_reqs = {
         "processes": 39,
@@ -99,9 +105,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "--nodes", "-n", help="number of nodes to use", type=int, default=1
     )
+
     parser.add_argument(
-        "--walltime", "-w", help="walltime in minutes", type=int, default=10
+        "--compute_zcentroid",
+        "-z",
+        help="compute zcentroid: 1 or 0",
+        type=int,
+        default=0,
     )
+
+    parser.add_argument("--walltime", "-w", help="minutes", type=int, default=10)
 
     args = parser.parse_args()
 

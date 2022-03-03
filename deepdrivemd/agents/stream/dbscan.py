@@ -761,6 +761,8 @@ def read_lastN(
     for bp in adios_files_list:
         with adios2.open(bp, "r") as fh:
             steps = fh.steps()
+            if steps == 0:
+                continue
             start_step = steps - lastN - 2
             if start_step < 0:
                 start_step = 0
@@ -813,6 +815,9 @@ def read_lastN(
     )
     """
 
+    if not variable_lists:
+        return {}
+
     print(variable_lists["contact_map"].shape)
     if cfg.compute_rmsd:
         print(variable_lists["rmsd"].shape)
@@ -832,6 +837,48 @@ def read_lastN(
 
     return result
 
+
+def project_mini(cfg: OutlierDetectionConfig, trajectory: str):
+    with Timer("wait_for_model"):
+        model_path = str(wait_for_model(cfg))
+        print("model_path = ", model_path)
+
+    lastN = 100000
+
+    output_path = Path(os.path.dirname(trajectory)) / "embeddings"
+    output_path.mkdir(exist_ok=True)
+
+    cvae_input = read_lastN([trajectory], lastN)
+    if not cvae_input:
+        return
+
+    if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
+        zcentroid = cvae_input["zcentroid"]
+        with open(output_path / f"zcentroid.npy", "wb") as f:
+            np.save(f, zcentroid)
+
+    if cfg.compute_rmsd:
+        rmsds = cvae_input["rmsds"]
+        with open(output_path / f"rmsd.npy", "wb") as f:
+            np.save(f, rmsds)
+
+    if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
+        ligand = cvae_input["ligand"]
+        sim = cvae_input["dirs"]
+        for j in range(len(ligand)):
+            print(f"ligand[{j}] = {ligand[j]}")
+            if ligand[j] == -1:
+                ligand[j] = int(sim[j])
+            with open(output_path / f"ligand.npy", "wb") as f:
+                np.save(f, ligand)
+
+    with Timer("project_predict"):
+        embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=64)
+    with open(output_path / f"embeddings_cvae.npy", "wb") as f:
+        np.save(f, embeddings_cvae)
+
+
+"""
 
 def project_mini(cfg: OutlierDetectionConfig):
     # with Timer("wait_for_input"):
@@ -883,6 +930,8 @@ def project_mini(cfg: OutlierDetectionConfig):
             embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=64)
         with open(cfg.output_path / f"embeddings_cvae_{i}.npy", "wb") as f:
             np.save(f, embeddings_cvae)
+
+"""
 
 
 def project(cfg: OutlierDetectionConfig):
@@ -991,6 +1040,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-m", "--miniproject", action="store_true", help="compute embeddings only"
     )
+    parser.add_argument("-b", "--bp")
     parser.add_argument(
         "-T",
         "--tsne_2D",
@@ -1015,7 +1065,7 @@ if __name__ == "__main__":
     if args.project:
         project(cfg)
     elif args.miniproject:
-        project_mini(cfg)
+        project_mini(cfg, args.bp)
     elif args.tsne_3D:
         project_tsne_3D(cfg)
     elif args.tsne_2D:
