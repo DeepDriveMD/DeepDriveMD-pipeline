@@ -9,6 +9,6 @@ hostname
 
 radical-stack
  
-python driver_rmsd.py --output_dir $1 --nodes $2 --walltime $3
+python driver_rmsd.py --output_dir $1 --nodes $2 --walltime $3 --compute_zcentroid $4
 
 

@@ -2,7 +2,7 @@ from radical.entk import Pipeline, Stage, Task, AppManager
 import os
 import glob
 import argparse
-import math
+
 
 if os.environ.get("RADICAL_ENTK_VERBOSE") is None:
     os.environ["RADICAL_ENTK_REPORT"] = "True"
@@ -16,31 +16,26 @@ except Exception as e:
     print(e)
 
 
-def generate_pipeline(trajectories, pattern, nodes):
+def generate_pipeline(trajectories, pattern, nodes, compute_zcentroid):
     p = Pipeline()
     p.name = "Postproduction"
 
-    n_stages = int(math.ceil(len(trajectories) / (nodes * 39 * 4)))
+    s = Stage()
+    s.name = f"TrajectoryToRMSD"
+    for task in range(len(trajectories)):
+        tr = trajectories[task]
+        t = Task()
+        t.name = f"Task{task}"
+        t.executable = "/usr/workspace/cv_ddmd/conda1/powerai/bin/python"
+        t.arguments = [
+            "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/postproduction_stream/rmsd1.py",
+            tr,
+            compute_zcentroid,
+        ]
+        t.pre_exec = ["source /usr/workspace/cv_ddmd/software1/etc/powerai.sh"]
+        s.add_tasks(t)
 
-    for stage in range(n_stages):
-        s = Stage()
-        s.name = f"TrajectoryToRMSD{stage}"
-        start = stage * 39 * 4
-        end = min((stage + 1) * 39 * 4, len(trajectories))
-
-        for task in range(start, end):
-            tr = trajectories[task]
-            t = Task()
-            t.name = f"Task{task}"
-            t.executable = "/usr/workspace/cv_ddmd/conda1/powerai/bin/python"
-            t.arguments = [
-                "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/postproduction_stream/rmsd1.py",
-                tr,
-            ]
-            t.pre_exec = ["source /usr/workspace/cv_ddmd/software1/etc/powerai.sh"]
-            s.add_tasks(t)
-
-        p.add_stages(s)
+    p.add_stages(s)
 
     s = Stage()
     s.name = "AggregateRMSD"
@@ -51,6 +46,7 @@ def generate_pipeline(trajectories, pattern, nodes):
     t.arguments = [
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/postproduction_stream/rmsd1_agg.py",
         "'" + pattern + "'",
+        compute_zcentroid,
     ]
     t.pre_exec = ["source /usr/workspace/cv_ddmd/software1/etc/powerai.sh"]
     s.add_tasks(t)
@@ -75,6 +71,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--walltime", "-w", help="walltime in minutes", type=int, default=10
     )
+    parser.add_argument("--compute_zcentroid", "-z", help="1 or 0", type=int, default=0)
 
     args = parser.parse_args()
 
@@ -112,6 +109,7 @@ if __name__ == "__main__":
                 trajectories,
                 pattern.replace("trajectory.bp", "rmsd.csv"),
                 args.nodes,
+                args.compute_zcentroid,
             )
         ]
     )
