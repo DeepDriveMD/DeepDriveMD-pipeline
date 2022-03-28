@@ -27,7 +27,7 @@ class ContactMapReporter(object):
 
         self.step = 0
         self.cfg = cfg
-        
+
         if cfg.compute_zcentroid or cfg.compute_rmsd:
             self.universe_init = MDAnalysis.Universe(self.cfg.init_pdb_file)
         if cfg.compute_zcentroid:
@@ -92,7 +92,6 @@ class ContactMapReporter(object):
         md5 = hash2intarray(md5)
 
         positions_ca = positions[ca_indices].astype(np.float32)
-        point_cloud = positions_ca.copy()
 
         d = positions_ca.shape[0]
         if not (positions_ca.shape[0] % self.cfg.divisibleby == 0):
@@ -102,13 +101,11 @@ class ContactMapReporter(object):
         print(f"len(ca_indices) = {len(ca_indices)}, d = {d}, natoms = {natoms}")
         sys.stdout.flush()
 
-
-        if self.cfg.model == "cvae":
-            contact_map = distances.contact_matrix(
-                positions_ca, cutoff=self.cfg.threshold, returntype="numpy", box=None
-            ).astype("uint8")
-            # contact_map = t2Dto1D(contact_map)
-            # contact_map = np.packbits(contact_map)
+        contact_map = distances.contact_matrix(
+            positions_ca, cutoff=self.cfg.threshold, returntype="numpy", box=None
+        ).astype("uint8")
+        # contact_map = t2Dto1D(contact_map)
+        # contact_map = np.packbits(contact_map)
 
         step = np.array([step], dtype=np.int32)
         gpstime = np.array([int(datetime.datetime.now().timestamp())], dtype=np.int32)
@@ -118,14 +115,9 @@ class ContactMapReporter(object):
             "step": step,
             "positions": positions,
             "velocities": velocities,
+            "contact_map": contact_map,
             "gpstime": gpstime,
         }
-
-        if self.cfg.model == "cvae":
-            output["contact_map"] = contact_map
-        elif self.cfg.model == "aae":
-            output["point_cloud"] = point_cloud
-
 
         if self.cfg.compute_zcentroid:
             output["zcentroid"] = centroid

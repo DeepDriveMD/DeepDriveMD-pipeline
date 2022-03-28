@@ -17,6 +17,50 @@ from deepdrivemd.data.stream.enumerations import DataStructure
 import math
 
 
+
+from deepdrivemd.utils import Timer, timer, parse_args
+import subprocess
+import glob
+from deepdrivemd.data.stream.aggregator_reader import (
+    Streams,
+    StreamVariable,
+)
+import os
+import sys
+from deepdrivemd.data.stream.enumerations import DataStructure
+import math
+import time
+import itertools
+import numpy as np
+from tqdm import tqdm
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+from collections import defaultdict
+import adios2
+
+import torch
+from torch.utils.data import Dataset
+from torchsummary import summary
+import argparse
+
+
+from mdlearn.nn.models.aae.point_3d_aae import AAE3d
+from mdlearn.data.utils import train_valid_split
+from mdlearn.utils import (
+    BaseSettings,
+    OptimizerConfig,
+    log_checkpoint,
+    get_torch_optimizer,
+)
+
+#from deepdrivemd.models.aae_stream.config import Point3dAAEConfig
+#from deepdrivemd.models.aae_stream.utils import CenterOfMassTransform, PointCloudDatasetInMemory, read_adios_file
+
+torch.manual_seed(44)
+torch.set_num_threads(4)
+device = torch.device("cuda:0")
+
+
 def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
     """Wait for the expected number of sufficiently large agg.bp files to be produced.
 
@@ -28,12 +72,12 @@ def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
 
     # Wait for enough bpfiles
     while True:
-        bpfiles = glob.glob(str(cfg.agg_dir / "*/*/agg_cm.bp*"))
+        bpfiles = glob.glob(str(cfg.agg_dir / "*/*/agg_4ml.bp*"))
         print(bpfiles)
         sys.stdout.flush()
         if len(bpfiles) == cfg.num_agg:
             break
-        print(f"Waiting for {cfg.num_agg} agg.bp files")
+        print(f"Waiting for {cfg.num_agg} agg_4ml.bp files")
         time.sleep(cfg.timeout1)
 
     print(f"bpfiles = {bpfiles}")
@@ -140,9 +184,9 @@ def main(cfg: KerasCVAEModelConfig):
         bpfiles,
         [StreamContactMapVariable("contact_map", np.uint8, DataStructure.array)],
         lastN=cfg.max_steps,
-        config=cfg.adios_xml_agg,
+        config=cfg.adios_xml_agg_4ml,
         batch=cfg.read_batch,
-        stream_name="AggregatorOutput",
+        stream_name="AggregatorOutput4ml",
         # change for different aggregators
     )
 

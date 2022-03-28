@@ -72,7 +72,9 @@ class OutlierDetectionConfig(AgentTaskConfig):
     final_shape: List[int] = [28, 28, 1]
     outlier_selection: str = "rmsd"
     multi_ligand_table: Path = Path()
-
+    model: str = "cvae"
+    num_points: int = 539
+    num_features: int = 0
 
 if __name__ == "__main__":
     OutlierDetectionConfig().dump_yaml("dbscan_template.yaml")

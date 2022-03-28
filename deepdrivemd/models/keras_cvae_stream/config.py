@@ -57,7 +57,7 @@ class KerasCVAEModelConfig(MachineLearningTaskConfig):
     reinit: bool = True
     use_model_checkpoint = True
     read_batch: int = 10000
-
+    model: str = "cvae"
 
 if __name__ == "__main__":
     KerasCVAEModelConfig().dump_yaml("keras_cvae_template.yaml")

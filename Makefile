@@ -18,6 +18,8 @@ run5m:
 	bin/run.sh lassen-keras-dbscan_stream_greedy_mini
 run6:
 	bin/run.sh lassen-keras-dbscan_stream_smoothended_rec
+run6a:
+	bin/run.sh lassen-keras-dbscan_stream_smoothended_rec_a
 run7:
 	bin/run.sh lassen-keras-dbscan_stream_insRec_OM_region
 run7m:

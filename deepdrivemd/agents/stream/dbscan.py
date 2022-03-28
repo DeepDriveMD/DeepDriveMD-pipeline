@@ -39,6 +39,12 @@ from simtk.openmm.app.pdbfile import PDBFile
 
 import adios2
 
+import torch
+from mdlearn.nn.models.aae.point_3d_aae import AAE3d
+from torchsummary import summary
+from deepdrivemd.models.aae_stream.config import Point3dAAEConfig 
+from deepdrivemd.models.aae_stream.utils import PointCloudDatasetInMemory
+
 pool = Pool(39)
 
 
@@ -55,21 +61,44 @@ def clear_gpu():
 
 
 def build_model(cfg: OutlierDetectionConfig, model_path: str):
-    cvae = CVAE(
-        image_size=cfg.final_shape,
-        channels=cfg.final_shape[-1],
-        conv_layers=cfg.conv_layers,
-        feature_maps=cfg.conv_filters,
-        filter_shapes=cfg.conv_filter_shapes,
-        strides=cfg.conv_strides,
-        dense_layers=cfg.dense_layers,
-        dense_neurons=cfg.dense_neurons,
-        dense_dropouts=cfg.dense_dropouts,
-        latent_dim=cfg.latent_dim,
-    )
-    cvae.load(model_path)
-    return cvae
+    if(cfg.model == "cvae"):
+        cvae = CVAE(
+            image_size=cfg.final_shape,
+            channels=cfg.final_shape[-1],
+            conv_layers=cfg.conv_layers,
+            feature_maps=cfg.conv_filters,
+            filter_shapes=cfg.conv_filter_shapes,
+            strides=cfg.conv_strides,
+            dense_layers=cfg.dense_layers,
+            dense_neurons=cfg.dense_neurons,
+            dense_dropouts=cfg.dense_dropouts,
+            latent_dim=cfg.latent_dim,
+        )
+        cvae.load(model_path)
+        return cvae, None
+    elif(cfg.model == "aae"):
+        device = torch.device("cuda:0")
+        aae = AAE3d(
+            cfg.num_points,
+            cfg.num_features,
+            cfg.latent_dim,
+            cfg.encoder_bias,
+            cfg.encoder_relu_slope,
+            cfg.encoder_filters,
+            cfg.encoder_kernels,
+            cfg.decoder_bias,
+            cfg.decoder_relu_slope,
+            cfg.decoder_affine_widths,
+            cfg.discriminator_bias,
+            cfg.discriminator_relu_slope,
+            cfg.discriminator_affine_widths,
+        )
+        aae = aae.to(device)
+        checkpoint = torch.load(model_path, map_location="cpu")
+        aae.load_state_dict(checkpoint["model_state_dict"])
+        summary(aae, (3 + cfg.num_features, cfg.num_points))
 
+    return aae, device
 
 def wait_for_model(cfg: OutlierDetectionConfig) -> str:
     """Wait for the trained model to be published by machine learning pipeline.
@@ -106,35 +135,6 @@ def wait_for_input(cfg: OutlierDetectionConfig) -> List[str]:
 
     print(f"bpfiles = {bpfiles}")
 
-    time.sleep(60 * 5)
-
-    """
-    # Wait for enough time steps in each bp file
-    while True:
-        enough = True
-        for bp in bpfiles:
-            com = f"bpls {bp}"
-            a = subprocess.getstatusoutput(com)
-            if a[0] != 0:
-                enough = False
-                print(f"Waiting, a = {a}, {bp}")
-                break
-            try:
-                steps = int(a[1].split("\n")[0].split("*")[0].split(" ")[-1])
-            except Exception as e:
-                print("Exception ", e)
-                steps = 0
-                enough = False
-            if steps < cfg.min_step_increment:
-                enough = False
-                print(f"Waiting, steps = {steps}, {bp}")
-                break
-        if enough:
-            break
-        else:
-            time.sleep(cfg.timeout2)
-    """
-
     return bpfiles
 
 
@@ -155,7 +155,7 @@ def dirs(cfg: OutlierDetectionConfig) -> Tuple[str, str, str]:
 def predict(
     cfg: OutlierDetectionConfig,
     model_path: str,
-    cvae_input: Dict[str, Union[str, int, float, np.ndarray]],
+    agg_input: Dict[str, Union[str, int, float, np.ndarray]],
     batch_size: int = 32,
 ) -> np.ndarray:
     """Project contact maps into the middle layer of CVAE
@@ -165,7 +165,7 @@ def predict(
     cfg : OutlierDetectionConfig
     model_path : str
         Path to the published model.
-    cvae_input : Dict[str, Union[str, int, float, np.ndarray],
+    agg_input : Dict[str, Union[str, int, float, np.ndarray],
         positions, velocities, etc
     batch_size : int
         Batch size used to project input to the middle layer of the autoencoder.
@@ -175,20 +175,28 @@ def predict(
         The latent space representation of the input.
     """
 
-    input = np.expand_dims(cvae_input["contact_map"], axis=-1)
-
-    cfg.initial_shape = input.shape[1:3]
-    cfg.final_shape = list(input.shape[1:3]) + list(np.array([1]))
+    if(cfg.model == "cvae"):
+        input = np.expand_dims(agg_input["contact_map"], axis=-1)
+        cfg.initial_shape = input.shape[1:3]
+        cfg.final_shape = list(input.shape[1:3]) + list(np.array([1]))
+    elif(cfg.model == "aae"):
+        input = np.transpose(agg_input["point_cloud"], [0, 2, 1])
 
     print(f"input.shape = {input.shape}")
     sys.stdout.flush()
 
-    cvae = build_model(cfg, model_path)
-    cm_predict = cvae.return_embeddings(input, batch_size)
-    del cvae
-    clear_gpu()
-    return cm_predict
-
+    if(cfg.model == "cvae"):
+        cvae,_ = build_model(cfg, model_path)
+        cm_predict = cvae.return_embeddings(input, batch_size)
+        del cvae
+        clear_gpu()
+        return cm_predict
+    elif(cfg.model == "aae"):
+        aae,device = build_model(cfg, model_path)
+        pc_predict = aae.encode(torch.from_numpy(input).to(device))
+        del aae
+        clear_gpu()
+        return pc_predict
 
 def outliers_from_latent(
     cm_predict: np.ndarray, eps: float = 0.35, min_samples: int = 10
@@ -432,7 +440,7 @@ def publish(tmp_dir: Path, published_dir: Path):
 
 def top_outliers(
     cfg: OutlierDetectionConfig,
-    cvae_input: Dict[str, Union[np.ndarray, str, int, float]],
+    agg_input: Dict[str, Union[np.ndarray, str, int, float]],
     outlier_list: np.ndarray,
 ) -> Dict[str, Union[np.ndarray, str, int, float]]:
     """
@@ -441,7 +449,7 @@ def top_outliers(
     Parameters
     ----------
     cfg : OutlierDetectionConfig
-    cvae_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+    agg_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
             steps, positions, velocities, md5sums, rmsds
     outlier_list : np.ndarray
             indices corresponding to outliers
@@ -453,10 +461,10 @@ def top_outliers(
          indices of outliers, sorted in ascending order by rmsd
     """
     outlier_list = list(outlier_list[0])
-    positions = cvae_input["positions"][outlier_list]
-    velocities = cvae_input["velocities"][outlier_list]
-    md5s = cvae_input["md5"][outlier_list]
-    rmsds = cvae_input["rmsd"][outlier_list]
+    positions = agg_input["positions"][outlier_list]
+    velocities = agg_input["velocities"][outlier_list]
+    md5s = agg_input["md5"][outlier_list]
+    rmsds = agg_input["rmsd"][outlier_list]
 
     z = list(zip(positions, velocities, md5s, rmsds, outlier_list))
     z.sort(key=lambda x: x[3])
@@ -470,7 +478,7 @@ def top_outliers(
 
 def random_outliers(
     cfg: OutlierDetectionConfig,
-    cvae_input: Dict[str, Union[np.ndarray, str, int, float]],
+    agg_input: Dict[str, Union[np.ndarray, str, int, float]],
     outlier_list: np.ndarray,
 ) -> Dict[str, Union[np.ndarray, str, int, float]]:
     """
@@ -479,7 +487,7 @@ def random_outliers(
     Parameters
     ----------
     cfg : OutlierDetectionConfig
-    cvae_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+    agg_input : Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
             steps, positions, velocities, md5sums, rmsds
     outlier_list : np.ndarray
             indices corresponding to outliers
@@ -490,16 +498,16 @@ def random_outliers(
          Positions, velocities, md5sums, rmsds, outlier, etc
     """
     outlier_list = list(outlier_list[0])
-    positions = cvae_input["positions"][outlier_list]
-    velocities = cvae_input["velocities"][outlier_list]
-    md5s = cvae_input["md5"][outlier_list]
+    positions = agg_input["positions"][outlier_list]
+    velocities = agg_input["velocities"][outlier_list]
+    md5s = agg_input["md5"][outlier_list]
     if cfg.compute_rmsd:
-        rmsds = cvae_input["rmsd"][outlier_list]
+        rmsds = agg_input["rmsd"][outlier_list]
     else:
         rmsds = np.array([-1.0] * len(outlier_list))
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-        dirs = cvae_input["ligand"][outlier_list]
+        dirs = agg_input["ligand"][outlier_list]
         z = list(zip(positions, velocities, md5s, rmsds, outlier_list, dirs))
         keys = ["positions", "velocities", "md5s", "rmsds", "outliers", "dirs"]
     else:
@@ -523,27 +531,38 @@ def run_lof(data: np.ndarray) -> np.ndarray:
 
 def top_lof(
     cfg: OutlierDetectionConfig,
-    cvae_input: Dict[str, Union[np.ndarray, str, int, float]],
+    agg_input: Dict[str, Union[np.ndarray, str, int, float]],
     cm_predict: np.array,
     outlier_list: np.ndarray,
 ) -> Dict[str, Union[np.ndarray, str, int, float]]:
 
     outlier_list = list(outlier_list[0])
-    projections = cm_predict[outlier_list]
+    if(cfg.model == "cvae"):
+        projections = cm_predict[outlier_list]
+    elif(cfg.model == "aae"):
+        projections = cm_predict[outlier_list]
+        print("type(projections)=", type(projections))
+        print("dir(projections)=", dir(projections))
+        print("projections=", projections)
+        projections = projections.cpu()
+        print("type(projections) = ", type(projections))
+        projections = projections.detach().numpy()
+        print("type(projections) = ", type(projections))
+
     lof_scores = run_lof(projections)
     print("lof_scores = ", lof_scores)
     sys.stdout.flush()
-    positions = cvae_input["positions"][outlier_list]
-    velocities = cvae_input["velocities"][outlier_list]
-    md5s = cvae_input["md5"][outlier_list]
+    positions = agg_input["positions"][outlier_list]
+    velocities = agg_input["velocities"][outlier_list]
+    md5s = agg_input["md5"][outlier_list]
 
     if cfg.compute_rmsd:
-        rmsds = cvae_input["rmsd"][outlier_list]
+        rmsds = agg_input["rmsd"][outlier_list]
     else:
         rmsds = np.array([-1.0] * len(outlier_list))
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-        dirs = cvae_input["ligand"][outlier_list]
+        dirs = agg_input["ligand"][outlier_list]
         z = list(
             zip(positions, velocities, md5s, rmsds, outlier_list, dirs, lof_scores)
         )
@@ -560,15 +579,15 @@ def top_lof(
 
 def select_best_random(
     cfg: OutlierDetectionConfig,
-    cvae_input: Dict[str, Union[np.ndarray, str, int, float]],
+    agg_input: Dict[str, Union[np.ndarray, str, int, float]],
 ) -> List[int]:
-    """Sort cvae_input by rmsd, selects :obj:`2*cfg.num_sim` best entries, out of them
+    """Sort agg_input by rmsd, selects :obj:`2*cfg.num_sim` best entries, out of them
     randomly select :obj:`cfg.num_sim`, return the corresponding indices.
 
     Parameters
     ----------
     cfg : OutlierDetectionConfig
-    cvae_input : Dict[str, Union[np.ndarray, str, int, float]]
+    agg_input : Dict[str, Union[np.ndarray, str, int, float]]
         steps, positions, velocities, md5sums, rmsds, etc.
 
     Returns
@@ -581,7 +600,7 @@ def select_best_random(
     ----
     This is used when no outliers are found.
     """
-    rmsds = cvae_input["rmsd"]
+    rmsds = agg_input["rmsd"]
     z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])
     sorted_index = list(map(lambda x: x[1], z))[2 * cfg.num_sim :]
     sorted_index = random.sample(sorted_index, cfg.num_sim)
@@ -590,15 +609,15 @@ def select_best_random(
 
 def select_best(
     cfg: OutlierDetectionConfig,
-    cvae_input: Dict[str, Union[np.ndarray, str, int, float]],
+    agg_input: Dict[str, Union[np.ndarray, str, int, float]],
 ) -> List[int]:
-    """Sort cvae_input by rmsd, selects best :obj:`cfg.num_sim`, return
+    """Sort agg_input by rmsd, selects best :obj:`cfg.num_sim`, return
     the corresponding indices.
 
     Parameters
     ----------
     cfg : OutlierDetectionConfig
-    cvae_input : Dict[str, Union[np.ndarray, str, int, float]]
+    agg_input : Dict[str, Union[np.ndarray, str, int, float]]
         steps, positions, velocities, md5sums, rmsds, etc.
 
     Returns
@@ -607,7 +626,7 @@ def select_best(
         List of :obj:`cfg.num_sim` indices for best traversed states among
         :obj:`lastN` from each aggregator.
     """
-    rmsds = cvae_input["rmsd"]
+    rmsds = agg_input["rmsd"]
     z = sorted(zip(rmsds, range(len(rmsds))), key=lambda x: x[0])
     sorted_index = list(map(lambda x: x[1], z))[cfg.num_sim :]
     return sorted_index
@@ -624,11 +643,17 @@ def main(cfg: OutlierDetectionConfig):
         adios_files_list = list(map(lambda x: x.replace(".sst", ""), adios_files_list))
 
     variable_list = [
-        StreamContactMapVariable("contact_map", np.uint8, DataStructure.array),
+        #StreamContactMapVariable("contact_map", np.uint8, DataStructure.array),
         StreamVariable("positions", np.float32, DataStructure.array),
         StreamVariable("md5", str, DataStructure.string),
         StreamVariable("velocities", np.float32, DataStructure.array),
     ]
+
+    if(cfg.model == "cvae"):
+        variable_list.append(StreamContactMapVariable("contact_map", np.uint8, DataStructure.array))
+    elif(cfg.model == "aae"):
+        variable_list.append(StreamVariable("point_cloud", np.float32, DataStructure.array))
+
 
     if cfg.compute_rmsd:
         variable_list.append(
@@ -649,8 +674,8 @@ def main(cfg: OutlierDetectionConfig):
 
     with Timer("outlier_read"):
         while True:
-            cvae_input = mystreams.next()
-            if len(cvae_input[list(cvae_input.keys())[0]]) < 10:
+            agg_input = mystreams.next()
+            if len(agg_input[list(agg_input.keys())[0]]) < 10:
                 time.sleep(30)
             else:
                 break
@@ -669,7 +694,7 @@ def main(cfg: OutlierDetectionConfig):
         timer("outlier_search_iteration", 1)
 
         with Timer("outlier_predict"):
-            cm_predict = predict(cfg, model_path, cvae_input)
+            cm_predict = predict(cfg, model_path, agg_input)
 
         outlier_list = []
         with Timer("outlier_cluster"):
@@ -683,13 +708,13 @@ def main(cfg: OutlierDetectionConfig):
                 clear_gpu()
                 if cfg.compute_rmsd:
                     print("Using best rmsd states")
-                    outlier_list = [select_best(cfg, cvae_input)]
+                    outlier_list = [select_best(cfg, agg_input)]
                 else:
                     print("Using random states")
                     outlier_list = [
                         list(
                             np.random.choice(
-                                np.arange(len(cvae_input["contact_map"])),
+                                np.arange(len(agg_input["contact_map"])),
                                 cfg.num_sim,
                                 replace=False,
                             )
@@ -699,13 +724,13 @@ def main(cfg: OutlierDetectionConfig):
                 min_samples = cfg.init_min_samples
         if cfg.outlier_selection == "lof":
             print("Using top lof outliers")
-            top = top_lof(cfg, cvae_input, cm_predict, outlier_list)
+            top = top_lof(cfg, agg_input, cm_predict, outlier_list)
         elif cfg.use_random_outliers or (not cfg.compute_rmsd):
             print("Using random outliers")
-            top = random_outliers(cfg, cvae_input, outlier_list)
+            top = random_outliers(cfg, agg_input, outlier_list)
         else:
             print("Using top outliers sorted by rmsd")
-            top = top_outliers(cfg, cvae_input, outlier_list)
+            top = top_outliers(cfg, agg_input, outlier_list)
 
         print("top outliers = ", top["outliers"])
 
@@ -719,7 +744,7 @@ def main(cfg: OutlierDetectionConfig):
             publish(tmp_dir, published_dir)
 
         with Timer("outlier_read"):
-            cvae_input = mystreams.next()
+            agg_input = mystreams.next()
 
         timer("outlier_search_iteration", -1)
 
@@ -848,23 +873,23 @@ def project_mini(cfg: OutlierDetectionConfig, trajectory: str):
     output_path = Path(os.path.dirname(trajectory)) / "embeddings"
     output_path.mkdir(exist_ok=True)
 
-    cvae_input = read_lastN([trajectory], lastN)
-    if not cvae_input:
+    agg_input = read_lastN([trajectory], lastN)
+    if not agg_input:
         return
 
     if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
-        zcentroid = cvae_input["zcentroid"]
+        zcentroid = agg_input["zcentroid"]
         with open(output_path / f"zcentroid.npy", "wb") as f:
             np.save(f, zcentroid)
 
     if cfg.compute_rmsd:
-        rmsds = cvae_input["rmsds"]
+        rmsds = agg_input["rmsds"]
         with open(output_path / f"rmsd.npy", "wb") as f:
             np.save(f, rmsds)
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-        ligand = cvae_input["ligand"]
-        sim = cvae_input["dirs"]
+        ligand = agg_input["ligand"]
+        sim = agg_input["dirs"]
         for j in range(len(ligand)):
             print(f"ligand[{j}] = {ligand[j]}")
             if ligand[j] == -1:
@@ -873,7 +898,7 @@ def project_mini(cfg: OutlierDetectionConfig, trajectory: str):
                 np.save(f, ligand)
 
     with Timer("project_predict"):
-        embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=64)
+        embeddings_cvae = predict(cfg, model_path, agg_input, batch_size=64)
     with open(output_path / f"embeddings_cvae.npy", "wb") as f:
         np.save(f, embeddings_cvae)
 
@@ -904,21 +929,21 @@ def project_mini(cfg: OutlierDetectionConfig):
     for i, bp in enumerate(adios_files_list):
         print(f"i={i}, bp={bp}")
         sys.stdout.flush()
-        cvae_input = read_lastN([bp], lastN)
+        agg_input = read_lastN([bp], lastN)
 
         if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
-            zcentroid = cvae_input["zcentroid"]
+            zcentroid = agg_input["zcentroid"]
             with open(cfg.output_path / f"zcentroid_{i}.npy", "wb") as f:
                 np.save(f, zcentroid)
 
         if cfg.compute_rmsd:
-            rmsds = cvae_input["rmsds"]
+            rmsds = agg_input["rmsds"]
             with open(cfg.output_path / f"rmsd_{i}.npy", "wb") as f:
                 np.save(f, rmsds)
 
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-            ligand = cvae_input["ligand"]
-            sim = cvae_input["dirs"]
+            ligand = agg_input["ligand"]
+            sim = agg_input["dirs"]
             for j in range(len(ligand)):
                 print(f"ligand[{j}] = {ligand[j]}")
                 if ligand[j] == -1:
@@ -927,7 +952,7 @@ def project_mini(cfg: OutlierDetectionConfig):
                 np.save(f, ligand)
 
         with Timer("project_predict"):
-            embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=64)
+            embeddings_cvae = predict(cfg, model_path, agg_input, batch_size=64)
         with open(cfg.output_path / f"embeddings_cvae_{i}.npy", "wb") as f:
             np.save(f, embeddings_cvae)
 
@@ -953,15 +978,15 @@ def project(cfg: OutlierDetectionConfig):
     dirs(cfg)
 
     with Timer("project_next"):
-        cvae_input = read_lastN(adios_files_list, lastN)
+        agg_input = read_lastN(adios_files_list, lastN)
 
     if cfg.compute_rmsd:
-        rmsds = cvae_input["rmsd"]
+        rmsds = agg_input["rmsd"]
         with open(cfg.output_path / "rmsd.npy", "wb") as f:
             np.save(f, rmsds)
 
     with Timer("project_predict"):
-        embeddings_cvae = predict(cfg, model_path, cvae_input, batch_size=1024)
+        embeddings_cvae = predict(cfg, model_path, agg_input, batch_size=1024)
 
     with open(cfg.output_path / "embeddings_cvae.npy", "wb") as f:
         np.save(f, embeddings_cvae)

@@ -83,7 +83,7 @@ def aggregate(
         int, Tuple[adios2.adios2.ADIOS, adios2.adios2.IO, adios2.adios2.Engine]
     ],
     aggregator_stream: adios2.adios2.Engine,
-    aggregator_stream_4ml: adios2.adios2.Engine,
+    aggregator_stream_cm: adios2.adios2.Engine,
 ):
     """Read adios streams from a subset of simulations handled by this
     aggregator and write them to adios file to be used by machine learning and outlier search.
@@ -104,36 +104,23 @@ def aggregate(
 
     variablesR = {
         "step": (np.int32, DataStructure.scalar),
+        "contact_map": (np.uint8, DataStructure.array),
         "positions": (np.float32, DataStructure.array),
         "velocities": (np.float32, DataStructure.array),
         "md5": (np.int64, DataStructure.array),
     }
 
-    if(cfg.model == "cvae"):
-        variablesR["contact_map"]=(np.uint8, DataStructure.array)
-    elif(cfg.model == "aae"):
-        variablesR["point_cloud"]=(np.float32, DataStructure.array)        
-
     variablesW = {
         "step": (np.int32, DataStructure.scalar),
+        "contact_map": (np.uint8, DataStructure.array),
         "positions": (np.float32, DataStructure.array),
         "velocities": (np.float32, DataStructure.array),
         "md5": (str, DataStructure.scalar),
     }
 
-    if(cfg.model == "cvae"):
-        variablesW["contact_map"]=(np.uint8, DataStructure.array)
-    elif(cfg.model == "aae"):
-        variablesW["point_cloud"]=(np.float32, DataStructure.array)        
-
-    if(cfg.model == "cvae"):
-        variablesW_4ml = {
-            "contact_map": (np.uint8, DataStructure.array),
-        }
-    elif(cfg.model == "aae"):
-        variablesW_4ml = {
-            "point_cloud": (np.float32, DataStructure.array),
-        }        
+    variablesW_cm = {
+        "contact_map": (np.uint8, DataStructure.array),
+    }
 
     if cfg.compute_rmsd:
         variablesR["rmsd"] = (np.float32, DataStructure.scalar)
@@ -148,11 +135,6 @@ def aggregate(
         variablesR["natoms"] = (np.int32, DataStructure.scalar)
         variablesW["ligand"] = (np.int32, DataStructure.scalar)
         variablesW["natoms"] = (np.int32, DataStructure.scalar)
-
-    print("In aggregate: variablesR = ", variablesR)
-    print("In aggregate: variablesW_4ml = ", variablesW_4ml)
-    print("In aggregate: variablesW = ", variablesW)
-    sys.stdout.flush()
 
     ARW = AdiosStreamStepRW(connections, variablesR)
 
@@ -173,16 +155,8 @@ def aggregate(
             status = ARW.read_step(sim_task_id)
             if status:
                 ARW.d_md5 = intarray2hash(ARW.d_md5)
-                print("dir(ARW) = ", dir(ARW))
-                sys.stdout.flush()
-                print("point_cloud.shape = ", ARW.d_point_cloud.shape)
-                print("point_cloud.dtype = ", ARW.d_point_cloud.dtype)
-                print(ARW.d_point_cloud)
-                print("positions.shape = ", ARW.d_positions.shape)
-                print("positions.dtype = ", ARW.d_positions.dtype)
-                sys.stdout.flush()
-                ARW.write_step(aggregator_stream_4ml, variablesW_4ml, end_step=True)
                 ARW.write_step(aggregator_stream, variablesW, end_step=False)
+                ARW.write_step(aggregator_stream_cm, variablesW_cm, end_step=True)
                 aggregator_stream.write("dir", str(sim_task_id), end_step=True)
             else:
                 print(f"NotReady in simulation {sim_task_id}")
@@ -198,8 +172,6 @@ if __name__ == "__main__":
 
     args = parse_args()
     cfg = StreamAggregation.from_yaml(args.config)
-
-    print(cfg)
 
     with Timer("aggregator_find_adios_files"):
         bpfiles = find_input(cfg)
@@ -220,17 +192,17 @@ if __name__ == "__main__":
         io_in_config_file="AggregatorOutput",
     )
 
+    bpaggregator_cm = str(cfg.output_path / "agg_cm.bp")
 
-    bpaggregator_4ml = str(cfg.output_path / "agg_4ml.bp")
-    aggregator_stream_4ml = adios2.open(
-        name=bpaggregator_4ml,
+    aggregator_stream_cm = adios2.open(
+        name=bpaggregator_cm,
         mode="w",
-        config_file=str(cfg.adios_xml_agg_4ml),
-        io_in_config_file="AggregatorOutput4ml",
+        config_file=str(cfg.adios_xml_agg),
+        io_in_config_file="AggregatorOutput",
     )
 
-    aggregate(cfg, connections, aggregator_stream, aggregator_stream_4ml)
+    aggregate(cfg, connections, aggregator_stream, aggregator_stream_cm)
 
     # Currently there is an infinite loop in aggregate() and this statement should never be reached.
     aggregator_stream.close()
-    aggregator_stream_4ml.close()
+    aggregator_stream_cm.close()

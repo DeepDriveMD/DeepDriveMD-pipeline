@@ -237,6 +237,7 @@ class ExperimentConfig(BaseSettings):
 class StreamingExperimentConfig(ExperimentConfig):
     adios_xml_sim: Path
     adios_xml_agg: Path
+    adios_xml_agg_4ml: Path
     adios_xml_file: Path
     config_directory: Path
     software_directory: Path
@@ -248,7 +249,7 @@ class StreamingExperimentConfig(ExperimentConfig):
     aggregation_stage: StreamingAggregationStageConfig
     machine_learning_stage: StreamingMachineLearningStageConfig
     agent_stage: StreamingAgentStageConfig
-
+    model: str
 
 def generate_sample_config():
     return ExperimentConfig(
@@ -263,7 +264,7 @@ def generate_sample_config():
         gpus_per_node=6,
         max_iteration=4,
         experiment_directory="/path/to/experiment",
-        node_local_path=None,
+        node_local_path='/tmp',
         molecular_dynamics_stage=MolecularDynamicsStageConfig(),
         aggregation_stage=AggregationStageConfig(),
         machine_learning_stage=MachineLearningStageConfig(),
