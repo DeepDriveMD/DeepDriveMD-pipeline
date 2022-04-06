@@ -30,17 +30,17 @@ if compute_zcentroid:
 for d in dirs:
     if compute_zcentroid:
         condition = (
-            os.path.exists(d + "/embeddings_cvae.npy")
+            os.path.exists(d + "/embeddings_model.npy")
             and os.path.exists(d + "/rmsd.npy")
             and os.path.exists(d + "/zcentroid.npy")
         )
     else:
-        condition = os.path.exists(d + "/embeddings_cvae.npy") and os.path.exists(
+        condition = os.path.exists(d + "/embeddings_model.npy") and os.path.exists(
             d + "/rmsd.npy"
         )
 
     if condition:
-        emb.append(np.load(d + "/embeddings_cvae.npy"))
+        emb.append(np.load(d + "/embeddings_model.npy"))
         rmsd.append(np.load(d + "/rmsd.npy"))
         if compute_zcentroid:
             zcentroid.append(np.load(d + "/zcentroid.npy"))

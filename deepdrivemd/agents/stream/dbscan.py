@@ -194,9 +194,64 @@ def predict(
     elif(cfg.model == "aae"):
         aae,device = build_model(cfg, model_path)
         pc_predict = aae.encode(torch.from_numpy(input).to(device))
+        # del aae
+        # clear_gpu()
+
+        
+        # print("type(pc_predict) = ", type(pc_predict))
+        # print("dir(pc_predict) = ", dir(pc_predict))
+
+        z = pc_predict.cpu()
+
+        # print("type(pc_predict) = ", type(pc_predict))
+        # print("dir(pc_predict) = ", dir(pc_predict))
+
+        z1 = z.detach()
+        z2 = z1.numpy()
+
+        # print("type(pc_predict) = ", type(pc_predict))
+        # print("dir(pc_predict) = ", dir(pc_predict))
+        # print("pc_predict.shape = ", pc_predict.shape)
+        # sys.stdout.flush()
+
         del aae
+        del pc_predict
         clear_gpu()
-        return pc_predict
+
+        return z2 #pc_predict
+
+
+
+'''
+    scalars = defaultdict(list)
+    latent_vectors = []
+    avg_ae_loss = 0.0
+    for batch in valid_loader:
+        x = batch["X"].to(device)
+        z = model.encode(x)
+        recon_x = model.decode(z)
+        avg_ae_loss += model.recon_loss(x, recon_x).item()
+
+        # Collect latent vectors for visualization                                                                                                                                                                                                                                        
+        latent_vectors.append(z.cpu().numpy())
+        for name in cfg.scalar_dset_names:
+            scalars[name].append(batch[name].cpu().numpy())
+
+    avg_ae_loss /= len(valid_loader)
+    latent_vectors = np.concatenate(latent_vectors)
+    scalars = {name: np.concatenate(scalar) for name, scalar in scalars.items()}
+
+    return avg_ae_loss, latent_vectors, scalars
+
+
+
+'''
+
+
+
+
+
+
 
 def outliers_from_latent(
     cm_predict: np.ndarray, eps: float = 0.35, min_samples: int = 10
@@ -541,6 +596,7 @@ def top_lof(
         projections = cm_predict[outlier_list]
     elif(cfg.model == "aae"):
         projections = cm_predict[outlier_list]
+        '''
         print("type(projections)=", type(projections))
         print("dir(projections)=", dir(projections))
         print("projections=", projections)
@@ -548,6 +604,7 @@ def top_lof(
         print("type(projections) = ", type(projections))
         projections = projections.detach().numpy()
         print("type(projections) = ", type(projections))
+        '''
 
     lof_scores = run_lof(projections)
     print("lof_scores = ", lof_scores)
@@ -674,7 +731,12 @@ def main(cfg: OutlierDetectionConfig):
 
     with Timer("outlier_read"):
         while True:
-            agg_input = mystreams.next()
+            try:
+                agg_input = mystreams.next()
+            except:
+                print("Sleeping for input")
+                time.sleep(60)
+                continue
             if len(agg_input[list(agg_input.keys())[0]]) < 10:
                 time.sleep(30)
             else:
@@ -767,8 +829,11 @@ def read_lastN(
         :obj:`lastN` contact maps from each aggregated file and
         :obj:`lastN` corresponding rmsds.
     """
-
-    vars = ["contact_map"]
+    
+    if(cfg.model == "cvae"):
+        vars = ["contact_map"]
+    elif(cfg.model == "aae"):
+        vars = ["point_cloud"]
 
     if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
         print("compute_zcentroid = ", cfg.compute_zcentroid)
@@ -793,14 +858,14 @@ def read_lastN(
                 start_step = 0
                 lastN = steps
             for v in vars:
-                if v == "contact_map":
+                if v == "contact_map" or v == "point_cloud":
                     shape = list(
                         map(int, fh.available_variables()[v]["Shape"].split(","))
                     )
                 elif v == "rmsd" or v == "zcentroid":
                     print(fh.available_variables()[v]["Shape"])
                     sys.stdout.flush()
-                if v == "contact_map":
+                if v == "contact_map" or v == "point_cloud":
                     start = [0] * len(shape)
                     var = fh.read(
                         v,
@@ -843,12 +908,17 @@ def read_lastN(
     if not variable_lists:
         return {}
 
-    print(variable_lists["contact_map"].shape)
+
     if cfg.compute_rmsd:
         print(variable_lists["rmsd"].shape)
     sys.stdout.flush()
 
-    result = {"contact_map": variable_lists["contact_map"]}
+    if(cfg.model == "cvae"):
+        result = {"contact_map": variable_lists["contact_map"]}
+        print(variable_lists["contact_map"].shape)
+    elif(cfg.model == "aae"):
+        result = {"point_cloud": variable_lists["point_cloud"]}
+        print(variable_lists["point_cloud"].shape)
 
     if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
         result["zcentroid"] = np.concatenate(variable_lists["zcentroid"])
@@ -898,10 +968,23 @@ def project_mini(cfg: OutlierDetectionConfig, trajectory: str):
                 np.save(f, ligand)
 
     with Timer("project_predict"):
-        embeddings_cvae = predict(cfg, model_path, agg_input, batch_size=64)
-    with open(output_path / f"embeddings_cvae.npy", "wb") as f:
-        np.save(f, embeddings_cvae)
+        embeddings = predict(cfg, model_path, agg_input, batch_size=64)
+        #print(dir(embeddings))
 
+    '''    
+    if(cfg.model == "aae"):
+        z = embeddings.cpu()
+        z1 = z.detach()
+        z2 = z1.numpy()
+        embeddings = embeddings.cpu().detach().numpy()
+        #print(embeddings)
+        #print(dir(embeddings))
+    '''
+
+    #sys.exit(0)
+
+    with open(output_path / f"embeddings_model.npy", "wb") as f:
+        np.save(f, embeddings)
 
 """
 

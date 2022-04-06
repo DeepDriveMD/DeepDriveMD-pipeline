@@ -111,7 +111,7 @@ class Point3dAAEConfig(BaseSettings):
     adios_xml_agg: Path
     adios_xml_agg_4ml: Path
     # retrain the model from scratch at each iteration or start with the previously trained model
-    reinit: bool = True
+    reinit: bool = False
     use_model_checkpoint = True
     read_batch: int = 10000
 

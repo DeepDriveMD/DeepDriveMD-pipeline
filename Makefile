@@ -19,7 +19,7 @@ run5m:
 run6:
 	bin/run.sh lassen-keras-dbscan_stream_smoothended_rec
 run6a:
-	bin/run.sh lassen-keras-dbscan_stream_smoothended_rec_a
+	bin/run.sh lassen-aae_stream_smoothended_rec
 run7:
 	bin/run.sh lassen-keras-dbscan_stream_insRec_OM_region
 run7m:
@@ -28,6 +28,8 @@ run8:
 	bin/run.sh lassen-keras-dbscan_stream_spike
 run9:
 	bin/run.sh lassen-keras-dbscan_stream_smoothended_rec_120
+run9a:
+	bin/run.sh lassen-aae_stream_smoothended_rec_120
 run10:
 	bin/run.sh lassen-keras-dbscan_stream_multi-ligand
 run11:

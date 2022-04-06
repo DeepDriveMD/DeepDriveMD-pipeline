@@ -61,7 +61,6 @@ def next_input(
     """
     while True:
         with Timer("ml_read"):
-            
             z = streams.next()
             print("z=", z)
             print("type(z)=", type(z))
@@ -98,10 +97,6 @@ def next_input(
         #    persistent_workers=True,
         #    prefetch_factor=cfg.prefetch_factor,
     )
-
-    print("len(train_loader) = ", len(train_loader))
-    print("len(valid_loader) = ", len(valid_loader))
-    print("cfg.split_pct = ", cfg.split_pct)
 
     return train_loader, valid_loader
 
@@ -323,16 +318,12 @@ def main(cfg: Point3dAAEConfig):
         print(f"ML iteration {i}")
         train_loader, valid_loader = next_input(cfg, streams)
 
-        best_model_path = cfg.published_model_dir / "best.pt"
         if i > 0:
-            checkpoint = torch.load(str(best_model_path), map_location="cpu")
-            print("type(checkpoint)=", type(checkpoint))
-            print("dir(checkpoint)=", dir(checkpoint))
-            print("checkpoint.keys() = ", checkpoint.keys())
+            checkpoint = torch.load(cfg.checkpoint_dir / "best.pt", map_location="cpu")
             epoch = checkpoint["epoch"]
             model.load_state_dict(checkpoint["model_state_dict"])
-            ae_optimizer.load_state_dict(checkpoint["ae_optimizer_state_dict"])
-            disc_optimizer.load_state_dict(checkpoint["disc_optimizer_state_dict"])
+            ae_optimizer.load_state_dict(checkpoint["ae_optimizer"])
+            disc_optimizer.load_state_dict(checkpoint["disc_optimizer"])
             model = model.to(device)
             print(f"Loaded checkpoint from previous iteration at epoch: {epoch}")
 
@@ -347,11 +338,10 @@ def main(cfg: Point3dAAEConfig):
                 cfg,
             )
 
-        checkpoint_path = cfg.checkpoint_dir / "best.pt"
-
-        if checkpoint_path.exists():
-            #shutil.move(str(checkpoint_path), str(cfg.published_model_dir))
-            subprocess.getstatusoutput(f"mv {checkpoint_path} {cfg.published_model_dir}/")
+        best_model_path = cfg.checkpoint_dir / " best.pt"
+        if best_model_path.exists():
+            shutil.move(best_model_path, cfg.published_model_dir)
+            # subprocess.getstatusoutput(f"mv {best_model_path} {cfg.published_model_dir}/")
 
         print("=" * 30)
         timer("ml_iteration", -1)

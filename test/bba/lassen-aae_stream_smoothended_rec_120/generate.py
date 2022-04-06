@@ -7,17 +7,17 @@ from pathlib import Path
 
 
 class Header(BaseModel):
-    title = "smoothended_rec mini"
+    title = "smoothended_rec, aae, 12h"
     resource = "llnl.lassen"
     queue = "pbatch"
     schema_ = "local"
     project = "cv19-a01"
-    walltime_min = 60 * 3
+    walltime_min = 60 * 12
     max_iteration = 4
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/p/gpfs1/yakushin/Outputs/18m"
+    experiment_directory = "/p/gpfs1/yakushin/Outputs/405a"
     software_directory = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
     )
@@ -70,8 +70,8 @@ class TaskConfigMD(BaseModel):
     initial_pdb_dir = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/"
     solvent_type = "explicit"
     top_suffix: str = ".top"
-    simulation_length_ns = 10.0 / 20
-    report_interval_ps = 50.0 / 2
+    simulation_length_ns = 10.0 / 5
+    report_interval_ps = 50.0 / 5
     dt_ps = 0.002
     temperature_kelvin = 300.0
     heat_bath_friction_coef = 1.0
@@ -82,7 +82,7 @@ class TaskConfigMD(BaseModel):
     in_memory = False
     bp_file = "set_by_deepdrivemd"
     outliers_dir = f"{header.experiment_directory}/agent_runs/stage0000/task0000/published_outliers"
-    copy_velocities_p = 1.0
+    copy_velocities_p = 0.5
     next_outlier_policy = 1
     lock = "set_by_deepdrivemd"
     adios_xml_sim = header.adios_xml_sim
@@ -92,6 +92,8 @@ class TaskConfigMD(BaseModel):
     zcentroid_atoms = "resname CY8 and not name H*"
     init_pdb_file = f"{header.init_pdb_file}"
     model = header.model
+    compute_zcentroid = True
+
 
 task_config_md = TaskConfigMD()
 
@@ -113,9 +115,8 @@ class MD(BaseModel):
     arguments = [f"{header.software_directory}/sim/openmm_stream/run_openmm.py"]
     cpu_reqs = cpu_req_md.dict()
     gpu_reqs = gpu_req_md.dict()
-    num_tasks = 12
+    num_tasks = 120
     task_config = task_config_md.dict()
-
 
 md = MD()
 
@@ -136,13 +137,14 @@ class TaskConfigAgg(BaseModel):
     task_idx = 0
     output_path = "set_by_deepdrivemd"
     node_local_path = header.node_local_path
-    num_tasks = 1
+    num_tasks = 10
     n_sim = md.num_tasks
     sleeptime_bpfiles = 30
     adios_xml_agg = header.adios_xml_agg
     adios_xml_agg_4ml = header.adios_xml_agg_4ml
     compute_rmsd = task_config_md.compute_rmsd
     model = header.model
+    compute_zcentroid = task_config_md.compute_zcentroid
 
 task_config_agg = TaskConfigAgg()
 
@@ -187,10 +189,10 @@ class TaskConfigML(AAE):
     stage_idx = 0
     task_idx = 0
     output_path = "set_by_deepdrivemd"
-    epochs = 70
+    epochs = 130
     batch_size = 32
     min_step_increment = 600
-    max_steps = 600
+    max_steps = 2400
     max_loss = 1500
     num_agg = agg.num_tasks
     timeout1 = 30
@@ -200,9 +202,9 @@ class TaskConfigML(AAE):
     checkpoint_dir = "set_by_deepdrivemd"
     adios_xml_agg = header.adios_xml_agg
     adios_xml_agg_4ml = header.adios_xml_agg_4ml
-    reinit = True
+    reinit = False
     use_model_checkpoint = True
-    read_batch = 600
+    read_batch = 2400
 
     #resume_checkpoint = None
     num_points: int = 459
@@ -212,7 +214,6 @@ class TaskConfigML(AAE):
     split_pct = 0.8
     seed = 333
     shuffle = True
-    epochs = 30
     #init_weights = None
     ae_optimizer = {"name":"Adam", "hparams":{"lr": 0.0001}}
     disc_optimizer = {"name":"Adam", "hparams":{"lr": 0.0001}}
@@ -266,6 +267,7 @@ class TaskConfigAgent(AAE):
     use_outliers = True
     use_random_outliers = True
     compute_rmsd = task_config_md.compute_rmsd
+    compute_zcentroid = task_config_md.compute_zcentroid
     outlier_selection = "lof"
     model = header.model
 

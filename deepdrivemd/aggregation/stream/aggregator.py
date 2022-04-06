@@ -173,6 +173,7 @@ def aggregate(
             status = ARW.read_step(sim_task_id)
             if status:
                 ARW.d_md5 = intarray2hash(ARW.d_md5)
+                '''
                 print("dir(ARW) = ", dir(ARW))
                 sys.stdout.flush()
                 print("point_cloud.shape = ", ARW.d_point_cloud.shape)
@@ -181,6 +182,7 @@ def aggregate(
                 print("positions.shape = ", ARW.d_positions.shape)
                 print("positions.dtype = ", ARW.d_positions.dtype)
                 sys.stdout.flush()
+                '''
                 ARW.write_step(aggregator_stream_4ml, variablesW_4ml, end_step=True)
                 ARW.write_step(aggregator_stream, variablesW, end_step=False)
                 aggregator_stream.write("dir", str(sim_task_id), end_step=True)
