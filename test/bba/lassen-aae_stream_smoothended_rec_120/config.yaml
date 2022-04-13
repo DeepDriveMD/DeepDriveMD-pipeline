@@ -82,7 +82,7 @@ agent_stage:
     init_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/system/comp.pdb
     lambda_gp: 10.0
     lambda_rec: 0.5
-    lastN: 200
+    lastN: 1000
     latent_dim: 16
     min_step_increment: 200
     model: aae
@@ -93,13 +93,13 @@ agent_stage:
     num_points: 459
     num_sim: 120
     outlier_count: 120
-    outlier_max: 2000
+    outlier_max: 1000
     outlier_min: 120
     outlier_selection: lof
     output_path: set_by_deepdrivemd
     project_gpu: false
     project_lastN: 50000
-    read_batch: 200
+    read_batch: 600
     ref_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/smoothended_rec/system/comp.pdb
     stage_idx: 0
     task_idx: 0
@@ -114,7 +114,7 @@ aggregation_stage:
     process_type: null
     processes: 1
     thread_type: OpenMP
-    threads_per_process: 4
+    threads_per_process: 64
   executable: /usr/workspace/cv_ddmd/conda1/powerai/bin/python
   gpu_reqs:
     process_type: null
@@ -211,14 +211,14 @@ machine_learning_stage:
     - 1
     - 1
     encoder_relu_slope: 0.0
-    epochs: 130
+    epochs: 70
     experiment_directory: set_by_deepdrivemd
     init_weights_path: /tmp
     lambda_gp: 10.0
     lambda_rec: 0.5
     latent_dim: 16
     max_loss: 1500
-    max_steps: 2400
+    max_steps: 2000
     min_step_increment: 600
     model: aae
     node_local_path: /tmp/
@@ -231,7 +231,7 @@ machine_learning_stage:
     output_path: set_by_deepdrivemd
     prefetch_factor: 2
     published_model_dir: set_by_deepdrivemd
-    read_batch: 2400
+    read_batch: 2000
     reinit: false
     scalar_dset_names: []
     scalar_requires_grad: false

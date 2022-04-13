@@ -26,10 +26,10 @@ pattern2 = '====> Epoch:\s+(\d+)\s+Valid:\s+Avg recon loss:\s+(\-*\d+\.*\d+)\s+T
 p1 = re.compile(pattern1)
 p2 = re.compile(pattern2)
 
-r1 = re.findall(p1, "====> Epoch: 0 Train:   Avg Disc loss: 8.0352   Avg AE loss: 7399.7970  Time: 1.7543")
-print(r1)
-r2 = re.findall(p2, "====> Epoch: 0 Valid:   Avg recon loss: 15285.2761      Time: 0.4237")
-print(r2)
+#r1 = re.findall(p1, "====> Epoch: 0 Train:   Avg Disc loss: 8.0352   Avg AE loss: 7399.7970  Time: 1.7543")
+#print(r1)
+#r2 = re.findall(p2, "====> Epoch: 0 Valid:   Avg recon loss: 15285.2761      Time: 0.4237")
+#print(r2)
 
 iteration = -1
 

@@ -77,28 +77,40 @@ def build_model(cfg: OutlierDetectionConfig, model_path: str):
         cvae.load(model_path)
         return cvae, None
     elif(cfg.model == "aae"):
-        device = torch.device("cuda:0")
-        aae = AAE3d(
-            cfg.num_points,
-            cfg.num_features,
-            cfg.latent_dim,
-            cfg.encoder_bias,
-            cfg.encoder_relu_slope,
-            cfg.encoder_filters,
-            cfg.encoder_kernels,
-            cfg.decoder_bias,
-            cfg.decoder_relu_slope,
-            cfg.decoder_affine_widths,
-            cfg.discriminator_bias,
-            cfg.discriminator_relu_slope,
-            cfg.discriminator_affine_widths,
-        )
-        aae = aae.to(device)
-        checkpoint = torch.load(model_path, map_location="cpu")
-        aae.load_state_dict(checkpoint["model_state_dict"])
-        summary(aae, (3 + cfg.num_features, cfg.num_points))
+        device = torch.device("cuda")
+        print("device = ", device)
+        # device = torch.device("cpu")
+        try:
+            print(cfg.aae)
+        except:
+            cfg.aae = AAE3d(
+                cfg.num_points,
+                cfg.num_features,
+                cfg.latent_dim,
+                cfg.encoder_bias,
+                cfg.encoder_relu_slope,
+                cfg.encoder_filters,
+                cfg.encoder_kernels,
+                cfg.decoder_bias,
+                cfg.decoder_relu_slope,
+                cfg.decoder_affine_widths,
+                cfg.discriminator_bias,
+                cfg.discriminator_relu_slope,
+                cfg.discriminator_affine_widths,
+            )
+        print(subprocess.getstatusoutput("nvidia-smi")[1])
+        print(subprocess.getstatusoutput("free -h")[1])
+        print(subprocess.getstatusoutput("top -b -n1 -U yakushin")[1])
+        print("model_path=",model_path); sys.stdout.flush()
+        if(os.path.exists(str(model_path))):
+            checkpoint = torch.load(model_path, map_location='cpu')
+            cfg.aae.load_state_dict(checkpoint["model_state_dict"])
+        cfg.aae = cfg.aae.to(device)
+        cfg.aae.eval()
+        summary(cfg.aae, (3 + cfg.num_features, cfg.num_points))
+        torch.cuda.empty_cache()
 
-    return aae, device
+    return cfg.aae, device
 
 def wait_for_model(cfg: OutlierDetectionConfig) -> str:
     """Wait for the trained model to be published by machine learning pipeline.
@@ -192,7 +204,33 @@ def predict(
         clear_gpu()
         return cm_predict
     elif(cfg.model == "aae"):
-        aae,device = build_model(cfg, model_path)
+        _,device = build_model(cfg, model_path)
+
+        p_list = []
+
+        batch_size = 100
+        n = len(input)//batch_size
+        print("n = ", n)
+        for i in range(n):
+            start = i*batch_size
+            end = (i+1)*batch_size
+            
+            print("start = ", start, ", end = ", end)
+
+            with torch.no_grad():
+                p_list.append(cfg.aae.encode(torch.from_numpy(input[start:end]).to(device)).detach().cpu().numpy())
+
+        prediction = np.concatenate(p_list)
+
+        #del aae
+        torch.cuda.empty_cache()
+
+        return prediction
+
+
+        '''
+
+
         pc_predict = aae.encode(torch.from_numpy(input).to(device))
         # del aae
         # clear_gpu()
@@ -214,12 +252,12 @@ def predict(
         # print("pc_predict.shape = ", pc_predict.shape)
         # sys.stdout.flush()
 
-        del aae
-        del pc_predict
-        clear_gpu()
+        # del aae
+        # del pc_predict
+        # clear_gpu()
 
         return z2 #pc_predict
-
+        '''
 
 
 '''
@@ -279,7 +317,7 @@ def outliers_from_latent(
     db_label = db.labels_.to_array()
     print("unique labels = ", np.unique(db_label))
     outlier_list = np.where(db_label == -1)
-    clear_gpu()
+    #clear_gpu()
     return outlier_list
 
 
@@ -595,7 +633,18 @@ def top_lof(
     if(cfg.model == "cvae"):
         projections = cm_predict[outlier_list]
     elif(cfg.model == "aae"):
-        projections = cm_predict[outlier_list]
+        print("cm_predict.shape = ", cm_predict.shape)
+        print("len(outlier_list) = ", len(outlier_list))
+        print("outlier_list = ", outlier_list)
+        print("max(outlier_list) = ", max(outlier_list))
+        sys.stdout.flush()
+        try:
+            projections = cm_predict[outlier_list]
+        except Exception as e:
+            print("projection exception")
+            print(e)
+            outlier_list = list(filter(lambda x: x < len(cm_predict), outlier_list)) 
+            projections = cm_predict[outlier_list]
         '''
         print("type(projections)=", type(projections))
         print("dir(projections)=", dir(projections))
@@ -767,7 +816,7 @@ def main(cfg: OutlierDetectionConfig):
                 or len(outlier_list[0]) < cfg.num_sim
             ):
                 print("Not using outliers")
-                clear_gpu()
+                # clear_gpu()
                 if cfg.compute_rmsd:
                     print("Using best rmsd states")
                     outlier_list = [select_best(cfg, agg_input)]

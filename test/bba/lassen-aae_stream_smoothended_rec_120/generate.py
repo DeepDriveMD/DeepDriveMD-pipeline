@@ -121,6 +121,14 @@ class MD(BaseModel):
 md = MD()
 
 
+class CPUReqAgg(BaseModel):
+    processes = 1
+    process_type: str = None
+    threads_per_process = 4*16
+    thread_type = "OpenMP"
+
+cpu_req_agg = CPUReqAgg()
+
 class GPUReqAgg(BaseModel):
     processes = 0
     process_type: str = None
@@ -153,7 +161,7 @@ class Aggregator(BaseModel):
     pre_exec = pre_exec_md
     executable = python
     arguments = [f"{header.software_directory}/aggregation/stream/aggregator.py"]
-    cpu_reqs = cpu_req_md.dict()
+    cpu_reqs = cpu_req_agg.dict()
     gpu_reqs = gpu_req_agg.dict()
     skip_aggregation = False
     num_tasks = task_config_agg.num_tasks
@@ -189,10 +197,10 @@ class TaskConfigML(AAE):
     stage_idx = 0
     task_idx = 0
     output_path = "set_by_deepdrivemd"
-    epochs = 130
+    epochs = 70
     batch_size = 32
     min_step_increment = 600
-    max_steps = 2400
+    max_steps = 2000
     max_loss = 1500
     num_agg = agg.num_tasks
     timeout1 = 30
@@ -204,7 +212,7 @@ class TaskConfigML(AAE):
     adios_xml_agg_4ml = header.adios_xml_agg_4ml
     reinit = False
     use_model_checkpoint = True
-    read_batch = 2400
+    read_batch = 2000
 
     #resume_checkpoint = None
     num_points: int = 459
@@ -251,15 +259,15 @@ class TaskConfigAgent(AAE):
     timeout1 = 30
     timeout2 = 10
     best_model = f"{header.experiment_directory}/machine_learning_runs/stage0000/task0000/published_model/best.pt"
-    lastN = 200
+    lastN = 1000
     outlier_count = 120
-    outlier_max = 2000
+    outlier_max = 1000
     outlier_min = 120
     init_pdb_file = f"{header.init_pdb_file}"
     ref_pdb_file = f"{header.ref_pdb_file}"
     init_eps = 1.3
     init_min_samples = 10
-    read_batch = 200
+    read_batch = 600
     num_sim = md.num_tasks
     project_lastN = 50 * 1000
     project_gpu = False
