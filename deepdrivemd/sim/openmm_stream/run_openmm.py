@@ -73,18 +73,22 @@ def next_outlier(
     if not os.path.exists(cfg.pickle_db):
         return None
 
+    '''
     if cfg.lock == "set_by_deepdrivemd":
         cfg.lock = LockFile(cfg.pickle_db)
 
+    '''
+
     while True:
         try:
-            cfg.lock.acquire()
+            #cfg.lock.acquire()
             with open(cfg.pickle_db, "rb") as f:
                 db = pickle.load(f)
             md5 = db.sorted_index[cfg.task_idx]
             rmsd = db.dictionary[md5]
-            positions_pdb = cfg.outliers_dir / f"{md5}.pdb"
-            velocities_npy = cfg.outliers_dir / f"{md5}.npy"
+            #positions_pdb = cfg.outliers_dir / f"{md5}.pdb"
+            positions_pdb = cfg.outliers_dir / f"p_{md5}.npy"
+            velocities_npy = cfg.outliers_dir / f"v_{md5}.npy"
 
             shutil.copy(positions_pdb, cfg.current_dir)
             shutil.copy(velocities_npy, cfg.current_dir)
@@ -93,7 +97,7 @@ def next_outlier(
                 task = cfg.outliers_dir / f"{md5}.txt"
                 shutil.copy(task, cfg.current_dir)
                 copied_task = cfg.current_dir / f"{md5}.txt"
-            cfg.lock.release()
+            #cfg.lock.release()
         except Exception as e:
             print("=" * 30)
             print(e)
@@ -110,8 +114,11 @@ def next_outlier(
     with open(cfg.current_dir / "rmsd.txt", "w") as f:
         f.write(f"{rmsd}\n")
 
-    positions_pdb = cfg.current_dir / f"{md5}.pdb"
-    velocities_npy = cfg.current_dir / f"{md5}.npy"
+    #positions_pdb = cfg.current_dir / f"{md5}.pdb"
+    #velocities_npy = cfg.current_dir / f"{md5}.npy"
+
+    positions_pdb = cfg.current_dir / f"p_{md5}.npy"
+    velocities_npy = cfg.current_dir / f"v_{md5}.npy"
 
     outputs = {
         "positions_pdb": positions_pdb,
@@ -185,7 +192,10 @@ def prepare_simulation(
 
         while True:
             try:
-                positions = pmd.load_file(str(positions_pdb)).positions
+                ### positions = pmd.load_file(str(positions_pdb)).positions
+                positions = np.load(str(positions_pdb))
+                print("positions.shape = ", positions.shape)
+                print("positions = ", positions)
                 # positions = pmd.load_file(ctx.top_file, xyz=str(positions_pdb)).positions
                 velocities = np.load(str(velocities_npy))
                 break
@@ -224,7 +234,7 @@ def prepare_simulation(
         with Timer("molecular_dynamics_configure_reporters"):
             configure_reporters(sim, cfg, cfg.report_steps, iteration)
 
-        sim.context.setPositions(positions)
+        sim.context.setPositions(positions/10)
 
         if random.random() < cfg.copy_velocities_p:
             print("Copying velocities from outliers")

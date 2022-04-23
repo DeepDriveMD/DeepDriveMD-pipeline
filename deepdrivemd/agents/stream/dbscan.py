@@ -45,6 +45,9 @@ from torchsummary import summary
 from deepdrivemd.models.aae_stream.config import Point3dAAEConfig 
 from deepdrivemd.models.aae_stream.utils import PointCloudDatasetInMemory
 
+
+import MDAnalysis as mda
+
 pool = Pool(39)
 
 
@@ -208,7 +211,7 @@ def predict(
 
         p_list = []
 
-        batch_size = 100
+        batch_size = 10
         n = len(input)//batch_size
         print("n = ", n)
         for i in range(n):
@@ -388,6 +391,34 @@ def write_pdb_frame(
     output_pdb_fn : str
         Where to write an outlier.
     """
+    print("In write_pdb_frame, original_pdb = ", original_pdb, ", output_pdb_fn = ", output_pdb_fn, ", ligand = ", ligand, ", frame.shape = ", frame.shape)
+    sys.stdout.flush()
+
+    '''
+    with Timer("universe"):
+        mda_u = mda.Universe(str(original_pdb))
+    print(np.max(frame, axis=0) - np.min(frame, axis=0)); sys.stdout.flush()
+    mda_u.atoms.positions = frame
+
+    with Timer("write_pdb"):
+        mda_u.atoms.write(str(output_pdb_fn))
+    '''
+    np.save(str(output_pdb_fn), frame)
+
+def write_pdb_frame_2(
+    frame: np.ndarray, original_pdb: Path, output_pdb_fn: str, ligand: int
+):
+    """Write positions into pdb file.
+
+    Parameters
+    ----------
+    frame : np.ndarray
+        Positions of atoms.
+    original_pdb : str
+        PDB file with initial condition to be used for topology.
+    output_pdb_fn : str
+        Where to write an outlier.
+    """
     pdb = PDBFile(str(original_pdb))
     print(
         "write_pdb_frame:  original_pdb = ",
@@ -425,6 +456,7 @@ def write_pdb_frame(
 
     sys.stdout.flush()
     sys.stderr.flush()
+
 
 
 def check_output(dir):
@@ -468,8 +500,8 @@ def write_top_outliers(
             print("   d=", d)
             topology_file = table["pdb"][d]
             tdir = table["tdir"][d]
-            outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
-            outlier_v_file = f"{tmp_dir}/{m}.npy"
+            outlier_pdb_file = f"{tmp_dir}/p_{m}.npy"
+            outlier_v_file = f"{tmp_dir}/v_{m}.npy"
             init_pdb_file = Path(f"{tdir}/system/{topology_file}")
 
             pp.append(
@@ -484,8 +516,8 @@ def write_top_outliers(
                 f.flush()
     else:
         for p, v, m in zip(positions, velocities, md5s):
-            outlier_pdb_file = f"{tmp_dir}/{m}.pdb"
-            outlier_v_file = f"{tmp_dir}/{m}.npy"
+            outlier_pdb_file = f"{tmp_dir}/p_{m}.npy"
+            outlier_v_file = f"{tmp_dir}/v_{m}.npy"
             pp.append(
                 pool.apipe(write_pdb_frame, p, cfg.init_pdb_file, outlier_pdb_file, -1)
             )
@@ -519,16 +551,19 @@ def publish(tmp_dir: Path, published_dir: Path):
     dbfn = f"{published_dir}/OutlierDB.pickle"
     subprocess.getstatusoutput(f"touch {dbfn}")
 
-    mylock = LockFile(dbfn)
+    #mylock = LockFile(dbfn)
 
-    mylock.acquire()
+    #mylock.acquire()
+    '''
     print(
         subprocess.getstatusoutput(
             f"rm -rf {published_dir}/*.pickle {published_dir}/*.pdb {published_dir}/*.npy"
         )
     )
-    print(subprocess.getstatusoutput(f"mv {tmp_dir}/* {published_dir}/"))
-    mylock.release()
+    '''
+    print(subprocess.getstatusoutput(f"mv {tmp_dir}/*.npy {published_dir}/"))
+    print(subprocess.getstatusoutput(f"mv {tmp_dir}/*.pickle {published_dir}/"))
+    #mylock.release()
 
 
 def top_outliers(
@@ -853,6 +888,8 @@ def main(cfg: OutlierDetectionConfig):
 
         with Timer("outlier_publish"):
             publish(tmp_dir, published_dir)
+
+        time.sleep(random.randint(250,350))
 
         with Timer("outlier_read"):
             agg_input = mystreams.next()
