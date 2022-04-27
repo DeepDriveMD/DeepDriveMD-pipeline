@@ -32,7 +32,8 @@ class Header(BaseModel):
     adios_xml_sim = "set_by_deepdrivemd"
     adios_xml_agg = "set_by_deepdrivemd"
     adios_xml_file = "set_by_deepdrivemd"
-
+    adios_xml_agg_4ml = "set_by_deepdrivemd"
+    model = "cvae"
 
 header = Header()
 
@@ -90,7 +91,7 @@ class TaskConfigMD(BaseModel):
     adios_xml_sim = header.adios_xml_sim
     adios_xml_file = header.adios_xml_file
     init_pdb_file = header.init_pdb_file
-
+    model = header.model
 
 task_config_md = TaskConfigMD()
 
@@ -136,10 +137,11 @@ class TaskConfigAgg(BaseModel):
     output_path = "set_by_deepdrivemd"
     node_local_path = "set_by_deepdrivemd"
     num_tasks = 1
+    model = header.model
     n_sim = md.num_tasks
     sleeptime_bpfiles = 30
     adios_xml_agg = header.adios_xml_agg
-
+    adios_xml_agg_4ml = header.adios_xml_agg_4ml
 
 task_config_agg = TaskConfigAgg()
 
@@ -193,7 +195,8 @@ class TaskConfigML(CVAE):
     reinit = True
     use_model_checkpoint = True
     read_batch = 2000
-
+    model = header.model
+    adios_xml_agg_4ml = header.adios_xml_agg_4ml
 
 task_config_ml = TaskConfigML()
 
@@ -237,7 +240,7 @@ class TaskConfigAgent(CVAE):
     project_gpu = False
     adios_xml_agg = header.adios_xml_agg
     use_outliers = False
-
+    model = header.model
 
 task_config_agent = TaskConfigAgent()
 

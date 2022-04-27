@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<adios-config>
+    <io name="Trajectory">
+        <engine type="BPFile">
+        <parameter key="FlushStepsCount" value="10"/>
+        </engine>
+    </io>
+</adios-config>

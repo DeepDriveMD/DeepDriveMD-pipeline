@@ -56,8 +56,6 @@ if __name__ == "__main__":
         "--output_dir",
         "-o",
         help="a number corresponding to a directory in /p/gpfs1/yakushin/Outputs",
-        type=int,
-        default=3,
     )
     parser.add_argument(
         "--nodes", "-n", help="number of nodes to use", type=int, default=1

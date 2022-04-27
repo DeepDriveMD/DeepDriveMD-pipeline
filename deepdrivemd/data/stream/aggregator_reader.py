@@ -254,17 +254,17 @@ class Streams:
         for v in self.vnames:
             cname = "c_" + v
             cache = getattr(self, cname)
-            '''
+
             for k in cache:
                 print("k=",k)
                 print("v=", cache[k])
                 print("len(v)=", len(cache[k]))
-            '''
+
             values = list(cache.values())
-            # print("before filter: len(values) = ", len(values))
+            print("before filter: len(values) = ", len(values))
             values = list(filter(lambda x: len(x) > 0, values))
-            # print("after filter: len(values) = ", len(values))            
-            # import sys; sys.stdout.flush()
+            print("after filter: len(values) = ", len(values))            
+            import sys; sys.stdout.flush()
             output[v] = np.concatenate(values)
 
         return output

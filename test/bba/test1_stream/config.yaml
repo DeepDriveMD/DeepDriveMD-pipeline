@@ -1,4 +1,5 @@
 adios_xml_agg: set_by_deepdrivemd
+adios_xml_agg_4ml: set_by_deepdrivemd
 adios_xml_file: set_by_deepdrivemd
 adios_xml_sim: set_by_deepdrivemd
 config_directory: set_by_deepdrivemd
@@ -8,6 +9,7 @@ gpus_per_node: 4
 hardware_threads_per_cpu: 4
 init_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input/1FME-0.pdb
 max_iteration: 4
+model: cvae
 node_local_path: null
 project: cv19-a01
 queue: pbatch
@@ -44,6 +46,7 @@ agent_stage:
   - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
   task_config:
     adios_xml_agg: set_by_deepdrivemd
+    adios_xml_agg_4ml: set_by_deepdrivemd
     agg_dir: /p/gpfs1/yakushin/Outputs/3/aggregation_runs
     best_model: /p/gpfs1/yakushin/Outputs/3/machine_learning_runs/stage0000/task0000/published_model/best.h5
     compute_rmsd: true
@@ -90,6 +93,7 @@ agent_stage:
     lastN: 2000
     latent_dim: 10
     min_step_increment: 500
+    model: cvae
     num_agg: 1
     num_sim: 12
     outlier_count: 120
@@ -135,8 +139,10 @@ aggregation_stage:
   skip_aggregation: false
   task_config:
     adios_xml_agg: set_by_deepdrivemd
+    adios_xml_agg_4ml: set_by_deepdrivemd
     compute_rmsd: true
     experiment_directory: set_by_deepdrivemd
+    model: cvae
     n_sim: 12
     node_local_path: set_by_deepdrivemd
     num_tasks: 1
@@ -265,6 +271,7 @@ molecular_dynamics_stage:
     initial_pdb_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input
     lock: set_by_deepdrivemd
     mda_selection: protein and name CA
+    model: cvae
     node_local_path: set_by_deepdrivemd
     openmm_selection:
     - CA

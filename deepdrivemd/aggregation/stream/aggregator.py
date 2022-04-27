@@ -176,13 +176,14 @@ def aggregate(
                 '''
                 print("dir(ARW) = ", dir(ARW))
                 sys.stdout.flush()
-                print("point_cloud.shape = ", ARW.d_point_cloud.shape)
-                print("point_cloud.dtype = ", ARW.d_point_cloud.dtype)
-                print(ARW.d_point_cloud)
+                print("contact_map.shape = ", ARW.d_contact_map.shape)
+                print("contact_map.dtype = ", ARW.d_contact_map.dtype)
+                print(ARW.d_contact_map)
                 print("positions.shape = ", ARW.d_positions.shape)
                 print("positions.dtype = ", ARW.d_positions.dtype)
                 sys.stdout.flush()
                 '''
+
                 ARW.write_step(aggregator_stream_4ml, variablesW_4ml, end_step=True)
                 ARW.write_step(aggregator_stream, variablesW, end_step=False)
                 aggregator_stream.write("dir", str(sim_task_id), end_step=True)

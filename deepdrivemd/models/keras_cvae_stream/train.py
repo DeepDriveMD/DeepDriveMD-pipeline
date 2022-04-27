@@ -125,7 +125,14 @@ def next_input(
     """
 
     with Timer("ml_read"):
-        cm_data_input = streams.next()["contact_map"]
+        while(True):
+            try:
+                cm_data_input = streams.next()["contact_map"]
+                break
+            except:
+                print("Sleeping for input to become readable"); sys.stdout.flush()
+                time.sleep(60)
+                continue
     cm_data_input = np.expand_dims(cm_data_input, axis=-1)
 
     cfg.initial_shape = cm_data_input.shape[1:3]
