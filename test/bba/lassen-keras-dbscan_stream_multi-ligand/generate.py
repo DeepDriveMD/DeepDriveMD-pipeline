@@ -12,7 +12,7 @@ class Header(BaseModel):
     queue = "pbatch"
     schema_ = "local"
     project = "cv19-a01"
-    walltime_min = 60 * 3
+    walltime_min = 60 * 6
     max_iteration = 4
     cpus_per_node = 40
     gpus_per_node = 4
@@ -31,7 +31,8 @@ class Header(BaseModel):
     multi_ligand_table = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv"
     )
-
+    adios_xml_agg_4ml = "set_by_deepdrivemd"
+    model = "cvae"
 
 header = Header()
 
@@ -95,7 +96,7 @@ class TaskConfigMD(BaseModel):
     zcentroid_atoms = "resname CY8 and not name H*"
     init_pdb_file = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/l1076-710260/system/sys_l1076-710260.pdb"
     compute_zcentroid = False
-
+    model = header.model
 
 task_config_md = TaskConfigMD()
 
@@ -147,7 +148,8 @@ class TaskConfigAgg(BaseModel):
     compute_rmsd = task_config_md.compute_rmsd
     compute_zcentroid = task_config_md.compute_zcentroid
     multi_ligand_table = header.multi_ligand_table
-
+    adios_xml_agg_4ml = header.adios_xml_agg_4ml
+    model = header.model
 
 task_config_agg = TaskConfigAgg()
 
@@ -201,7 +203,8 @@ class TaskConfigML(CVAE):
     reinit = False
     use_model_checkpoint = True
     read_batch = 200
-
+    adios_xml_agg_4ml = header.adios_xml_agg_4ml
+    model = header.model
 
 task_config_ml = TaskConfigML()
 

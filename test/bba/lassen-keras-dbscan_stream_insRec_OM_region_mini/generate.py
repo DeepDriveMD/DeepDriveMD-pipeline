@@ -12,7 +12,7 @@ class Header(BaseModel):
     queue = "pbatch"
     schema_ = "local"
     project = "cv19-a01"
-    walltime_min = 60 * 2
+    walltime_min = 60 * 4
     max_iteration = 4
     cpus_per_node = 40
     gpus_per_node = 4
@@ -28,6 +28,8 @@ class Header(BaseModel):
     adios_xml_sim = "set_by_deepdrivemd"
     adios_xml_agg = "set_by_deepdrivemd"
     adios_xml_file = "set_by_deepdrivemd"
+    adios_xml_agg_4ml = "set_by_deepdrivemd"
+    model = "cvae"
 
 
 header = Header()
@@ -88,7 +90,7 @@ class TaskConfigMD(BaseModel):
     compute_rmsd = False
     divisibleby = 256
     init_pdb_file = header.init_pdb_file
-
+    model = header.model
 
 task_config_md = TaskConfigMD()
 
@@ -138,7 +140,8 @@ class TaskConfigAgg(BaseModel):
     sleeptime_bpfiles = 30
     adios_xml_agg = header.adios_xml_agg
     compute_rmsd = task_config_md.compute_rmsd
-
+    adios_xml_agg_4ml = header.adios_xml_agg_4ml
+    model = header.model
 
 task_config_agg = TaskConfigAgg()
 
@@ -192,7 +195,8 @@ class TaskConfigML(CVAE):
     reinit = True
     use_model_checkpoint = True
     read_batch = 2000
-
+    adios_xml_agg_4ml = header.adios_xml_agg_4ml
+    model = header.model
 
 task_config_ml = TaskConfigML()
 
@@ -238,7 +242,7 @@ class TaskConfigAgent(CVAE):
     use_outliers = True
     use_random_outliers = True
     compute_rmsd = task_config_md.compute_rmsd
-
+    model = header.model
 
 task_config_agent = TaskConfigAgent()
 

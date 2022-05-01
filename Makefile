@@ -31,9 +31,9 @@ run9:
 run9a:
 	bin/run.sh lassen-aae_stream_smoothended_rec_120
 run10:
-	bin/run.sh lassen-keras-dbscan_stream_multi-ligand
+	bin/run.sh lassen-keras-dbscan_stream_multi-ligand #broken?
 run11:
-	bin/run.sh lassen-keras-dbscan_stream_multi-ligand_120
+	bin/run.sh lassen-keras-dbscan_stream_multi-ligand_120 #broken?
 clean:
 	rm -f *~ */*~
 	rm -rf __pycache__ */__pycache__ *.log */*/__pycache__ */*/*/__pycache__

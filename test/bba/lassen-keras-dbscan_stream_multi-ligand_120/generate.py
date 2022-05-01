@@ -31,6 +31,8 @@ class Header(BaseModel):
     multi_ligand_table = (
         "/usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv"
     )
+    adios_xml_agg_4ml = "set_by_deepdrivemd"
+    model = "cvae"
 
 
 header = Header()
@@ -94,7 +96,7 @@ class TaskConfigMD(BaseModel):
     zcentroid_atoms = "resname CY8 and not name H*"
     init_pdb_file = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/l1076-710260/system/sys_l1076-710260.pdb"
     compute_zcentroid = False
-
+    model = header.model
 
 task_config_md = TaskConfigMD()
 
@@ -147,7 +149,8 @@ class TaskConfigAgg(BaseModel):
     compute_rmsd = task_config_md.compute_rmsd
     compute_zcentroid = task_config_md.compute_zcentroid
     multi_ligand_table = header.multi_ligand_table
-
+    adios_xml_agg_4ml = header.adios_xml_agg_4ml
+    model = header.model
 
 task_config_agg = TaskConfigAgg()
 
@@ -201,7 +204,8 @@ class TaskConfigML(CVAE):
     reinit = False
     use_model_checkpoint = True
     read_batch = 600
-
+    adios_xml_agg_4ml = header.adios_xml_agg_4ml
+    model = header.model
 
 task_config_ml = TaskConfigML()
 
@@ -249,7 +253,7 @@ class TaskConfigAgent(CVAE):
     compute_rmsd = task_config_md.compute_rmsd
     compute_zcentroid = task_config_md.compute_zcentroid
     multi_ligand_table = header.multi_ligand_table
-
+    model = header.model
 
 task_config_agent = TaskConfigAgent()
 

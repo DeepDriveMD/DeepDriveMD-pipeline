@@ -1,4 +1,5 @@
 adios_xml_agg: set_by_deepdrivemd
+adios_xml_agg_4ml: set_by_deepdrivemd
 adios_xml_file: set_by_deepdrivemd
 adios_xml_sim: set_by_deepdrivemd
 config_directory: set_by_deepdrivemd
@@ -8,6 +9,7 @@ gpus_per_node: 4
 hardware_threads_per_cpu: 4
 init_pdb_file: set_by_deepdrivemd
 max_iteration: 4
+model: cvae
 multi_ligand_table: /usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv
 node_local_path: null
 project: cv19-a01
@@ -17,7 +19,7 @@ resource: llnl.lassen
 schema_: local
 software_directory: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd
 title: BBA integration test
-walltime_min: 180
+walltime_min: 360
 
 agent_stage:
   arguments:
@@ -137,9 +139,11 @@ aggregation_stage:
   skip_aggregation: false
   task_config:
     adios_xml_agg: set_by_deepdrivemd
+    adios_xml_agg_4ml: set_by_deepdrivemd
     compute_rmsd: true
     compute_zcentroid: false
     experiment_directory: set_by_deepdrivemd
+    model: cvae
     multi_ligand_table: /usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv
     n_sim: 12
     node_local_path: set_by_deepdrivemd
@@ -173,6 +177,7 @@ machine_learning_stage:
   - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
   task_config:
     adios_xml_agg: set_by_deepdrivemd
+    adios_xml_agg_4ml: set_by_deepdrivemd
     agg_dir: /p/gpfs1/yakushin/Outputs/306m/aggregation_runs/
     batch_size: 32
     checkpoint_dir: set_by_deepdrivemd
@@ -218,6 +223,7 @@ machine_learning_stage:
     max_loss: 1500
     max_steps: 200
     min_step_increment: 200
+    model: cvae
     num_agg: 1
     output_path: set_by_deepdrivemd
     published_model_dir: set_by_deepdrivemd
@@ -270,6 +276,7 @@ molecular_dynamics_stage:
     initial_pdb_dir: set_by_deepdrivemd
     lock: set_by_deepdrivemd
     mda_selection: protein and name CA
+    model: cvae
     multi_ligand_table: /usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv
     next_outlier_policy: 1
     node_local_path: set_by_deepdrivemd

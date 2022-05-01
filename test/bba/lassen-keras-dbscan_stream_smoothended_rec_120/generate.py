@@ -28,7 +28,8 @@ class Header(BaseModel):
     adios_xml_sim = "set_by_deepdrivemd"
     adios_xml_agg = "set_by_deepdrivemd"
     adios_xml_file = "set_by_deepdrivemd"
-
+    adios_xml_agg_4ml = "set_by_deepdrivemd"
+    model = "cvae"
 
 header = Header()
 
@@ -90,7 +91,7 @@ class TaskConfigMD(BaseModel):
     zcentroid_atoms = "resname CY8 and not name H*"
     init_pdb_file = f"{header.init_pdb_file}"
     compute_zcentroid = True
-
+    model = header.model
 
 task_config_md = TaskConfigMD()
 
@@ -141,7 +142,8 @@ class TaskConfigAgg(BaseModel):
     adios_xml_agg = header.adios_xml_agg
     compute_rmsd = task_config_md.compute_rmsd
     compute_zcentroid = task_config_md.compute_zcentroid
-
+    adios_xml_agg_4ml = header.adios_xml_agg_4ml
+    model = header.model
 
 task_config_agg = TaskConfigAgg()
 
@@ -195,7 +197,8 @@ class TaskConfigML(CVAE):
     reinit = False
     use_model_checkpoint = True
     read_batch = 600
-
+    adios_xml_agg_4ml = header.adios_xml_agg_4ml
+    model = header.model
 
 task_config_ml = TaskConfigML()
 
@@ -243,7 +246,7 @@ class TaskConfigAgent(CVAE):
     compute_rmsd = task_config_md.compute_rmsd
     outlier_selection = "lof"
     compute_zcentroid = task_config_md.compute_zcentroid
-
+    model = header.model
 
 task_config_agent = TaskConfigAgent()
 
