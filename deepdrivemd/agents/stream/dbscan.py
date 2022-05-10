@@ -562,6 +562,7 @@ def publish(tmp_dir: Path, published_dir: Path):
     )
     '''
     print(subprocess.getstatusoutput(f"mv {tmp_dir}/*.npy {published_dir}/"))
+    print(subprocess.getstatusoutput(f"mv {tmp_dir}/*.txt {published_dir}/"))
     print(subprocess.getstatusoutput(f"mv {tmp_dir}/*.pickle {published_dir}/"))
     #mylock.release()
 
