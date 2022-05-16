@@ -34,8 +34,6 @@ from deepdrivemd.data.stream.aggregator_reader import (
 from deepdrivemd.data.stream.enumerations import DataStructure
 from deepdrivemd.data.stream.OutlierDB import OutlierDB
 from deepdrivemd.models.keras_cvae.model import CVAE
-
-# from deepdrivemd.utils import t1Dto2D
 from deepdrivemd.utils import Timer, timer
 
 pool = Pool(39)
