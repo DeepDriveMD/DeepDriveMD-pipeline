@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import yaml
-from pydantic import BaseModel
 import os
 from pathlib import Path
+
+import yaml
+from pydantic import BaseModel
 
 
 class Header(BaseModel):
@@ -30,7 +31,8 @@ class Header(BaseModel):
     adios_xml_agg_4ml = "set_by_deepdrivemd"
     adios_xml_file = "set_by_deepdrivemd"
     model = "aae"
-    node_local_path: Path = '/tmp/'
+    node_local_path: Path = "/tmp/"
+
 
 header = Header()
 
@@ -118,16 +120,19 @@ class MD(BaseModel):
     num_tasks = 120
     task_config = task_config_md.dict()
 
+
 md = MD()
 
 
 class CPUReqAgg(BaseModel):
     processes = 1
     process_type: str = None
-    threads_per_process = 4*16
+    threads_per_process = 4 * 16
     thread_type = "OpenMP"
 
+
 cpu_req_agg = CPUReqAgg()
+
 
 class GPUReqAgg(BaseModel):
     processes = 0
@@ -153,6 +158,7 @@ class TaskConfigAgg(BaseModel):
     compute_rmsd = task_config_md.compute_rmsd
     model = header.model
     compute_zcentroid = task_config_md.compute_zcentroid
+
 
 task_config_agg = TaskConfigAgg()
 
@@ -192,6 +198,7 @@ class AAE(BaseModel):
     # Releative weight to put on reconstruction loss
     lambda_rec: float = 0.5
 
+
 class TaskConfigML(AAE):
     experiment_directory = "set_by_deepdrivemd"
     stage_idx = 0
@@ -214,7 +221,7 @@ class TaskConfigML(AAE):
     use_model_checkpoint = True
     read_batch = 2000
 
-    #resume_checkpoint = None
+    # resume_checkpoint = None
     num_points: int = 459
     scalar_dset_names = []
     cms_transform: bool = True
@@ -222,17 +229,19 @@ class TaskConfigML(AAE):
     split_pct = 0.8
     seed = 333
     shuffle = True
-    #init_weights = None
-    ae_optimizer = {"name":"Adam", "hparams":{"lr": 0.0001}}
-    disc_optimizer = {"name":"Adam", "hparams":{"lr": 0.0001}}
+    # init_weights = None
+    ae_optimizer = {"name": "Adam", "hparams": {"lr": 0.0001}}
+    disc_optimizer = {"name": "Adam", "hparams": {"lr": 0.0001}}
     num_data_workers = 16
     prefetch_factor = 2
     model = header.model
     node_local_path = header.node_local_path
-    init_weights_path = '/tmp'
+    init_weights_path = "/tmp"
     num_features = 0
 
+
 task_config_ml = TaskConfigML()
+
 
 class ML(BaseModel):
     pre_exec = pre_exec_md
@@ -281,6 +290,7 @@ class TaskConfigAgent(AAE):
 
     num_points = task_config_ml.num_points
     num_features = task_config_ml.num_features
+
 
 task_config_agent = TaskConfigAgent()
 

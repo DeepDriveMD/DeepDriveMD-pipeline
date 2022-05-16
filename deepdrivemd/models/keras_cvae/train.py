@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     import numpy.typing as npt
 
 import numpy as np
+
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
 from deepdrivemd.models.keras_cvae.config import KerasCVAEModelConfig

@@ -1,6 +1,8 @@
+from typing import Dict, Tuple
+
 import adios2
 import numpy as np
-from typing import Dict, Tuple
+
 from deepdrivemd.data.stream.enumerations import DataStructure
 
 

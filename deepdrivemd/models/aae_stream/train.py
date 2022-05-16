@@ -1,27 +1,24 @@
+import glob
+import itertools
+import subprocess
 import sys
 import time
-import glob
-import shutil
-import subprocess
-import itertools
-import numpy as np
-from tqdm import tqdm
-from typing import List, Tuple
 from collections import defaultdict
+from typing import List, Tuple
 
+import numpy as np
 import torch
-from torchsummary import summary
-
-
-from mdlearn.nn.models.aae.point_3d_aae import AAE3d
 from mdlearn.data.utils import train_valid_split
-from mdlearn.utils import log_checkpoint, get_torch_optimizer
+from mdlearn.nn.models.aae.point_3d_aae import AAE3d
+from mdlearn.utils import get_torch_optimizer, log_checkpoint
+from torchsummary import summary
+from tqdm import tqdm
 
-from deepdrivemd.utils import Timer, timer, parse_args
+from deepdrivemd.data.stream.aggregator_reader import Streams, StreamVariable
 from deepdrivemd.data.stream.enumerations import DataStructure
 from deepdrivemd.models.aae_stream.config import Point3dAAEConfig
 from deepdrivemd.models.aae_stream.utils import PointCloudDatasetInMemory
-from deepdrivemd.data.stream.aggregator_reader import Streams, StreamVariable
+from deepdrivemd.utils import Timer, parse_args, timer
 
 
 def wait_for_input(cfg: Point3dAAEConfig) -> List[str]:
@@ -61,7 +58,7 @@ def next_input(
     """
     while True:
         with Timer("ml_read"):
-            
+
             z = streams.next()
             print("z=", z)
             print("type(z)=", type(z))
@@ -350,8 +347,10 @@ def main(cfg: Point3dAAEConfig):
         checkpoint_path = cfg.checkpoint_dir / "best.pt"
 
         if checkpoint_path.exists():
-            #shutil.move(str(checkpoint_path), str(cfg.published_model_dir))
-            subprocess.getstatusoutput(f"mv {checkpoint_path} {cfg.published_model_dir}/")
+            # shutil.move(str(checkpoint_path), str(cfg.published_model_dir))
+            subprocess.getstatusoutput(
+                f"mv {checkpoint_path} {cfg.published_model_dir}/"
+            )
 
         print("=" * 30)
         timer("ml_iteration", -1)

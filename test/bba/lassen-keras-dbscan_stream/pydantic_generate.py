@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 import os
 from pathlib import Path
+
+from deepdrivemd.agents.stream.config import OutlierDetectionConfig
+from deepdrivemd.aggregation.stream.config import StreamAggregation
 from deepdrivemd.config import (
+    AgentStageConfig,
     CPUReqs,
     GPUReqs,
-    StreamingExperimentConfig,
+    MachineLearningStageConfig,
     MolecularDynamicsStageConfig,
     StreamingAggregationStageConfig,
-    MachineLearningStageConfig,
-    AgentStageConfig,
+    StreamingExperimentConfig,
 )
-from deepdrivemd.sim.openmm_stream.config import OpenMMConfig
-from deepdrivemd.aggregation.stream.config import StreamAggregation
 from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
-from deepdrivemd.agents.stream.config import OutlierDetectionConfig
-
+from deepdrivemd.sim.openmm_stream.config import OpenMMConfig
 
 # TODO: This file should have no "set_by_deepdrivemd" occurences.
 #       Instead, the config classes should have it by default.

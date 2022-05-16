@@ -1,5 +1,6 @@
-from deepdrivemd.config import AggregationTaskConfig
 from pathlib import Path
+
+from deepdrivemd.config import AggregationTaskConfig
 
 
 class StreamAggregation(AggregationTaskConfig):
@@ -16,6 +17,7 @@ class StreamAggregation(AggregationTaskConfig):
     compute_zcentroid: bool = False
     multi_ligand_table: Path = Path()
     model: str = "cvae"
+
 
 if __name__ == "__main__":
     StreamAggregation().dump_yaml("stream_aggregation_template.yaml")

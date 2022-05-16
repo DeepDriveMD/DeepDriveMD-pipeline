@@ -10,14 +10,23 @@ if TYPE_CHECKING:
 
 import numpy as np
 import pandas as pd
-from tensorflow.keras.layers import Input, Dense, Lambda, Flatten, Reshape, Dropout
-from tensorflow.keras.layers import Convolution2D, Conv2DTranspose
-from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import RMSprop
-from tensorflow.keras.callbacks import Callback, ModelCheckpoint, EarlyStopping
+import tensorflow as tf
 import tensorflow.keras.backend as K
 import tensorflow.keras.losses as objectives
-import tensorflow as tf
+from tensorflow.keras.callbacks import Callback, EarlyStopping, ModelCheckpoint
+from tensorflow.keras.layers import (
+    Conv2DTranspose,
+    Convolution2D,
+    Dense,
+    Dropout,
+    Flatten,
+    Input,
+    Lambda,
+    Reshape,
+)
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import RMSprop
+
 from deepdrivemd.utils import PathLike
 
 tf.config.experimental.set_lms_enabled(True)

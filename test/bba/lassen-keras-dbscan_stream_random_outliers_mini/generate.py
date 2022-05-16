@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import yaml
-from pydantic import BaseModel
 import os
 from pathlib import Path
+
+import yaml
+from pydantic import BaseModel
 
 
 class Header(BaseModel):
@@ -34,6 +35,7 @@ class Header(BaseModel):
     adios_xml_file = "set_by_deepdrivemd"
     adios_xml_agg_4ml = "set_by_deepdrivemd"
     model = "cvae"
+
 
 header = Header()
 
@@ -93,6 +95,7 @@ class TaskConfigMD(BaseModel):
     init_pdb_file = header.init_pdb_file
     model = header.model
 
+
 task_config_md = TaskConfigMD()
 
 pre_exec_md = [
@@ -142,6 +145,7 @@ class TaskConfigAgg(BaseModel):
     adios_xml_agg = header.adios_xml_agg
     model = header.model
     adios_xml_agg_4ml = header.adios_xml_agg_4ml
+
 
 task_config_agg = TaskConfigAgg()
 
@@ -198,6 +202,7 @@ class TaskConfigML(CVAE):
     model = header.model
     adios_xml_agg_4ml = header.adios_xml_agg_4ml
 
+
 task_config_ml = TaskConfigML()
 
 
@@ -208,7 +213,7 @@ class ML(BaseModel):
     cpu_reqs = cpu_req_md.dict()
     gpu_reqs = gpu_req_md.dict()
     task_config = task_config_ml.dict()
-    
+
 
 cpu_req_agent = cpu_req_md.copy()
 cpu_req_agent.threads_per_process = 39
@@ -242,6 +247,7 @@ class TaskConfigAgent(CVAE):
     use_outliers = True
     use_random_outliers = True
     model = header.model
+
 
 task_config_agent = TaskConfigAgent()
 

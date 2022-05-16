@@ -1,18 +1,20 @@
-import numpy as np
-from deepdrivemd.aggregation.stream.config import StreamAggregation
-from deepdrivemd.utils import Timer, timer, parse_args, intarray2hash
-import time
-import os
-import sys
-import adios2
+import itertools
 import math
+import os
 import queue
 import subprocess
-import itertools
-from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
-from typing import List, Dict, Tuple
+import sys
+import time
 from pathlib import Path
+from typing import Dict, List, Tuple
+
+import adios2
+import numpy as np
+
+from deepdrivemd.aggregation.stream.config import StreamAggregation
+from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
 from deepdrivemd.data.stream.enumerations import DataStructure
+from deepdrivemd.utils import Timer, intarray2hash, parse_args, timer
 
 
 def find_input(cfg: StreamAggregation) -> List[str]:
@@ -109,10 +111,10 @@ def aggregate(
         "md5": (np.int64, DataStructure.array),
     }
 
-    if(cfg.model == "cvae"):
-        variablesR["contact_map"]=(np.uint8, DataStructure.array)
-    elif(cfg.model == "aae"):
-        variablesR["point_cloud"]=(np.float32, DataStructure.array)        
+    if cfg.model == "cvae":
+        variablesR["contact_map"] = (np.uint8, DataStructure.array)
+    elif cfg.model == "aae":
+        variablesR["point_cloud"] = (np.float32, DataStructure.array)
 
     variablesW = {
         "step": (np.int32, DataStructure.scalar),
@@ -121,19 +123,19 @@ def aggregate(
         "md5": (str, DataStructure.scalar),
     }
 
-    if(cfg.model == "cvae"):
-        variablesW["contact_map"]=(np.uint8, DataStructure.array)
-    elif(cfg.model == "aae"):
-        variablesW["point_cloud"]=(np.float32, DataStructure.array)        
+    if cfg.model == "cvae":
+        variablesW["contact_map"] = (np.uint8, DataStructure.array)
+    elif cfg.model == "aae":
+        variablesW["point_cloud"] = (np.float32, DataStructure.array)
 
-    if(cfg.model == "cvae"):
+    if cfg.model == "cvae":
         variablesW_4ml = {
             "contact_map": (np.uint8, DataStructure.array),
         }
-    elif(cfg.model == "aae"):
+    elif cfg.model == "aae":
         variablesW_4ml = {
             "point_cloud": (np.float32, DataStructure.array),
-        }        
+        }
 
     if cfg.compute_rmsd:
         variablesR["rmsd"] = (np.float32, DataStructure.scalar)
@@ -173,7 +175,7 @@ def aggregate(
             status = ARW.read_step(sim_task_id)
             if status:
                 ARW.d_md5 = intarray2hash(ARW.d_md5)
-                '''
+                """
                 print("dir(ARW) = ", dir(ARW))
                 sys.stdout.flush()
                 print("contact_map.shape = ", ARW.d_contact_map.shape)
@@ -182,7 +184,7 @@ def aggregate(
                 print("positions.shape = ", ARW.d_positions.shape)
                 print("positions.dtype = ", ARW.d_positions.dtype)
                 sys.stdout.flush()
-                '''
+                """
 
                 ARW.write_step(aggregator_stream_4ml, variablesW_4ml, end_step=True)
                 ARW.write_step(aggregator_stream, variablesW, end_step=False)
@@ -222,7 +224,6 @@ if __name__ == "__main__":
         config_file=str(cfg.adios_xml_agg),
         io_in_config_file="AggregatorOutput",
     )
-
 
     bpaggregator_4ml = str(cfg.output_path / "agg_4ml.bp")
     aggregator_stream_4ml = adios2.open(

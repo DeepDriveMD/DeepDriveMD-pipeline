@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import yaml
-from pydantic import BaseModel
 import os
 from pathlib import Path
+
+import yaml
+from pydantic import BaseModel
 
 
 class Header(BaseModel):
@@ -93,6 +94,7 @@ class TaskConfigMD(BaseModel):
     init_pdb_file = f"{header.init_pdb_file}"
     model = header.model
 
+
 task_config_md = TaskConfigMD()
 
 pre_exec_md = [
@@ -143,6 +145,7 @@ class TaskConfigAgg(BaseModel):
     compute_rmsd = task_config_md.compute_rmsd
     adios_xml_agg_4ml = header.adios_xml_agg_4ml
     model = header.model
+
 
 task_config_agg = TaskConfigAgg()
 
@@ -199,6 +202,7 @@ class TaskConfigML(CVAE):
     adios_xml_agg_4ml = header.adios_xml_agg_4ml
     model = header.model
 
+
 task_config_ml = TaskConfigML()
 
 
@@ -245,6 +249,7 @@ class TaskConfigAgent(CVAE):
     compute_rmsd = task_config_md.compute_rmsd
     outlier_selection = "lof"
     model = header.model
+
 
 task_config_agent = TaskConfigAgent()
 

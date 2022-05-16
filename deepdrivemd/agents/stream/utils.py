@@ -1,9 +1,11 @@
-import numpy as np
-from torch.utils.data import Dataset
-import torch
-import adios2
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict
+
+import adios2
+import numpy as np
+import torch
+from torch.utils.data import Dataset
+
 
 class CenterOfMassTransform:
     def __init__(self, data: np.ndarray) -> None:
@@ -120,5 +122,3 @@ def read_adios_file(input_path: Path):
         points = fr.read("point_cloud", [0, 0], shape, 0, n)
 
     return points
-
-

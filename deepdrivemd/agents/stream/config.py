@@ -1,6 +1,7 @@
-from typing import List, Tuple
-from deepdrivemd.config import AgentTaskConfig
 from pathlib import Path
+from typing import List, Tuple
+
+from deepdrivemd.config import AgentTaskConfig
 
 
 class OutlierDetectionConfig(AgentTaskConfig):
@@ -75,7 +76,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
     model: str = "cvae"
     num_points: int = 539
     num_features: int = 0
-    '''
+    """
     encoder_bias: bool = True
     encoder_relu_slope: float = 0.0
     encoder_filters: List[int] = [64, 128, 256, 256, 512]
@@ -86,6 +87,8 @@ class OutlierDetectionConfig(AgentTaskConfig):
     discriminator_bias: bool = True
     discriminator_relu_slope: float = 0.0
     discriminator_affine_widths: List[int] = [512, 128, 64]
-    '''
+    """
+
+
 if __name__ == "__main__":
     OutlierDetectionConfig().dump_yaml("dbscan_template.yaml")

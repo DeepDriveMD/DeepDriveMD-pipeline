@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import yaml
-from pydantic import BaseModel
 import os
 from pathlib import Path
+
+import yaml
+from pydantic import BaseModel
 
 
 class Header(BaseModel):
@@ -34,6 +35,7 @@ class Header(BaseModel):
     adios_xml_file = "set_by_deepdrivemd"
     adios_xml_agg_4ml = "set_by_deepdrivemd"
     model = "cvae"
+
 
 header = Header()
 
@@ -92,6 +94,7 @@ class TaskConfigMD(BaseModel):
     compute_rmsd = True
     init_pdb_file = header.init_pdb_file
     model = header.model
+
 
 task_config_md = TaskConfigMD()
 
@@ -246,6 +249,7 @@ class TaskConfigAgent(CVAE):
     compute_rmsd = task_config_md.compute_rmsd
     adios_xml_agg_4ml = header.adios_xml_agg_4ml
     model = header.model
+
 
 task_config_agent = TaskConfigAgent()
 

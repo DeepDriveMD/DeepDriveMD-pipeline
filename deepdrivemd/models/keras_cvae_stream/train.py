@@ -1,64 +1,24 @@
-import time
-import numpy as np
-from deepdrivemd.utils import Timer, timer, parse_args
-from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
-from deepdrivemd.models.keras_cvae.model import CVAE
-import subprocess
 import glob
-from deepdrivemd.data.stream.aggregator_reader import (
-    Streams,
-    StreamContactMapVariable,
-)
-import os
-import sys
 import itertools
+import math
+import os
+import subprocess
+import sys
+import time
 from typing import List, Tuple
-from deepdrivemd.data.stream.enumerations import DataStructure
-import math
 
-
-
-from deepdrivemd.utils import Timer, timer, parse_args
-import subprocess
-import glob
-from deepdrivemd.data.stream.aggregator_reader import (
-    Streams,
-    StreamVariable,
-)
-import os
-import sys
-from deepdrivemd.data.stream.enumerations import DataStructure
-import math
-import time
-import itertools
 import numpy as np
-from tqdm import tqdm
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-from collections import defaultdict
-import adios2
 
-import torch
-from torch.utils.data import Dataset
-from torchsummary import summary
-import argparse
+from deepdrivemd.data.stream.aggregator_reader import StreamContactMapVariable, Streams
+from deepdrivemd.data.stream.enumerations import DataStructure
+from deepdrivemd.models.keras_cvae.model import CVAE
+from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
+from deepdrivemd.utils import Timer, parse_args, timer
 
-
-from mdlearn.nn.models.aae.point_3d_aae import AAE3d
-from mdlearn.data.utils import train_valid_split
-from mdlearn.utils import (
-    BaseSettings,
-    OptimizerConfig,
-    log_checkpoint,
-    get_torch_optimizer,
-)
-
-#from deepdrivemd.models.aae_stream.config import Point3dAAEConfig
-#from deepdrivemd.models.aae_stream.utils import CenterOfMassTransform, PointCloudDatasetInMemory, read_adios_file
-
-torch.manual_seed(44)
-torch.set_num_threads(4)
-device = torch.device("cuda:0")
+# import torch
+# torch.manual_seed(44)
+# torch.set_num_threads(4)
+# device = torch.device("cuda:0")
 
 
 def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
@@ -125,12 +85,13 @@ def next_input(
     """
 
     with Timer("ml_read"):
-        while(True):
+        while True:
             try:
                 cm_data_input = streams.next()["contact_map"]
                 break
-            except:
-                print("Sleeping for input to become readable"); sys.stdout.flush()
+            except:  # noqa TODO: flake8 - should not have a bar except
+                print("Sleeping for input to become readable")
+                sys.stdout.flush()
                 time.sleep(60)
                 continue
     cm_data_input = np.expand_dims(cm_data_input, axis=-1)

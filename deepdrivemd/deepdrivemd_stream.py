@@ -1,13 +1,15 @@
+import math
 import os
 import shutil
+from pathlib import Path
 from typing import List
+
 import radical.utils as ru
 from radical.entk import AppManager, Pipeline, Stage, Task
-from deepdrivemd.config import StreamingExperimentConfig, BaseStageConfig
+
+from deepdrivemd.config import BaseStageConfig, StreamingExperimentConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.utils import parse_args
-import math
-from pathlib import Path
 
 
 def generate_task(cfg: BaseStageConfig) -> Task:

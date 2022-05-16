@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import yaml
-from pydantic import BaseModel
 import os
 from pathlib import Path
+
+import yaml
+from pydantic import BaseModel
 
 
 class Header(BaseModel):
@@ -33,6 +34,7 @@ class Header(BaseModel):
     )
     adios_xml_agg_4ml = "set_by_deepdrivemd"
     model = "cvae"
+
 
 header = Header()
 
@@ -98,6 +100,7 @@ class TaskConfigMD(BaseModel):
     compute_zcentroid = False
     model = header.model
 
+
 task_config_md = TaskConfigMD()
 
 pre_exec_md = [
@@ -150,6 +153,7 @@ class TaskConfigAgg(BaseModel):
     multi_ligand_table = header.multi_ligand_table
     adios_xml_agg_4ml = header.adios_xml_agg_4ml
     model = header.model
+
 
 task_config_agg = TaskConfigAgg()
 
@@ -205,6 +209,7 @@ class TaskConfigML(CVAE):
     read_batch = 200
     adios_xml_agg_4ml = header.adios_xml_agg_4ml
     model = header.model
+
 
 task_config_ml = TaskConfigML()
 

@@ -1,18 +1,17 @@
-import simtk.unit as u
-
-from MDAnalysis.analysis import distances, rms
-import MDAnalysis
-import numpy as np
-from deepdrivemd.utils import hash2intarray, timer
 import datetime
+import hashlib
+import sys
 
 # from deepdrivemd.utils import t2Dto1D
 from typing import Dict
 
-import hashlib
-import sys
-
 import adios2
+import MDAnalysis
+import numpy as np
+import simtk.unit as u
+from MDAnalysis.analysis import distances, rms
+
+from deepdrivemd.utils import hash2intarray, timer
 
 
 class ContactMapReporter(object):
@@ -27,7 +26,7 @@ class ContactMapReporter(object):
 
         self.step = 0
         self.cfg = cfg
-        
+
         if cfg.compute_zcentroid or cfg.compute_rmsd:
             self.universe_init = MDAnalysis.Universe(self.cfg.init_pdb_file)
         if cfg.compute_zcentroid:
@@ -102,7 +101,6 @@ class ContactMapReporter(object):
         print(f"len(ca_indices) = {len(ca_indices)}, d = {d}, natoms = {natoms}")
         sys.stdout.flush()
 
-
         if self.cfg.model == "cvae":
             contact_map = distances.contact_matrix(
                 positions_ca, cutoff=self.cfg.threshold, returntype="numpy", box=None
@@ -125,7 +123,6 @@ class ContactMapReporter(object):
             output["contact_map"] = contact_map
         elif self.cfg.model == "aae":
             output["point_cloud"] = point_cloud
-
 
         if self.cfg.compute_zcentroid:
             output["zcentroid"] = centroid

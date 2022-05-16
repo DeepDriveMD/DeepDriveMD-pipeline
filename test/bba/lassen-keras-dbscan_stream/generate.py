@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import yaml
-from pydantic import BaseModel
 import os
 from pathlib import Path
+
+import yaml
+from pydantic import BaseModel
 
 
 class Header(BaseModel):
@@ -94,6 +95,7 @@ class TaskConfigMD(BaseModel):
     compute_rmsd = True
     init_pdb_file = header.init_pdb_file
     model = header.model
+
 
 task_config_md = TaskConfigMD()
 
@@ -201,6 +203,7 @@ class TaskConfigML(CVAE):
     read_batch = 2000
     adios_xml_agg_4ml = header.adios_xml_agg_4ml
     model = header.model
+
 
 task_config_ml = TaskConfigML()
 

@@ -1,8 +1,9 @@
 import glob
 import os
-import pandas as pd
-import sys
 import subprocess
+import sys
+
+import pandas as pd
 
 target_dir = sys.argv[1]
 

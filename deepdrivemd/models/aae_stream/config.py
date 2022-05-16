@@ -1,11 +1,8 @@
 from pathlib import Path
-from typing import Dict, List, Optional
-from mdlearn.utils import (
-    BaseSettings,
-    OptimizerConfig,
-    log_checkpoint,
-    get_torch_optimizer,
-)
+from typing import List, Optional
+
+from mdlearn.utils import BaseSettings, OptimizerConfig
+
 
 class Point3dAAEConfig(BaseSettings):
     # File paths
@@ -43,7 +40,7 @@ class Point3dAAEConfig(BaseSettings):
     # Training batch size
     batch_size: int = 32
     # Pretrained model weights
-    init_weights: Optional[str] = ''
+    init_weights: Optional[str] = ""
     # AE (encoder/decoder) optimizer params
     ae_optimizer: OptimizerConfig = OptimizerConfig(name="Adam", hparams={"lr": 0.0001})
     # Discriminator optimizer params
@@ -88,7 +85,6 @@ class Point3dAAEConfig(BaseSettings):
     # Number of validation samples to run visualization on
     # plot_n_samples: Optional[int] = None
 
-
     # minimum number of steps in each aggregated file before the model is trained
     min_step_increment: int = 5000
     # take up to this number of samples from each aggregated file to train the model
@@ -117,8 +113,8 @@ class Point3dAAEConfig(BaseSettings):
 
     experiment_directory: Path
     init_weights_path: Path
-    model: str = 'aae'
-    model_tag: str = 'aae'
-    node_local_path: Path = Path('/tmp')
+    model: str = "aae"
+    model_tag: str = "aae"
+    node_local_path: Path = Path("/tmp")
     stage_idx: int = 0
     task_idx: int = 0

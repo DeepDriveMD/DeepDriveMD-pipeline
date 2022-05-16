@@ -1,52 +1,42 @@
-import random
-import numpy as np
-import glob
-import subprocess
-import time
-import sys
-import os
 import argparse
+import glob
 import itertools
-from typing import List, Tuple, Dict, Union
-from numba import cuda
+import os
+import pickle
+import random
+import subprocess
+import sys
+import time
 from pathlib import Path
-import pandas as pd
-from sklearn.neighbors import LocalOutlierFactor
+from typing import Dict, List, Tuple, Union
 
+import adios2
+import cupy as cp
+import numpy as np
+import pandas as pd
+import tensorflow.keras.backend as K
+import torch
+from cuml import DBSCAN as DBSCAN
+from mdlearn.nn.models.aae.point_3d_aae import AAE3d
+from numba import cuda
 from pathos.multiprocessing import ProcessingPool as Pool
+from simtk.openmm.app.pdbfile import PDBFile
+from sklearn.neighbors import LocalOutlierFactor
+from torchsummary import summary
+
+from deepdrivemd.agents.stream.config import OutlierDetectionConfig
+from deepdrivemd.data.stream.aggregator_reader import (
+    StreamContactMapVariable,
+    Streams,
+    StreamScalarVariable,
+    StreamVariable,
+)
+from deepdrivemd.data.stream.enumerations import DataStructure
+from deepdrivemd.data.stream.OutlierDB import OutlierDB
+from deepdrivemd.models.keras_cvae.model import CVAE
 
 # from deepdrivemd.utils import t1Dto2D
 from deepdrivemd.utils import Timer, timer
-from deepdrivemd.agents.stream.config import OutlierDetectionConfig
-import tensorflow.keras.backend as K
-from deepdrivemd.data.stream.enumerations import DataStructure
-
-import pickle
-from deepdrivemd.data.stream.OutlierDB import OutlierDB
-from lockfile import LockFile
-from deepdrivemd.data.stream.aggregator_reader import (
-    Streams,
-    StreamVariable,
-    StreamContactMapVariable,
-    StreamScalarVariable,
-)
-
-import cupy as cp
-from cuml import DBSCAN as DBSCAN
-
-from deepdrivemd.models.keras_cvae.model import CVAE
-from simtk.openmm.app.pdbfile import PDBFile
-
-import adios2
-
-import torch
-from mdlearn.nn.models.aae.point_3d_aae import AAE3d
-from torchsummary import summary
-from deepdrivemd.models.aae_stream.config import Point3dAAEConfig 
-from deepdrivemd.models.aae_stream.utils import PointCloudDatasetInMemory
-
-
-import MDAnalysis as mda
 
 pool = Pool(39)
 
@@ -64,7 +54,7 @@ def clear_gpu():
 
 
 def build_model(cfg: OutlierDetectionConfig, model_path: str):
-    if(cfg.model == "cvae"):
+    if cfg.model == "cvae":
         cvae = CVAE(
             image_size=cfg.final_shape,
             channels=cfg.final_shape[-1],
@@ -79,13 +69,12 @@ def build_model(cfg: OutlierDetectionConfig, model_path: str):
         )
         cvae.load(model_path)
         return cvae, None
-    elif(cfg.model == "aae"):
+    elif cfg.model == "aae":
         device = torch.device("cuda")
         print("device = ", device)
-        # device = torch.device("cpu")
         try:
             print(cfg.aae)
-        except:
+        except:  # noqa TODO: flake8 - should not have a bar except
             cfg.aae = AAE3d(
                 cfg.num_points,
                 cfg.num_features,
@@ -104,9 +93,10 @@ def build_model(cfg: OutlierDetectionConfig, model_path: str):
         print(subprocess.getstatusoutput("nvidia-smi")[1])
         print(subprocess.getstatusoutput("free -h")[1])
         print(subprocess.getstatusoutput("top -b -n1 -U yakushin")[1])
-        print("model_path=",model_path); sys.stdout.flush()
-        if(os.path.exists(str(model_path))):
-            checkpoint = torch.load(model_path, map_location='cpu')
+        print("model_path=", model_path)
+        sys.stdout.flush()
+        if os.path.exists(str(model_path)):
+            checkpoint = torch.load(model_path, map_location="cpu")
             cfg.aae.load_state_dict(checkpoint["model_state_dict"])
         cfg.aae = cfg.aae.to(device)
         cfg.aae.eval()
@@ -114,6 +104,7 @@ def build_model(cfg: OutlierDetectionConfig, model_path: str):
         torch.cuda.empty_cache()
 
     return cfg.aae, device
+
 
 def wait_for_model(cfg: OutlierDetectionConfig) -> str:
     """Wait for the trained model to be published by machine learning pipeline.
@@ -190,108 +181,50 @@ def predict(
         The latent space representation of the input.
     """
 
-    if(cfg.model == "cvae"):
+    if cfg.model == "cvae":
         input = np.expand_dims(agg_input["contact_map"], axis=-1)
         cfg.initial_shape = input.shape[1:3]
         cfg.final_shape = list(input.shape[1:3]) + list(np.array([1]))
-    elif(cfg.model == "aae"):
+    elif cfg.model == "aae":
         input = np.transpose(agg_input["point_cloud"], [0, 2, 1])
 
     print(f"input.shape = {input.shape}")
     sys.stdout.flush()
 
-    if(cfg.model == "cvae"):
-        cvae,_ = build_model(cfg, model_path)
+    if cfg.model == "cvae":
+        cvae, _ = build_model(cfg, model_path)
         cm_predict = cvae.return_embeddings(input, batch_size)
         del cvae
         clear_gpu()
         return cm_predict
-    elif(cfg.model == "aae"):
-        _,device = build_model(cfg, model_path)
+    elif cfg.model == "aae":
+        _, device = build_model(cfg, model_path)
 
         p_list = []
 
         batch_size = 10
-        n = len(input)//batch_size
+        n = len(input) // batch_size
         print("n = ", n)
         for i in range(n):
-            start = i*batch_size
-            end = (i+1)*batch_size
-            
+            start = i * batch_size
+            end = (i + 1) * batch_size
+
             print("start = ", start, ", end = ", end)
 
             with torch.no_grad():
-                p_list.append(cfg.aae.encode(torch.from_numpy(input[start:end]).to(device)).detach().cpu().numpy())
+                p_list.append(
+                    cfg.aae.encode(torch.from_numpy(input[start:end]).to(device))
+                    .detach()
+                    .cpu()
+                    .numpy()
+                )
 
         prediction = np.concatenate(p_list)
 
-        #del aae
+        # del aae
         torch.cuda.empty_cache()
 
         return prediction
-
-
-        '''
-
-
-        pc_predict = aae.encode(torch.from_numpy(input).to(device))
-        # del aae
-        # clear_gpu()
-
-        
-        # print("type(pc_predict) = ", type(pc_predict))
-        # print("dir(pc_predict) = ", dir(pc_predict))
-
-        z = pc_predict.cpu()
-
-        # print("type(pc_predict) = ", type(pc_predict))
-        # print("dir(pc_predict) = ", dir(pc_predict))
-
-        z1 = z.detach()
-        z2 = z1.numpy()
-
-        # print("type(pc_predict) = ", type(pc_predict))
-        # print("dir(pc_predict) = ", dir(pc_predict))
-        # print("pc_predict.shape = ", pc_predict.shape)
-        # sys.stdout.flush()
-
-        # del aae
-        # del pc_predict
-        # clear_gpu()
-
-        return z2 #pc_predict
-        '''
-
-
-'''
-    scalars = defaultdict(list)
-    latent_vectors = []
-    avg_ae_loss = 0.0
-    for batch in valid_loader:
-        x = batch["X"].to(device)
-        z = model.encode(x)
-        recon_x = model.decode(z)
-        avg_ae_loss += model.recon_loss(x, recon_x).item()
-
-        # Collect latent vectors for visualization                                                                                                                                                                                                                                        
-        latent_vectors.append(z.cpu().numpy())
-        for name in cfg.scalar_dset_names:
-            scalars[name].append(batch[name].cpu().numpy())
-
-    avg_ae_loss /= len(valid_loader)
-    latent_vectors = np.concatenate(latent_vectors)
-    scalars = {name: np.concatenate(scalar) for name, scalar in scalars.items()}
-
-    return avg_ae_loss, latent_vectors, scalars
-
-
-
-'''
-
-
-
-
-
 
 
 def outliers_from_latent(
@@ -320,7 +253,7 @@ def outliers_from_latent(
     db_label = db.labels_.to_array()
     print("unique labels = ", np.unique(db_label))
     outlier_list = np.where(db_label == -1)
-    #clear_gpu()
+    # clear_gpu()
     return outlier_list
 
 
@@ -391,10 +324,20 @@ def write_pdb_frame(
     output_pdb_fn : str
         Where to write an outlier.
     """
-    print("In write_pdb_frame, original_pdb = ", original_pdb, ", output_pdb_fn = ", output_pdb_fn, ", ligand = ", ligand, ", frame.shape = ", frame.shape)
+    print(
+        "In write_pdb_frame, original_pdb = ",
+        original_pdb,
+        ", output_pdb_fn = ",
+        output_pdb_fn,
+        ", ligand = ",
+        ligand,
+        ", frame.shape = ",
+        frame.shape,
+    )
     sys.stdout.flush()
 
-    '''
+    """
+    import MDAnalysis as mda
     with Timer("universe"):
         mda_u = mda.Universe(str(original_pdb))
     print(np.max(frame, axis=0) - np.min(frame, axis=0)); sys.stdout.flush()
@@ -402,8 +345,9 @@ def write_pdb_frame(
 
     with Timer("write_pdb"):
         mda_u.atoms.write(str(output_pdb_fn))
-    '''
+    """
     np.save(str(output_pdb_fn), frame)
+
 
 def write_pdb_frame_2(
     frame: np.ndarray, original_pdb: Path, output_pdb_fn: str, ligand: int
@@ -456,7 +400,6 @@ def write_pdb_frame_2(
 
     sys.stdout.flush()
     sys.stderr.flush()
-
 
 
 def check_output(dir):
@@ -551,20 +494,9 @@ def publish(tmp_dir: Path, published_dir: Path):
     dbfn = f"{published_dir}/OutlierDB.pickle"
     subprocess.getstatusoutput(f"touch {dbfn}")
 
-    #mylock = LockFile(dbfn)
-
-    #mylock.acquire()
-    '''
-    print(
-        subprocess.getstatusoutput(
-            f"rm -rf {published_dir}/*.pickle {published_dir}/*.pdb {published_dir}/*.npy"
-        )
-    )
-    '''
     print(subprocess.getstatusoutput(f"mv {tmp_dir}/*.npy {published_dir}/"))
     print(subprocess.getstatusoutput(f"mv {tmp_dir}/*.txt {published_dir}/"))
     print(subprocess.getstatusoutput(f"mv {tmp_dir}/*.pickle {published_dir}/"))
-    #mylock.release()
 
 
 def top_outliers(
@@ -666,9 +598,9 @@ def top_lof(
 ) -> Dict[str, Union[np.ndarray, str, int, float]]:
 
     outlier_list = list(outlier_list[0])
-    if(cfg.model == "cvae"):
+    if cfg.model == "cvae":
         projections = cm_predict[outlier_list]
-    elif(cfg.model == "aae"):
+    elif cfg.model == "aae":
         print("cm_predict.shape = ", cm_predict.shape)
         print("len(outlier_list) = ", len(outlier_list))
         print("outlier_list = ", outlier_list)
@@ -679,9 +611,9 @@ def top_lof(
         except Exception as e:
             print("projection exception")
             print(e)
-            outlier_list = list(filter(lambda x: x < len(cm_predict), outlier_list)) 
+            outlier_list = list(filter(lambda x: x < len(cm_predict), outlier_list))
             projections = cm_predict[outlier_list]
-        '''
+        """
         print("type(projections)=", type(projections))
         print("dir(projections)=", dir(projections))
         print("projections=", projections)
@@ -689,7 +621,7 @@ def top_lof(
         print("type(projections) = ", type(projections))
         projections = projections.detach().numpy()
         print("type(projections) = ", type(projections))
-        '''
+        """
 
     lof_scores = run_lof(projections)
     print("lof_scores = ", lof_scores)
@@ -785,17 +717,20 @@ def main(cfg: OutlierDetectionConfig):
         adios_files_list = list(map(lambda x: x.replace(".sst", ""), adios_files_list))
 
     variable_list = [
-        #StreamContactMapVariable("contact_map", np.uint8, DataStructure.array),
+        # StreamContactMapVariable("contact_map", np.uint8, DataStructure.array),
         StreamVariable("positions", np.float32, DataStructure.array),
         StreamVariable("md5", str, DataStructure.string),
         StreamVariable("velocities", np.float32, DataStructure.array),
     ]
 
-    if(cfg.model == "cvae"):
-        variable_list.append(StreamContactMapVariable("contact_map", np.uint8, DataStructure.array))
-    elif(cfg.model == "aae"):
-        variable_list.append(StreamVariable("point_cloud", np.float32, DataStructure.array))
-
+    if cfg.model == "cvae":
+        variable_list.append(
+            StreamContactMapVariable("contact_map", np.uint8, DataStructure.array)
+        )
+    elif cfg.model == "aae":
+        variable_list.append(
+            StreamVariable("point_cloud", np.float32, DataStructure.array)
+        )
 
     if cfg.compute_rmsd:
         variable_list.append(
@@ -818,7 +753,7 @@ def main(cfg: OutlierDetectionConfig):
         while True:
             try:
                 agg_input = mystreams.next()
-            except:
+            except:  # noqa TODO: flake8 - should not have a bar except
                 print("Sleeping for input")
                 time.sleep(60)
                 continue
@@ -890,7 +825,7 @@ def main(cfg: OutlierDetectionConfig):
         with Timer("outlier_publish"):
             publish(tmp_dir, published_dir)
 
-        time.sleep(random.randint(250,350))
+        time.sleep(random.randint(250, 350))
 
         with Timer("outlier_read"):
             agg_input = mystreams.next()
@@ -898,7 +833,8 @@ def main(cfg: OutlierDetectionConfig):
         timer("outlier_search_iteration", -1)
 
 
-def read_lastN(
+# TODO: flake8 says this function is too complex. Needs refactor.
+def read_lastN(  # noqa
     adios_files_list: List[str], lastN: int
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Read :obj:`lastN` steps from each aggregated file. Used by :obj:`project()`
@@ -916,10 +852,10 @@ def read_lastN(
         :obj:`lastN` contact maps from each aggregated file and
         :obj:`lastN` corresponding rmsds.
     """
-    
-    if(cfg.model == "cvae"):
+
+    if cfg.model == "cvae":
         vars = ["contact_map"]
-    elif(cfg.model == "aae"):
+    elif cfg.model == "aae":
         vars = ["point_cloud"]
 
     if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
@@ -995,15 +931,14 @@ def read_lastN(
     if not variable_lists:
         return {}
 
-
     if cfg.compute_rmsd:
         print(variable_lists["rmsd"].shape)
     sys.stdout.flush()
 
-    if(cfg.model == "cvae"):
+    if cfg.model == "cvae":
         result = {"contact_map": variable_lists["contact_map"]}
         print(variable_lists["contact_map"].shape)
-    elif(cfg.model == "aae"):
+    elif cfg.model == "aae":
         result = {"point_cloud": variable_lists["point_cloud"]}
         print(variable_lists["point_cloud"].shape)
 
@@ -1036,12 +971,12 @@ def project_mini(cfg: OutlierDetectionConfig, trajectory: str):
 
     if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
         zcentroid = agg_input["zcentroid"]
-        with open(output_path / f"zcentroid.npy", "wb") as f:
+        with open(output_path / "zcentroid.npy", "wb") as f:
             np.save(f, zcentroid)
 
     if cfg.compute_rmsd:
         rmsds = agg_input["rmsds"]
-        with open(output_path / f"rmsd.npy", "wb") as f:
+        with open(output_path / "rmsd.npy", "wb") as f:
             np.save(f, rmsds)
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
@@ -1051,27 +986,15 @@ def project_mini(cfg: OutlierDetectionConfig, trajectory: str):
             print(f"ligand[{j}] = {ligand[j]}")
             if ligand[j] == -1:
                 ligand[j] = int(sim[j])
-            with open(output_path / f"ligand.npy", "wb") as f:
+            with open(output_path / "ligand.npy", "wb") as f:
                 np.save(f, ligand)
 
     with Timer("project_predict"):
         embeddings = predict(cfg, model_path, agg_input, batch_size=64)
-        #print(dir(embeddings))
 
-    '''    
-    if(cfg.model == "aae"):
-        z = embeddings.cpu()
-        z1 = z.detach()
-        z2 = z1.numpy()
-        embeddings = embeddings.cpu().detach().numpy()
-        #print(embeddings)
-        #print(dir(embeddings))
-    '''
-
-    #sys.exit(0)
-
-    with open(output_path / f"embeddings_model.npy", "wb") as f:
+    with open(output_path / "embeddings_model.npy", "wb") as f:
         np.save(f, embeddings)
+
 
 """
 

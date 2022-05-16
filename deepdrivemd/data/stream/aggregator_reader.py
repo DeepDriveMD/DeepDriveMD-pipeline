@@ -1,9 +1,10 @@
+# from deepdrivemd.utils import t1Dto2D
+from pathlib import Path
+from typing import Dict, List, Union
+
 import adios2
 import numpy as np
 
-# from deepdrivemd.utils import t1Dto2D
-from pathlib import Path
-from typing import List, Dict, Union
 from deepdrivemd.data.stream.adios_utils import AdiosStreamStepRW
 from deepdrivemd.data.stream.enumerations import DataStructure
 
@@ -256,15 +257,17 @@ class Streams:
             cache = getattr(self, cname)
 
             for k in cache:
-                print("k=",k)
+                print("k=", k)
                 print("v=", cache[k])
                 print("len(v)=", len(cache[k]))
 
             values = list(cache.values())
             print("before filter: len(values) = ", len(values))
             values = list(filter(lambda x: len(x) > 0, values))
-            print("after filter: len(values) = ", len(values))            
-            import sys; sys.stdout.flush()
+            print("after filter: len(values) = ", len(values))
+            import sys
+
+            sys.stdout.flush()
             output[v] = np.concatenate(values)
 
         return output
