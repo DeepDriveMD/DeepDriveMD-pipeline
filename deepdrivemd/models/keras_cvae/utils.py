@@ -1,19 +1,43 @@
-from pathlib import Path
-from typing import Tuple, Union
-import numpy as np
-import h5py
-from scipy.sparse import coo_matrix
+from typing import TYPE_CHECKING, Tuple, Union
 
-PathLike = Union[str, Path]
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
+import h5py  # type: ignore[import]
+import numpy as np
+from scipy.sparse import coo_matrix  # type: ignore[import]
+
+from deepdrivemd.utils import PathLike
 
 
 def sparse_to_dense(
     h5_file: PathLike,
     dataset_name: str,
-    initial_shape: Tuple[int, ...],
-    final_shape: Tuple[int, ...],
-):
-    """Convert sparse COO formatted contact maps to dense."""
+    initial_shape: Tuple[int, int],
+    final_shape: Union[Tuple[int, int, int], Tuple[int, int]],
+) -> "npt.ArrayLike":
+    """Convert sparse COO formatted contact maps to dense.
+
+    Parameters
+    ----------
+    h5_file : PathLike
+        The HDF5 file containing contact maps.
+    dataset_name : str
+        The dataset name containing the contact map indices.
+    initial_shape : Tuple[int, int]
+        The shape of the contact map saved in the HDF5 file.
+    final_shape : Union[Tuple[int, int, int], Tuple[int, int]]
+        The final shape of the contact map incase adding an extra
+        dimension is necessary e.g. (D, D, 1) where D is the number
+        of residues or the cropping shape.
+
+    Returns
+    -------
+    npt.ArrayLike
+        The output array of contact maps of shape (N, D, D) or
+        (N, D, D, 1) depending on :obj:`final_shape` where N is
+        the number of contact maps in the HDF5 file.
+    """
     contact_maps = []
     with h5py.File(h5_file, "r", libver="latest", swmr=False) as f:
         for raw_indices in f[dataset_name]:

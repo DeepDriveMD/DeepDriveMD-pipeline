@@ -1,29 +1,30 @@
-import os
-import json
 import argparse
+import json
+import os
 from pathlib import Path
-from typing import Optional, Tuple, List
-import wandb
-from deepdrivemd.models.aae.config import AAEModelConfig
-from deepdrivemd.data.api import DeepDriveMD_API
-from deepdrivemd.data.utils import get_virtual_h5_file
-from deepdrivemd.selection.latest.select_model import get_model_path
+from typing import List, Optional, Tuple
 
 # torch stuff
-import torch
-import torch.distributed as dist
-from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.utils.data import DataLoader, Subset
-
-# molecules stuff
-from molecules.ml.hyperparams import OptimizerHyperparams
-from molecules.ml.callbacks import (
-    LossCallback,
+import torch  # type: ignore[import]
+import torch.distributed as dist  # type: ignore[import]
+import wandb  # type: ignore[import]
+from molecules.ml.callbacks import (  # type: ignore[import]
     CheckpointCallback,
+    LossCallback,
     SaveEmbeddingsCallback,
     TSNEPlotCallback,
 )
-from molecules.ml.unsupervised.point_autoencoder import AAE3d, AAE3dHyperparams
+
+# molecules stuff
+from molecules.ml.hyperparams import OptimizerHyperparams  # type: ignore[import]
+from molecules.ml.unsupervised.point_autoencoder import AAE3d, AAE3dHyperparams  # type: ignore[import]
+from torch.nn.parallel import DistributedDataParallel as DDP  # type: ignore[import]
+from torch.utils.data import DataLoader, Subset  # type: ignore[import]
+
+from deepdrivemd.data.api import DeepDriveMD_API
+from deepdrivemd.data.utils import get_virtual_h5_file
+from deepdrivemd.models.aae.config import AAEModelConfig
+from deepdrivemd.selection.latest.select_model import get_model_path
 
 
 def setup_wandb(
@@ -70,14 +71,14 @@ def get_init_weights(cfg: AAEModelConfig) -> Optional[str]:
 
         if cfg.stage_idx == 0:
             # Case for first iteration with no pretrained weights
-            return
+            return None
 
         token = get_model_path(
             stage_idx=cfg.stage_idx - 1, experiment_dir=cfg.experiment_directory
         )
         if token is None:
             # Case for no pretrained weights
-            return
+            return None
         else:
             # Case where model selection has run before
             _, init_weights = token
@@ -105,7 +106,7 @@ def get_dataset(
 
     if dataset_location == "storage":
         # Load training and validation data
-        from molecules.ml.datasets import PointCloudDataset
+        from molecules.ml.datasets import PointCloudDataset  # type: ignore[import]
 
         dataset = PointCloudDataset(
             input_path.as_posix(),
@@ -155,7 +156,7 @@ def main(
     generator_gpu: int,
     discriminator_gpu: int,
     distributed: bool,
-):
+) -> None:
 
     # Do some scaffolding for DDP
     comm_rank = 0
@@ -163,7 +164,7 @@ def main(
     comm = None
     if distributed and dist.is_available():
 
-        import mpi4py
+        import mpi4py  # type: ignore[import]
 
         mpi4py.rc.initialize = False
         from mpi4py import MPI  # noqa: E402
@@ -217,11 +218,11 @@ def main(
             json.dump(h5_files, f)
 
     else:
-        init_weights, h5_file = None, None
+        init_weights, h5_file = None, None  # type: ignore[assignment]
 
     if comm_size > 1:
-        init_weights = comm.bcast(init_weights, 0)
-        h5_file = comm.bcast(h5_file, 0)
+        init_weights = comm.bcast(init_weights, 0)  # type: ignore[union-attr]
+        h5_file = comm.bcast(h5_file, 0)  # type: ignore[union-attr]
 
     # construct model
     aae = AAE3d(

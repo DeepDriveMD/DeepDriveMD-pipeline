@@ -1,14 +1,16 @@
 import shutil
 from pathlib import Path
 from typing import Optional
-import simtk.unit as u
-import simtk.openmm as omm
-import simtk.openmm.app as app
-from mdtools.openmm.sim import configure_simulation
-from mdtools.openmm.reporter import OfflineReporter
-from deepdrivemd.utils import Timer, parse_args
+
+import simtk.openmm as omm  # type: ignore[import]
+import simtk.openmm.app as app  # type: ignore[import]
+import simtk.unit as u  # type: ignore[import]
+from mdtools.openmm.reporter import OfflineReporter  # type: ignore[import]
+from mdtools.openmm.sim import configure_simulation  # type: ignore[import]
+
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.sim.openmm.config import OpenMMConfig
+from deepdrivemd.utils import Timer, parse_args
 
 
 class SimulationContext:
@@ -17,6 +19,7 @@ class SimulationContext:
         self.cfg = cfg
         self.api = DeepDriveMD_API(cfg.experiment_directory)
         self._prefix = self.api.molecular_dynamics_stage.unique_name(cfg.output_path)
+        self._top_file: Optional[Path] = None
 
         # Use node local storage if available. Otherwise, write to output directory.
         if cfg.node_local_path is not None:
@@ -58,7 +61,7 @@ class SimulationContext:
             return None
         return self.cfg.reference_pdb_file.as_posix()
 
-    def _init_workdir(self):
+    def _init_workdir(self) -> None:
         """Setup workdir and copy PDB/TOP files."""
 
         self.workdir.mkdir(exist_ok=True)
@@ -105,7 +108,7 @@ class SimulationContext:
         local_top_file = shutil.copy(top_file, self.workdir.joinpath(top_file.name))
         return Path(local_top_file)
 
-    def move_results(self):
+    def move_results(self) -> None:
         if self.workdir != self.cfg.output_path:
             for p in self.workdir.iterdir():
                 shutil.move(str(p), str(self.cfg.output_path.joinpath(p.name)))
@@ -117,7 +120,7 @@ def configure_reporters(
     cfg: OpenMMConfig,
     report_steps: int,
     frames_per_h5: int,
-):
+) -> None:
     # Configure DCD file reporter
     sim.reporters.append(app.DCDReporter(ctx.traj_file, report_steps))
 
@@ -153,7 +156,7 @@ def configure_reporters(
     )
 
 
-def run_simulation(cfg: OpenMMConfig):
+def run_simulation(cfg: OpenMMConfig) -> None:
 
     # openmm typed variables
     dt_ps = cfg.dt_ps * u.picoseconds

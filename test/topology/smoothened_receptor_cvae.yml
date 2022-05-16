@@ -1,14 +1,14 @@
-title: BBA integration test
+title: Smoothened Receptor
 resource: llnl.lassen
-queue: pdebug
+queue: pbatch
 schema_: local
 project: cv19-a01
-walltime_min: 30
-max_iteration: 3
+walltime_min: 720
+max_iteration: 20
 cpus_per_node: 40
 gpus_per_node: 4
 hardware_threads_per_cpu: 4
-experiment_directory: /p/gpfs1/brace3/runs/ddmd_test_experiments/bba-keras-dbscan-run-0
+experiment_directory: /p/gpfs1/brace3/runs/ddmd_production_runs/smoothened_receptor_ddmd_run-0
 node_local_path: /tmp
 molecular_dynamics_stage:
     pre_exec:
@@ -29,7 +29,7 @@ molecular_dynamics_stage:
         process_type: null
         threads_per_process: 1
         thread_type: CUDA
-    num_tasks: 12
+    num_tasks: 120
     task_config:
         experiment_directory: set_by_deepdrivemd
         stage_idx: 0
@@ -37,16 +37,16 @@ molecular_dynamics_stage:
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
         pdb_file: set_by_deepdrivemd
-        initial_pdb_dir: /p/gpfs1/brace3/data/bba/ddmd_input
-        solvent_type: implicit
-        top_suffix: null
-        simulation_length_ns: 1.0
-        report_interval_ps: 1.0
+        initial_pdb_dir: /p/gpfs1/brace3/data/smoothened_receptor/
+        solvent_type: explicit
+        top_suffix: .top
+        simulation_length_ns: 2.0
+        report_interval_ps: 10.0
         dt_ps: 0.002
-        temperature_kelvin: 310.0
+        temperature_kelvin: 300.0
         heat_bath_friction_coef: 1.0
         wrap: false
-        reference_pdb_file: /p/gpfs1/brace3/data/bba/ddmd_input/1FME-folded.pdb
+        reference_pdb_file: /p/gpfs1/brace3/data/smoothened_receptor/system/comp.pdb
         openmm_selection:
         - CA
         mda_selection: protein and name CA
@@ -111,51 +111,51 @@ machine_learning_stage:
         node_local_path: set_by_deepdrivemd
         model_tag: set_by_deepdrivemd
         init_weights_path: null
-        last_n_h5_files: 12
-        k_random_old_h5_files: 12
+        last_n_h5_files: 120
+        k_random_old_h5_files: 120
         dataset_name: contact_map
         initial_shape:
-        - 28
-        - 28
+        - 459
+        - 459
         final_shape:
-        - 28
-        - 28
+        - 448
+        - 448
         - 1
-        initial_epochs: 5
-        epochs: 5
+        initial_epochs: 50
+        epochs: 50
         batch_size: 32
         split_pct: 0.8
         shuffle: true
         latent_dim: 10
         conv_layers: 4
-        conv_filters:
-        - 64
-        - 64
-        - 64
-        - 64
         conv_filter_shapes:
-        -   - 3
+          - - 5
+            - 5
+          - - 3
             - 3
-        -   - 3
+          - - 3
             - 3
-        -   - 3
+          - - 3
             - 3
-        -   - 3
-            - 3
+        conv_filters:
+          - 32
+          - 64
+          - 64
+          - 64
         conv_strides:
-        -   - 1
-            - 1
-        -   - 2
+          - - 2
             - 2
-        -   - 1
-            - 1
-        -   - 1
-            - 1
+          - - 2
+            - 2
+          - - 2
+            - 2
+          - - 2
+            - 2
         dense_layers: 1
         dense_neurons:
-        - 128
+          - 128
         dense_dropouts:
-        - 0.25
+          - 0.4
 model_selection_stage:
     pre_exec:
     - . /etc/profile.d/conda.sh
@@ -213,13 +213,13 @@ agent_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
-        num_intrinsic_outliers: 100
-        num_extrinsic_outliers: 12
-        intrinsic_score: dbscan
-        extrinsic_score: rmsd
-        n_traj_frames: 1000
-        n_most_recent_h5_files: 12
-        k_random_old_h5_files: 12
+        num_intrinsic_outliers: 120
+        num_extrinsic_outliers: 120
+        intrinsic_score: dbscan_lof_outlier
+        extrinsic_score: null
+        n_traj_frames: 200
+        n_most_recent_h5_files: 120
+        k_random_old_h5_files: 120
         sklearn_num_jobs: -1
         model_type: "keras_cvae"
-        inference_batch_size: 1024
+        inference_batch_size: 64
