@@ -15,11 +15,6 @@ from deepdrivemd.models.keras_cvae.model import CVAE
 from deepdrivemd.models.keras_cvae_stream.config import KerasCVAEModelConfig
 from deepdrivemd.utils import Timer, parse_args, timer
 
-# import torch
-# torch.manual_seed(44)
-# torch.set_num_threads(4)
-# device = torch.device("cuda:0")
-
 
 def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
     """Wait for the expected number of sufficiently large agg.bp files to be produced.
