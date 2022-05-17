@@ -5,6 +5,7 @@
 mypy==0.910
 black
 flake8
+pylint
 pytest
 isort
 pre-commit

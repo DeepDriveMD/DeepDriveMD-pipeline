@@ -20,6 +20,7 @@ format:
 lint:
 	$(black) --check --diff
 	flake8 deepdrivemd/ test/
+	pylint deepdrivemd/ test/
 	pydocstyle deepdrivemd/
 
 .PHONY: mypy
