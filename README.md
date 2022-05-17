@@ -128,7 +128,7 @@ comp.pdb comp.top
 ```
 Where the topology files are optional and only used when `molecular_dynamics_stage.task_config.solvent_type` is "explicit". Only one system directory is needed but an arbitrary number are supported. Also note that the system directory names are arbitrary. The path to the `data` directory should be passed into the config via `molecular_dynamics_stage.initial_pdb_dir`.
 
-# DeepDriveMD-S (Streaming asyncronous execution with ADIOS)
+# DeepDriveMD-S (Streaming asynchronous execution with ADIOS)
 
 The streaming version of DeepDriveMD uses the adios2 package.
 
