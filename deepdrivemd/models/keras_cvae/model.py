@@ -3,17 +3,18 @@ Convolutional variational autoencoder in Keras
 Reference: "Auto-Encoding Variational Bayes" (https://arxiv.org/abs/1312.6114)
 """
 
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Tuple
 
 if TYPE_CHECKING:
     import numpy.typing as npt
 
 import numpy as np
-import pandas as pd  # type: ignore[import]
-import tensorflow.keras.backend as K  # type: ignore[import]
-import tensorflow.keras.losses as objectives  # type: ignore[import]
-from tensorflow.keras.callbacks import Callback  # type: ignore[import]
-from tensorflow.keras.layers import (  # type: ignore[import]
+import pandas as pd
+import tensorflow as tf
+import tensorflow.keras.backend as K
+import tensorflow.keras.losses as objectives
+from tensorflow.keras.callbacks import Callback, EarlyStopping, ModelCheckpoint
+from tensorflow.keras.layers import (
     Conv2DTranspose,
     Convolution2D,
     Dense,
@@ -23,11 +24,13 @@ from tensorflow.keras.layers import (  # type: ignore[import]
     Lambda,
     Reshape,
 )
-from tensorflow.keras.models import Model  # type: ignore[import]
-from tensorflow.keras.optimizers import RMSprop  # type: ignore[import]
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import RMSprop
 
 from deepdrivemd.utils import PathLike
 
+tf.config.experimental.set_lms_enabled(True)
+print("lms_enabled was executed")
 
 # save history from log
 class LossHistory(Callback):  # type: ignore[misc]
@@ -45,22 +48,8 @@ class LossHistory(Callback):  # type: ignore[misc]
         df.to_csv(path, index_label="epoch")
 
 
-class conv_variational_autoencoder(object):
-    """Implements a convolutional variational autoencoder in Keras.
-
-    Methods
-    -------
-    train(data, batch_size, epochs=1, checkpoint=False, filepath=None)
-        Train network on the given data.
-    save(filepath)
-        Save the model weights to a file.
-    load(filepath)
-        Load model weights from a file.
-    return_embeddings(data)
-        Return the embeddings for given data.
-    generate(embedding)
-        Return a generated output given a latent embedding.
-    """
+class CVAE(object):
+    """Convolutional variational autoencoder class."""
 
     def __init__(  # noqa
         self,
@@ -124,9 +113,7 @@ class conv_variational_autoencoder(object):
 
         self.history = LossHistory()
 
-        # tensorflow.config.experimental_run_functions_eagerly(False)
-
-        # check that arguments are proper length
+        # check that arguments are proper length;
         if len(filter_shapes) != conv_layers:
             raise Exception(
                 "number of convolutional layers must equal length of filter_shapes list"
@@ -278,7 +265,7 @@ class conv_variational_autoencoder(object):
                 axis=None,
             )
         )
-        self.model.compile(optimizer=self.optimizer, loss=self._vae_loss1)
+        self.model.compile(optimizer=self.optimizer, loss=self._vae_loss)
         # self.model.compile(optimizer=self.optimizer)
         # self.model.compile(optimizer=self.optimizer, loss=objectives.MeanSquaredError())
         self.model.summary()
@@ -316,23 +303,7 @@ class conv_variational_autoencoder(object):
         sample: "npt.ArrayLike" = z_mean + K.exp(z_log_var) * epsilon
         return sample
 
-    def _vae_loss1(
-        self, input: "npt.ArrayLike", output: "npt.ArrayLike"
-    ) -> "npt.ArrayLike":
-        """Compute reconstruction loss.
-
-        Parameters
-        ----------
-        input : npt.ArrayLike
-            The input data.
-        output : npt.ArrayLike
-            The reconstructed data.
-
-        Returns
-        -------
-        npt.ArrayLike
-            The reconstruction loss.
-        """
+    def _vae_loss(self, input, output):
         input_flat = K.flatten(input)
         output_flat = K.flatten(output)
         xent_loss: "npt.ArrayLike" = (
@@ -344,14 +315,17 @@ class conv_variational_autoencoder(object):
 
     def train(
         self,
-        data: "npt.ArrayLike",
-        batch_size: int,
-        epochs: int = 1,
-        validation_data: Optional["npt.ArrayLike"] = None,
-        checkpoint: bool = False,
-        filepath: Optional[str] = None,
-    ) -> None:
-        """Train network on given data.
+        data,
+        batch_size,
+        epochs=1,
+        validation_data=None,
+        checkpoint_path=None,
+        file_path=None,
+        use_model_checkpoint=False,
+        **kwargs,
+    ):
+        """
+        train network on given data
 
         Parameters
         ----------
@@ -373,10 +347,42 @@ class conv_variational_autoencoder(object):
         Exception
             If :obj:`checkpoint` is :obj:`True` but :obj:`filename` is :obj:`None`.
         """
-        if checkpoint and filepath is None:
-            raise Exception("Please enter a path to save the network")
+        # if checkpoint and filepath is None:
+        #    raise Exception("Please enter a path to save the network")
         # tensorflow.config.experimental_run_functions_eagerly(False)
 
+        callbacks = [self.history]
+        if use_model_checkpoint:
+            callbacks.append(
+                ModelCheckpoint(
+                    f"{checkpoint_path}/best.h5",
+                    monitor="val_loss",
+                    save_best_only=True,
+                    verbose=1,
+                )
+            )
+            callbacks.append(
+                EarlyStopping(
+                    monitor="val_loss",
+                    patience=20,
+                    verbose=1,
+                    mode="min",
+                    restore_best_weights=True,
+                )
+            )
+
+        data_D = (
+            tf.data.Dataset.from_tensor_slices((data, data))
+            .batch(batch_size)
+            .prefetch(1)
+        )
+        validation_data_D = (
+            tf.data.Dataset.from_tensor_slices((validation_data, validation_data))
+            .batch(batch_size)
+            .prefetch(1)
+        )
+
+        """
         self.model.fit(
             data,
             data,
@@ -384,12 +390,18 @@ class conv_variational_autoencoder(object):
             epochs=epochs,
             shuffle=True,
             validation_data=(validation_data, validation_data),
-            callbacks=[
-                self.history,
-                # ModelCheckpoint(
-                #    "best.h5", monitor="val_loss", save_best_only=True, verbose=1
-                # ),
-            ],
+            callbacks=callbacks,
+            **kwargs,
+        )
+        """
+
+        self.model.fit(
+            data_D,
+            epochs=epochs,
+            shuffle=True,
+            validation_data=validation_data_D,
+            callbacks=callbacks,
+            **kwargs,
         )
 
     def save(self, filepath: str) -> None:

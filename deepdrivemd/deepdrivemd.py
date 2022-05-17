@@ -1,4 +1,3 @@
-import argparse
 import itertools
 import os
 import shutil
@@ -10,6 +9,7 @@ from radical.entk import AppManager, Pipeline, Stage, Task  # type: ignore[impor
 
 from deepdrivemd.config import BaseStageConfig, ExperimentConfig
 from deepdrivemd.data.api import DeepDriveMD_API
+from deepdrivemd.utils import parse_args
 
 
 def generate_task(cfg: BaseStageConfig) -> Task:
@@ -233,15 +233,6 @@ class PipelineManager:
         stage.add_tasks(task)
 
         return stage
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
 
 
 if __name__ == "__main__":

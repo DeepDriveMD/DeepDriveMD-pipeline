@@ -1,4 +1,4 @@
-# Schema of the YAML experiment file
+"""Schema of the YAML experiment file"""
 import json
 from pathlib import Path
 from typing import List, Optional, Type, TypeVar
@@ -105,18 +105,6 @@ class MolecularDynamicsTaskConfig(BaseTaskConfig):
     # Initial data directory passed containing PDBs and optional topologies
     initial_pdb_dir: Path
 
-    @validator("initial_pdb_dir")
-    def initial_pdb_dir_must_exist_with_valid_pdbs(cls, v: Path) -> Path:
-        if not v.exists():
-            raise FileNotFoundError(v.as_posix())
-        if not v.is_absolute():
-            raise ValueError(f"initial_pdb_dir must be an absolute path. Not {v}")
-        if any("__" in p.as_posix() for p in v.glob("*/*.pdb")):
-            raise ValueError(
-                f"Initial PDB files in {v} cannot contain a double underscore __"
-            )
-        return v
-
 
 class MolecularDynamicsStageConfig(BaseStageConfig):
     """Global MD configuration (written one per experiment)."""
@@ -139,6 +127,10 @@ class AggregationStageConfig(BaseStageConfig):
     task_config: AggregationTaskConfig
 
 
+class StreamingAggregationStageConfig(AggregationStageConfig):
+    num_tasks: int = 1
+
+
 class MachineLearningTaskConfig(BaseTaskConfig):
     """Base class for specific model configs to inherit."""
 
@@ -155,6 +147,10 @@ class MachineLearningStageConfig(BaseStageConfig):
     retrain_freq: int = 1
     # Arbitrary task parameters
     task_config: MachineLearningTaskConfig
+
+
+class StreamingMachineLearningStageConfig(MachineLearningStageConfig):
+    num_tasks: int = 1
 
 
 class ModelSelectionTaskConfig(BaseTaskConfig):
@@ -177,6 +173,10 @@ class AgentStageConfig(BaseStageConfig):
 
     # Arbitrary job parameters
     task_config: AgentTaskConfig
+
+
+class StreamingAgentStageConfig(AgentStageConfig):
+    num_tasks: int = 1
 
 
 class ExperimentConfig(BaseSettings):
@@ -207,6 +207,24 @@ class ExperimentConfig(BaseSettings):
         if not v.is_absolute():
             raise ValueError(f"experiment_directory must be an absolute path! Not {v}")
         return v
+
+
+class StreamingExperimentConfig(ExperimentConfig):
+    adios_xml_sim: Path
+    adios_xml_agg: Path
+    adios_xml_agg_4ml: Path
+    adios_xml_file: Path
+    config_directory: Path
+    software_directory: Path
+    init_pdb_file: Path
+    top_file1: Optional[Path]
+    ref_pdb_file: Optional[Path]
+    multi_ligand_table: Optional[Path]
+    model_selection_stage: Optional[ModelSelectionStageConfig]
+    aggregation_stage: StreamingAggregationStageConfig
+    machine_learning_stage: StreamingMachineLearningStageConfig
+    agent_stage: StreamingAgentStageConfig
+    model: str
 
 
 def generate_sample_config() -> ExperimentConfig:

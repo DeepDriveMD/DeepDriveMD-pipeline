@@ -1,4 +1,3 @@
-import argparse
 import json
 import time
 from pathlib import Path
@@ -12,10 +11,10 @@ import numpy as np
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
 from deepdrivemd.models.keras_cvae.config import KerasCVAEModelConfig
-from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
+from deepdrivemd.models.keras_cvae.model import CVAE
 from deepdrivemd.models.keras_cvae.utils import sparse_to_dense
 from deepdrivemd.selection.latest.select_model import get_model_path
-from deepdrivemd.utils import Timer
+from deepdrivemd.utils import Timer, parse_args
 
 
 def get_init_weights(cfg: KerasCVAEModelConfig) -> Optional[str]:
@@ -108,7 +107,7 @@ def main(cfg: KerasCVAEModelConfig) -> None:
         )
 
     with Timer("machine_learning_conv_variational_autoencoder"):
-        cvae = conv_variational_autoencoder(
+        cvae = CVAE(
             image_size=cfg.final_shape[:2],
             channels=cfg.final_shape[-1],
             conv_layers=cfg.conv_layers,
@@ -149,15 +148,6 @@ def main(cfg: KerasCVAEModelConfig) -> None:
 
         # Log loss history
         cvae.history.to_csv(cfg.output_path / "loss.csv")
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
 
 
 if __name__ == "__main__":

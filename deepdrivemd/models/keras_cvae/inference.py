@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     import numpy.typing as npt
 
 from deepdrivemd.models.keras_cvae.config import KerasCVAEModelConfig
-from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
+from deepdrivemd.models.keras_cvae.model import CVAE
 from deepdrivemd.models.keras_cvae.utils import sparse_to_dense
 from deepdrivemd.utils import PathLike
 
@@ -18,7 +18,7 @@ def generate_embeddings(
 
     cfg = KerasCVAEModelConfig.from_yaml(model_cfg_path)
 
-    cvae = conv_variational_autoencoder(
+    cvae = CVAE(
         image_size=cfg.final_shape[:2],
         channels=cfg.final_shape[-1],
         conv_layers=cfg.conv_layers,
