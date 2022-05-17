@@ -20,16 +20,20 @@ aggregation, training, and inference stages in a pipeline where each stage block
 and the stages communicate via the filesystem (**DeepDriveMD-F**).
 
 The second, and more optimal, mode of execution is asynchronous where each of the previously
-mention stages run continously as independent components and communicate using adios2_ to stream
+mention stages run continously as independent components communicating via adios2_ to stream
 data between concurrently running workflow components, enabling efficient feedback between
 simulations and learning algorithms (**DeepDriveMD-S**).
 
 Both modes of execution are implemented using `RADICAL-Ensemble Toolkit`_ to enable support
 for large scale runs on high-performance computing platforms.
 
+Additional information can be found on our website_. 
+
 .. _adios2: https://adios2.readthedocs.io/en/latest/
 
 .. _RADICAL-Ensemble Toolkit: https://radicalentk.readthedocs.io/en/stable/
+
+.. _website: https://deepdrivemd.github.io/
 
 Getting involved
 ================
