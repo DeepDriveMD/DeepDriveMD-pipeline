@@ -1,0 +1,225 @@
+title: Smoothened Receptor
+resource: llnl.lassen
+queue: pbatch
+schema_: local
+project: cv19-a01
+walltime_min: 720
+max_iteration: 20
+cpus_per_node: 40
+gpus_per_node: 4
+hardware_threads_per_cpu: 4
+experiment_directory: /p/gpfs1/brace3/runs/ddmd_production_runs/smoothened_receptor_ddmd_run-0
+node_local_path: /tmp
+molecular_dynamics_stage:
+    pre_exec:
+    - . /etc/profile.d/conda.sh
+    - module load cuda/9.1.85
+    - unset PYTHONPATH
+    - conda activate /p/gpfs1/brace3/envs/conda-openmm
+    executable: /p/gpfs1/brace3/envs/conda-openmm/bin/python
+    arguments:
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/sim/openmm/run_openmm.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 4
+        thread_type: OpenMP
+    gpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: CUDA
+    num_tasks: 120
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        pdb_file: set_by_deepdrivemd
+        initial_pdb_dir: /p/gpfs1/brace3/data/smoothened_receptor/
+        solvent_type: explicit
+        top_suffix: .top
+        simulation_length_ns: 2.0
+        report_interval_ps: 10.0
+        dt_ps: 0.002
+        temperature_kelvin: 300.0
+        heat_bath_friction_coef: 1.0
+        wrap: false
+        reference_pdb_file: /p/gpfs1/brace3/data/smoothened_receptor/system/comp.pdb
+        openmm_selection:
+        - CA
+        mda_selection: protein and name CA
+        threshold: 8.0
+        contact_map: true
+        point_cloud: false
+        fraction_of_contacts: false
+        in_memory: false
+aggregation_stage:
+    pre_exec: []
+    executable: ''
+    arguments: []
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    skip_aggregation: true
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+machine_learning_stage:
+    pre_exec:
+    - . /etc/profile.d/conda.sh
+    - module load gcc/7.3.1
+    - module load cuda/10.1.243
+    - export LANG=en_US.utf-8
+    - export LC_ALL=en_US.utf-8
+    - export HDF5_USE_FILE_LOCKING=FALSE
+    - export IBM_POWERAI_LICENSE_ACCEPT=yes
+    - unset PYTHONPATH
+    - conda activate /p/gpfs1/brace3/envs/conda-keras-powerai
+    - unset CUDA_VISIBLE_DEVICES
+    - export OMP_NUM_THREADS=4
+    executable: /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
+    arguments:
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/models/keras_cvae/train.py
+    cpu_reqs:
+        processes: 1
+        process_type: MPI
+        threads_per_process: 4
+        thread_type: OpenMP
+    gpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: CUDA
+    retrain_freq: 1
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        model_tag: set_by_deepdrivemd
+        init_weights_path: null
+        last_n_h5_files: 120
+        k_random_old_h5_files: 120
+        dataset_name: contact_map
+        initial_shape:
+        - 459
+        - 459
+        final_shape:
+        - 448
+        - 448
+        - 1
+        initial_epochs: 50
+        epochs: 50
+        batch_size: 32
+        split_pct: 0.8
+        shuffle: true
+        latent_dim: 10
+        conv_layers: 4
+        conv_filter_shapes:
+          - - 5
+            - 5
+          - - 3
+            - 3
+          - - 3
+            - 3
+          - - 3
+            - 3
+        conv_filters:
+          - 32
+          - 64
+          - 64
+          - 64
+        conv_strides:
+          - - 2
+            - 2
+          - - 2
+            - 2
+          - - 2
+            - 2
+          - - 2
+            - 2
+        dense_layers: 1
+        dense_neurons:
+          - 128
+        dense_dropouts:
+          - 0.4
+model_selection_stage:
+    pre_exec:
+    - . /etc/profile.d/conda.sh
+    - export IBM_POWERAI_LICENSE_ACCEPT=yes
+    - unset PYTHONPATH
+    - conda activate /p/gpfs1/brace3/envs/conda-keras-powerai
+    executable: /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
+    arguments:
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select_model.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 4
+        thread_type: OpenMP
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        retrain_freq: 1
+        checkpoint_dir: checkpoint
+        checkpoint_suffix: .h5
+agent_stage:
+    pre_exec:
+    - . /etc/profile.d/conda.sh
+    - export IBM_POWERAI_LICENSE_ACCEPT=yes
+    - unset PYTHONPATH
+    - conda activate /p/gpfs1/brace3/envs/conda-keras-powerai
+    - export LANG=en_US.utf-8
+    - export LC_ALL=en_US.utf-8
+    - unset CUDA_VISIBLE_DEVICES
+    - export OMP_NUM_THREADS=4
+    executable: /p/gpfs1/brace3/envs/conda-keras-powerai/bin/python
+    arguments:
+    - /p/gpfs1/brace3/src/DeepDriveMD-pipeline/deepdrivemd/agents/lof/lof.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 12
+        thread_type: OpenMP
+    gpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: CUDA
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        num_intrinsic_outliers: 120
+        num_extrinsic_outliers: 120
+        intrinsic_score: dbscan_lof_outlier
+        extrinsic_score: null
+        n_traj_frames: 200
+        n_most_recent_h5_files: 120
+        k_random_old_h5_files: 120
+        sklearn_num_jobs: -1
+        model_type: "keras_cvae"
+        inference_batch_size: 64

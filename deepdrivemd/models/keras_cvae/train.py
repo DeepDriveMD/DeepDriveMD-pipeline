@@ -1,16 +1,20 @@
-import time
 import json
-import argparse
+import time
 from pathlib import Path
-from typing import Tuple, List, Optional
+from typing import TYPE_CHECKING, List, Optional, Tuple
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
 import numpy as np
-from deepdrivemd.utils import Timer
+
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file
-from deepdrivemd.selection.latest.select_model import get_model_path
 from deepdrivemd.models.keras_cvae.config import KerasCVAEModelConfig
+from deepdrivemd.models.keras_cvae.model import CVAE
 from deepdrivemd.models.keras_cvae.utils import sparse_to_dense
-from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
+from deepdrivemd.selection.latest.select_model import get_model_path
+from deepdrivemd.utils import Timer, parse_args
 
 
 def get_init_weights(cfg: KerasCVAEModelConfig) -> Optional[str]:
@@ -18,14 +22,14 @@ def get_init_weights(cfg: KerasCVAEModelConfig) -> Optional[str]:
 
         if cfg.stage_idx == 0:
             # Case for first iteration with no pretrained weights
-            return
+            return None
 
         token = get_model_path(
             stage_idx=cfg.stage_idx - 1, experiment_dir=cfg.experiment_directory
         )
         if token is None:
             # Case for no pretrained weights
-            return
+            return None
         else:
             # Case where model selection has run before
             _, init_weights = token
@@ -56,12 +60,12 @@ def get_h5_training_file(cfg: KerasCVAEModelConfig) -> Tuple[Path, List[str]]:
 
 def preprocess(
     h5_file: Path,
-    initial_shape: Tuple[int, ...],
-    final_shape: Tuple[int, ...],
+    initial_shape: Tuple[int, int],
+    final_shape: Tuple[int, int, int],
     dataset_name: str = "contact_map",
     split_pct: float = 0.8,
     shuffle: bool = True,
-):
+) -> Tuple["npt.ArrayLike", "npt.ArrayLike"]:
 
     data = sparse_to_dense(h5_file, dataset_name, initial_shape, final_shape)
 
@@ -69,16 +73,16 @@ def preprocess(
         np.random.shuffle(data)
 
     # Split data into train and validation
-    train_val_split = int(split_pct * len(data))
+    train_val_split = int(split_pct * len(data))  # type: ignore[arg-type]
     train_data, valid_data = (
-        data[:train_val_split],
-        data[train_val_split:],
+        data[:train_val_split],  # type: ignore[index]
+        data[train_val_split:],  # type: ignore[index]
     )
 
     return train_data, valid_data
 
 
-def main(cfg: KerasCVAEModelConfig):
+def main(cfg: KerasCVAEModelConfig) -> None:
 
     cfg.output_path.mkdir(exist_ok=True)
 
@@ -103,8 +107,8 @@ def main(cfg: KerasCVAEModelConfig):
         )
 
     with Timer("machine_learning_conv_variational_autoencoder"):
-        cvae = conv_variational_autoencoder(
-            image_size=cfg.final_shape,
+        cvae = CVAE(
+            image_size=cfg.final_shape[:2],
             channels=cfg.final_shape[-1],
             conv_layers=cfg.conv_layers,
             feature_maps=cfg.conv_filters,
@@ -144,15 +148,6 @@ def main(cfg: KerasCVAEModelConfig):
 
         # Log loss history
         cvae.history.to_csv(cfg.output_path / "loss.csv")
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
 
 
 if __name__ == "__main__":

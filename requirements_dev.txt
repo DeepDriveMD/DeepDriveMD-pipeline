@@ -1,5 +1,28 @@
+# Installs the current package from setup.cfg
+-e .
+
+# As well as these dev tools:
+mypy==0.910
 black
 flake8
+pylint
+pytest
+isort
 pre-commit
-sphinx
-sphinx_rtd_theme
+pydocstyle
+twine
+
+# Documentation requirements
+sphinx==4.5.0
+sphinx-rtd-theme==1.0.0
+autodoc-pydantic==1.6.2
+
+# mypy type stubs:
+types-PyYAML
+types-aiofiles 
+types-orjson 
+types-python-dateutil 
+types-redis 
+types-requests 
+types-ujson
+types-jwt

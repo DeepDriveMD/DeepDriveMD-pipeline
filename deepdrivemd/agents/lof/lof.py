@@ -1,19 +1,20 @@
-import json
 import argparse
+import json
 import random
 from pathlib import Path
-from typing import List, Tuple, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-# import torch
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
 import numpy as np
-from sklearn.neighbors import LocalOutlierFactor
-from deepdrivemd.utils import setup_mpi_comm, setup_mpi, bestk, Timer
+from sklearn.neighbors import LocalOutlierFactor  # type: ignore[import]
+
+from deepdrivemd.agents.lof.config import OutlierDetectionConfig
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.data.utils import get_virtual_h5_file, parse_h5
-from deepdrivemd.agents.lof.config import OutlierDetectionConfig
 from deepdrivemd.selection.latest.select_model import get_model_path
-
-PathLike = Union[str, Path]
+from deepdrivemd.utils import PathLike, Timer, bestk, setup_mpi, setup_mpi_comm
 
 
 def get_representation(
@@ -23,8 +24,8 @@ def get_representation(
     h5_file: PathLike,
     inference_batch_size: int = 128,
     gpu_id: int = 0,
-    comm=None,
-) -> np.ndarray:
+    comm: Optional[Any] = None,
+) -> "npt.ArrayLike":
     if model_type == "AAE3d":
         from deepdrivemd.models.aae.inference import generate_embeddings
 
@@ -38,9 +39,9 @@ def get_representation(
             comm,
         )
     elif model_type == "keras_cvae":
-        from deepdrivemd.models.keras_cvae.inference import generate_embeddings
+        from deepdrivemd.models.keras_cvae.inference import generate_embeddings  # type: ignore[no-redef]
 
-        embeddings = generate_embeddings(
+        embeddings = generate_embeddings(  # type: ignore[call-arg]
             model_cfg_path,
             h5_file,
             model_weights_path,
@@ -52,10 +53,10 @@ def get_representation(
     return embeddings
 
 
-def run_dbscan(data: np.ndarray, eps: float = 0.35):
+def run_dbscan(data: "npt.ArrayLike", eps: float = 0.35) -> "npt.ArrayLike":
     # RAPIDS.ai import as needed
-    import cupy as cp
-    from cuml import DBSCAN as DBSCAN
+    import cupy as cp  # type: ignore[import]
+    from cuml import DBSCAN as DBSCAN  # type: ignore[import]
 
     db = DBSCAN(eps=eps, min_samples=10, max_mbytes_per_batch=500).fit(cp.asarray(data))
     outlier_inds = np.flatnonzero(db.labels_.to_array() == -1)
@@ -63,19 +64,21 @@ def run_dbscan(data: np.ndarray, eps: float = 0.35):
 
 
 def dbscan_outlier_search(
-    embeddings: np.ndarray, num_intrinsic_outliers: int
-) -> np.ndarray:
+    embeddings: "npt.ArrayLike", num_intrinsic_outliers: int
+) -> "npt.ArrayLike":
     """Find best eps and return corresponding outlier indices."""
+
+    # TODO: Move these parameters to config
     eps = 1.3
     outlier_min = num_intrinsic_outliers
-    outlier_max = num_intrinsic_outliers + 200
+    outlier_max = num_intrinsic_outliers + 2000
     attempts = 120
 
     for _ in range(attempts):
         n_outlier = 0
         try:
             outliers = run_dbscan(embeddings, eps=eps)
-            n_outlier = len(outliers)
+            n_outlier = len(outliers)  # type: ignore[arg-type]
         except Exception as e:
             print(e, "\nNo outliers found")
 
@@ -90,13 +93,13 @@ def dbscan_outlier_search(
 
 
 def get_intrinsic_score(
-    embeddings: np.ndarray, cfg: OutlierDetectionConfig
-) -> Tuple[np.ndarray, np.ndarray]:
+    embeddings: "npt.ArrayLike", cfg: OutlierDetectionConfig
+) -> Tuple["npt.ArrayLike", "npt.ArrayLike"]:
 
     if cfg.intrinsic_score == "lof":
         # Perform LocalOutlierFactor outlier detection on embeddings
         clf = LocalOutlierFactor(n_jobs=cfg.sklearn_num_jobs)
-        embeddings = np.nan_to_num(embeddings, nan=0.0)
+        embeddings = np.nan_to_num(embeddings, nan=0.0)  # type: ignore[no-untyped-call]
         # Array with 1 if inlier, -1 if outlier
         clf.fit_predict(embeddings)
 
@@ -108,25 +111,42 @@ def get_intrinsic_score(
     elif cfg.intrinsic_score == "dbscan":
         intrinsic_inds = dbscan_outlier_search(embeddings, cfg.num_intrinsic_outliers)
         # DBSCAN does not have an outlier score
-        intrinsic_scores = np.zeros(len(intrinsic_inds))
+        intrinsic_scores = np.zeros(len(intrinsic_inds))  # type: ignore[arg-type]
+    elif cfg.intrinsic_score == "dbscan_lof_outlier":
+        try:
+            intrinsic_inds = dbscan_outlier_search(
+                embeddings, cfg.num_intrinsic_outliers
+            )
+        except ValueError:
+            print("WARNING: Could not find outliers with DBSCAN")
+            # Default to the "lof" intrinsic score if DBSCAN doesn't find outliers
+            intrinsic_inds = np.arange(len(embeddings))  # type: ignore[arg-type]
+        clf = LocalOutlierFactor()
+        clf.fit_predict(embeddings[intrinsic_inds])  # type: ignore[index]
+        intrinsic_scores: "npt.ArrayLike" = clf.negative_outlier_factor_  # type: ignore[no-redef]
+        # Sort the DBSCAN outliers by LOF score.
+        # The smaller the lof_score, the more likely the point is an outlier.
+        sorted_lof_inds = np.argsort(intrinsic_scores)
+        intrinsic_inds = intrinsic_inds[sorted_lof_inds]  # type: ignore[call-overload, index]
+
     else:
         # If no intrinsic_score, simply return all the data
-        intrinsic_inds = np.arange(len(embeddings))
-        intrinsic_scores = np.zeros(len(embeddings))
+        intrinsic_inds = np.arange(len(embeddings))  # type: ignore[arg-type]
+        intrinsic_scores = np.zeros(len(embeddings))  # type: ignore[arg-type]
 
     # Returns n_outlier best outliers sorted from best to worst
     return intrinsic_scores, intrinsic_inds
 
 
 def get_extrinsic_score(
-    intrinsic_inds: np.ndarray, virtual_h5_file: Path, cfg: OutlierDetectionConfig
-) -> Tuple[np.ndarray, np.ndarray]:
+    intrinsic_inds: "npt.ArrayLike", virtual_h5_file: Path, cfg: OutlierDetectionConfig
+) -> Tuple["npt.ArrayLike", "npt.ArrayLike"]:
 
     if cfg.extrinsic_score == "rmsd":
         # Get all RMSD values from virutal HDF5 file
         rmsds = parse_h5(virtual_h5_file, fields=["rmsd"])["rmsd"]
         # Select the subset choosen with the intrinsic score method
-        intrinsic_rmsds = rmsds[intrinsic_inds]
+        intrinsic_rmsds = rmsds[intrinsic_inds]  # type: ignore[index]
         # Find the best points within the selected subset
         extrinsic_scores, extrinsic_inds = bestk(
             intrinsic_rmsds, k=cfg.num_extrinsic_outliers
@@ -134,7 +154,7 @@ def get_extrinsic_score(
     else:
         # If no extrinsic_score, simply return the intrinsic selection
         extrinsic_inds = np.arange(cfg.num_extrinsic_outliers)
-        extrinsic_scores = np.zeros(len(extrinsic_inds))
+        extrinsic_scores = np.zeros(len(extrinsic_inds))  # type: ignore[arg-type]
 
     return extrinsic_scores, extrinsic_inds
 
@@ -142,13 +162,13 @@ def get_extrinsic_score(
 def generate_outliers(
     md_data: Dict[str, List[str]],
     sampled_h5_files: List[str],
-    outlier_inds: List[int],
-    intrinsic_scores: List[float],
-    extrinsic_scores: List[float],
-) -> List[Dict[str, Union[str, int]]]:
+    outlier_inds: "npt.ArrayLike",
+    intrinsic_scores: "npt.ArrayLike",
+    extrinsic_scores: "npt.ArrayLike",
+) -> List[Dict[str, object]]:
 
-    assert len(intrinsic_scores) == len(extrinsic_scores)
-    assert len(intrinsic_scores) == len(outlier_inds)
+    assert len(intrinsic_scores) == len(extrinsic_scores)  # type: ignore[arg-type]
+    assert len(intrinsic_scores) == len(outlier_inds)  # type: ignore[arg-type]
 
     # Get all available MD data
     all_h5_files = md_data["data_files"]
@@ -163,10 +183,10 @@ def generate_outliers(
     # Collect outlier metadata used to create PDB files down stream
     outliers = []
     for outlier_ind, intrinsic_score, extrinsic_score in zip(
-        outlier_inds, intrinsic_scores, extrinsic_scores
+        outlier_inds, intrinsic_scores, extrinsic_scores  # type: ignore[arg-type, misc]
     ):
         # divmod returns a tuple of quotient and remainder
-        sampled_index, frame = divmod(outlier_ind, cfg.n_traj_frames)
+        sampled_index, frame = divmod(outlier_ind, cfg.n_traj_frames)  # type: ignore[operator]
         # Need to remap subsampled h5_file index back to all md_data
         all_index = h5_sample_ind_to_all[sampled_h5_files[sampled_index]]
 
@@ -176,16 +196,16 @@ def generate_outliers(
             "structure_file": str(all_pdb_files[all_index]),
             "traj_file": str(all_traj_files[all_index]),
             "frame": int(frame),
-            "outlier_ind": int(outlier_ind),
-            "intrinsic_score": float(intrinsic_score),
-            "extrinsic_score": float(extrinsic_score),
+            "outlier_ind": int(outlier_ind),  # type: ignore[call-overload]
+            "intrinsic_score": float(intrinsic_score),  # type: ignore[arg-type]
+            "extrinsic_score": float(extrinsic_score),  # type: ignore[arg-type]
         }
         outliers.append(outlier)
 
     return outliers
 
 
-def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool):
+def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool) -> None:
 
     comm = setup_mpi_comm(distributed)
     comm_size, comm_rank = setup_mpi(comm)
@@ -218,12 +238,12 @@ def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool):
             model_cfg_path, model_weights_path = token
 
     else:
-        virtual_h5_file, model_cfg_path, model_weights_path = None, None, None
+        virtual_h5_file, model_cfg_path, model_weights_path = None, None, None  # type: ignore[assignment]
 
     if comm_size > 1:
-        virtual_h5_file = comm.bcast(virtual_h5_file, 0)
-        model_cfg_path = comm.bcast(model_cfg_path, 0)
-        model_weights_path = comm.bcast(model_weights_path, 0)
+        virtual_h5_file = comm.bcast(virtual_h5_file, 0)  # type: ignore[union-attr]
+        model_cfg_path = comm.bcast(model_cfg_path, 0)  # type: ignore[union-attr]
+        model_weights_path = comm.bcast(model_weights_path, 0)  # type: ignore[union-attr]
 
     # Select machine learning model and generate embeddings
     with Timer("agent_get_representation"):
@@ -249,8 +269,8 @@ def main(cfg: OutlierDetectionConfig, encoder_gpu: int, distributed: bool):
             )
 
         # Take the subset of indices selected by the extrinsic method
-        pruned_intrinsic_scores = intrinsic_scores[extrinsic_inds]
-        pruned_intrinsic_inds = intrinsic_inds[extrinsic_inds]
+        pruned_intrinsic_scores = intrinsic_scores[extrinsic_inds]  # type: ignore[index]
+        pruned_intrinsic_inds = intrinsic_inds[extrinsic_inds]  # type: ignore[index]
 
         with Timer("agent_generate_outliers"):
             outliers = generate_outliers(

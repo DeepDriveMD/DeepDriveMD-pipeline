@@ -1,0 +1,2 @@
+# To ignore jupyter line counts
+*.ipynb linguist-generated

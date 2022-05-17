@@ -1,21 +1,24 @@
 """Data utility functions for handling HDF5 files."""
 
-import h5py
-import shutil
 import random
-import numpy as np
+import shutil
 from pathlib import Path
-from typing import List, Optional, Tuple, Union, Dict
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
-PathLike = Union[str, Path]
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
+import h5py  # type: ignore[import]
+
+from deepdrivemd.utils import PathLike
 
 
 def concatenate_virtual_h5(
     input_file_names: List[str], output_name: str, fields: Optional[List[str]] = None
-):
-    r"""Concatenate HDF5 files into a virtual HDF5 file.
+) -> None:
+    """Concatenate HDF5 files into a virtual HDF5 file.
 
-    Concatenates a list `input_file_names` of HDF5 files containing
+    Concatenates a list :obj:`input_file_names` of HDF5 files containing
     the same format into a single virtual dataset.
 
     Parameters
@@ -24,7 +27,7 @@ def concatenate_virtual_h5(
         List of HDF5 file names to concatenate.
     output_name : str
         Name of output virtual HDF5 file.
-    fields : Optional[List[str]]
+    fields : Optional[List[str]], default=None
         Which dataset fields to concatenate. Will concatenate all fields by default.
     """
 
@@ -80,34 +83,34 @@ def get_virtual_h5_file(
     all_h5_files : List[str]
         List of HDF5 files to select from.
     last_n : int, optional
-        Chooses the last n files in `all_h5_files` to concatenate
+        Chooses the last n files in :obj:`all_h5_files` to concatenate
         into a virtual HDF5 file. Defaults to all the files.
-    k_random_old : int
-        Chooses k random files not in the `last_n` files to
+    k_random_old : int, default=0
+        Chooses k random files not in the :obj:`last_n` files to
         concatenate into the virtual HDF5 file. Defaults to
         choosing no random old files.
-    virtual_name : str
+    virtual_name : str, default="virtual"
         The name of the virtual HDF5 file to be written
-        e.g. `virtual_name == virtual` implies the file will
-        be written to `output_path/virtual.h5`.
-    node_local_path : Optional[Path]
+        e.g. :obj:`virtual_name == virtual` implies the file will
+        be written to :obj:`output_path/virtual.h5`.
+    node_local_path : Optional[Path], default=None
         An optional path to write the virtual file to that could
         be a node local storage. Will also copy all selected HDF5
-        files in `all_h5_files` to the same directory.
+        files in :obj:`all_h5_files` to the same directory.
 
     Returns
     -------
     Path
         The path to the created virtual HDF5 file.
     List[str]
-        The selected HDF5 files from `last_n` and `k_random_old`
-        used to make the virtual HDF5 file.
+        The selected HDF5 files from :obj:`last_n` and
+        :obj:`k_random_old` used to make the virtual HDF5 file.
 
     Raises
     ------
     ValueError
-        If `all_h5_files` is empty.
-        If `last_n` is greater than len(all_h5_files).
+        If :obj:`all_h5_files` is empty.
+        If `:obj:last_n` is greater than :obj:`len(all_h5_files)`.
     """
 
     if not all_h5_files:
@@ -143,8 +146,8 @@ def get_virtual_h5_file(
     return virtual_h5_file, h5_files
 
 
-def parse_h5(path: PathLike, fields: List[str]) -> Dict[str, np.ndarray]:
-    r"""Helper function for accessing data fields in a HDF5 file.
+def parse_h5(path: PathLike, fields: List[str]) -> Dict[str, "npt.ArrayLike"]:
+    """Helper function for accessing data fields in a HDF5 file.
 
     Parameters
     ----------
@@ -155,8 +158,8 @@ def parse_h5(path: PathLike, fields: List[str]) -> Dict[str, np.ndarray]:
 
     Returns
     -------
-    Dict[str, np.ndarray]
-        A dictionary maping each field name in `fields` to a numpy
+    Dict[str, npt.ArrayLike]
+        A dictionary maping each field name in :obj:`fields` to a numpy
         array containing the data from the associated HDF5 dataset.
     """
     data = {}

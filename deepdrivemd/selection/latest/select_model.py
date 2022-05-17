@@ -1,11 +1,9 @@
-import argparse
 from pathlib import Path
-from typing import Optional, Union, Tuple
-from deepdrivemd.utils import Timer
+from typing import Optional, Tuple
+
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.selection.latest.config import LatestCheckpointConfig
-
-PathLike = Union[str, Path]
+from deepdrivemd.utils import PathLike, Timer, parse_args
 
 
 def get_model_path(
@@ -14,7 +12,7 @@ def get_model_path(
     api: Optional[DeepDriveMD_API] = None,
     experiment_dir: Optional[PathLike] = None,
 ) -> Optional[Tuple[Path, Path]]:
-    r"""Get the current best model.
+    """Get the current best model.
 
     Should be imported by other stages to retrieve the best model path.
 
@@ -36,11 +34,10 @@ def get_model_path(
         Path to the most recent model weights selected by the model
         selection stage.
 
-
     Raises
     ------
     ValueError
-        If both `api` and `experiment_dir` are None.
+        If both :obj:`api` and :obj:`experiment_dir` are None.
     """
     if api is None and experiment_dir is None:
         raise ValueError("Both `api` and `experiment_dir` are None")
@@ -51,7 +48,7 @@ def get_model_path(
 
     data = api.model_selection_stage.read_task_json(stage_idx, task_idx)
     if data is None:
-        return
+        return None
 
     model_config = Path(data[0]["model_config"])
     model_checkpoint = Path(data[0]["model_checkpoint"])
@@ -75,11 +72,11 @@ def latest_checkpoint(
     ----------
     api : DeepDriveMD_API
         API to DeepDriveMD to access the machine learning model path.
-    checkpoint_dir : str, optional
+    checkpoint_dir : str, default="checkpoint"
         Name of the checkpoint directory inside the model path. Note,
         if checkpoint files are stored in the top level directory, set
         checkpoint_dir="".
-    checkpoint_suffix : str, optional
+    checkpoint_suffix : str, default=".pt"
         The file extension for checkpoint files (.pt, .h5, etc).
 
     Returns
@@ -94,8 +91,8 @@ def latest_checkpoint(
     return max(checkpoint_files, key=lambda x: int(x.name.split("-")[1]))
 
 
-def latest_model_checkpoint(cfg: LatestCheckpointConfig):
-    r"""Select the latest model checkpoint and write path to JSON.
+def latest_model_checkpoint(cfg: LatestCheckpointConfig) -> None:
+    """Select the latest model checkpoint and write path to JSON.
 
     Find the latest model checkpoint written by the machine learning
     stage and write the path into a JSON file to be consumed by the
@@ -129,15 +126,6 @@ def latest_model_checkpoint(cfg: LatestCheckpointConfig):
     ]
     # Dump metadata to disk for MD stage
     api.model_selection_stage.write_task_json(data, cfg.stage_idx, cfg.task_idx)
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
 
 
 if __name__ == "__main__":

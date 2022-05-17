@@ -1,7 +1,9 @@
 from enum import Enum
 from pathlib import Path
-from typing import Optional, List
+from typing import Any, Dict, List, Optional
+
 from pydantic import root_validator
+
 from deepdrivemd.config import MolecularDynamicsTaskConfig
 
 
@@ -38,7 +40,9 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
     in_memory: bool = True
 
     @root_validator()
-    def explicit_solvent_requires_top_suffix(cls, values: dict):
+    def explicit_solvent_requires_top_suffix(
+        cls, values: Dict[str, Any]
+    ) -> Dict[str, Any]:
         top_suffix = values.get("top_suffix")
         solvent_type = values.get("solvent_type")
         if solvent_type == "explicit" and top_suffix is None:

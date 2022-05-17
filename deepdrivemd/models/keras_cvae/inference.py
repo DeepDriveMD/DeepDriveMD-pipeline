@@ -1,11 +1,12 @@
-from pathlib import Path
-from typing import Union
-import numpy as np
-from deepdrivemd.models.keras_cvae.config import KerasCVAEModelConfig
-from deepdrivemd.models.keras_cvae.utils import sparse_to_dense
-from deepdrivemd.models.keras_cvae.model import conv_variational_autoencoder
+from typing import TYPE_CHECKING
 
-PathLike = Union[str, Path]
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
+from deepdrivemd.models.keras_cvae.config import KerasCVAEModelConfig
+from deepdrivemd.models.keras_cvae.model import CVAE
+from deepdrivemd.models.keras_cvae.utils import sparse_to_dense
+from deepdrivemd.utils import PathLike
 
 
 def generate_embeddings(
@@ -13,12 +14,12 @@ def generate_embeddings(
     h5_file: PathLike,
     model_weights_path: PathLike,
     inference_batch_size: int,
-) -> np.ndarray:
+) -> "npt.ArrayLike":
 
     cfg = KerasCVAEModelConfig.from_yaml(model_cfg_path)
 
-    cvae = conv_variational_autoencoder(
-        image_size=cfg.final_shape,
+    cvae = CVAE(
+        image_size=cfg.final_shape[:2],
         channels=cfg.final_shape[-1],
         conv_layers=cfg.conv_layers,
         feature_maps=cfg.conv_filters,
