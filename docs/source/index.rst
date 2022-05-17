@@ -39,9 +39,9 @@ Installation with `pip` and a *minimal set of dependencies*:
    :numbered:		
    :hidden:
    
-   documentation_pages/overview
-   documentation_pages/deepdrivemd_api
-   documentation_pages/streaming_overview
+   pages/overview
+   pages/deepdrivemd_api
+   pages/streaming_overview
 
 .. toctree::
    :maxdepth: 2

@@ -8,9 +8,12 @@ flake8
 pytest
 isort
 pre-commit
-sphinx
-sphinx_rtd_theme
 twine
+
+# Documentation requirements
+sphinx==4.5.0
+sphinx-rtd-theme==1.0.0
+autodoc-pydantic==1.6.2
 
 # mypy type stubs:
 types-PyYAML
