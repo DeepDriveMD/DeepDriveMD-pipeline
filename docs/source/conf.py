@@ -40,7 +40,36 @@ extensions = [
     "sphinx_rtd_theme",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "sphinx.ext.autosummary",
+    "sphinxcontrib.autodoc_pydantic",
 ]
+
+# Autosummary settings
+autosummary_generate = True  # Turn on sphinx.ext.autosummary
+
+# Autodoc settings
+# Need to figure these out. See https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+}
+
+# Napoleon settings
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = True
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = True
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = False
+napoleon_use_param = False
+napoleon_use_rtype = False
+napoleon_preprocess_types = False
+napoleon_type_aliases = None
+napoleon_attr_annotations = True
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
@@ -50,7 +79,17 @@ templates_path = ["_templates"]
 exclude_patterns = []
 
 # List of imports to mock when building the documentation.
-autodoc_mock_imports = ["adios2", "tensorflow", "simtk.openmm", "cupy", "cuml", "numba"]
+autodoc_mock_imports = [
+    "adios2",
+    "tensorflow",
+    "simtk.openmm",
+    "cupy",
+    "cuml",
+    "numba",
+    "torch",
+    "torchsummary",
+    "mdlearn",
+]
 
 html_context = {
     "conf_py_path": "/docs/source/",  # Path in the checkout to the docs root
@@ -68,14 +107,3 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = []
-
-
-# Include __init__()
-def skip(app, what, name, obj, would_skip, options):
-    if name == "__init__":
-        return False
-    return would_skip
-
-
-def setup(app):
-    app.connect("autodoc-skip-member", skip)

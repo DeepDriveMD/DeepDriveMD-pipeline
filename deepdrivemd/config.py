@@ -1,4 +1,4 @@
-# Schema of the YAML experiment file
+"""Schema of the YAML experiment file"""
 import json
 from pathlib import Path
 from typing import List, Optional, Type, TypeVar
@@ -104,20 +104,6 @@ class MolecularDynamicsTaskConfig(BaseTaskConfig):
     pdb_file: Optional[Path] = Path("set_by_deepdrivemd")
     # Initial data directory passed containing PDBs and optional topologies
     initial_pdb_dir: Path
-
-    """
-    @validator("initial_pdb_dir")
-    def initial_pdb_dir_must_exist_with_valid_pdbs(cls, v: Path) -> Path:
-        if not v.exists():
-            raise FileNotFoundError(v.as_posix())
-        if not v.is_absolute():
-            raise ValueError(f"initial_pdb_dir must be an absolute path. Not {v}")
-        if any("__" in p.as_posix() for p in v.glob("*/*.pdb")):
-            raise ValueError(
-                f"Initial PDB files in {v} cannot contain a double underscore __"
-            )
-        return v
-    """
 
 
 class MolecularDynamicsStageConfig(BaseStageConfig):

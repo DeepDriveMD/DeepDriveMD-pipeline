@@ -49,22 +49,7 @@ class LossHistory(Callback):  # type: ignore[misc]
 
 
 class CVAE(object):
-    """
-    variational autoencoder class
-
-    Methods
-    -------
-    train(data, batch_size, epochs=1, checkpoint=False, filepath=None)
-        Train network on the given data.
-    save(filepath)
-        Save the model weights to a file.
-    load(filepath)
-        Load model weights from a file.
-    return_embeddings(data)
-        Return the embeddings for given data.
-    generate(embedding)
-        Return a generated output given a latent embedding.
-    """
+    """Convolutional variational autoencoder class."""
 
     def __init__(  # noqa
         self,
