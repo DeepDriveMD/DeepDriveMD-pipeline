@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<adios-config>
+    <io name="AggregatorOutput">
+        <engine type="BPFile">
+        <parameter key="FlushStepsCount" value="100"/>
+        </engine>
+    </io>
+</adios-config>

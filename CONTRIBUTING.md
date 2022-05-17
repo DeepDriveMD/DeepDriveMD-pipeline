@@ -71,11 +71,11 @@ To view the docs run: `open DeepDriveMD-pipeline/docs/build/html/index.html`.
 
 ## Releasing to PyPI
 
-To release a new version of mdlearn to PyPI:
+To release a new version of deepdrivemd to PyPI:
 
 1. Merge the `develop` branch into the `main` branch with an updated version number in [`deepdrivemd.__init__`](https://github.com/DeepDriveMD/DeepDriveMD-pipeline/blob/main/deepdrivemd/__init__.py).
 2. Make a new release on GitHub with the tag and name equal to the version number.
-3. [Build and install](#developing-deepdrivemd) mdlearn from source.
+3. [Build and install](#developing-deepdrivemd) deepdrivemd from source.
 4. Run the following commands:
 ```
 python setup.py sdist

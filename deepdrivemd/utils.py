@@ -1,3 +1,5 @@
+import argparse
+import math
 import sys
 import time
 from inspect import Traceback, currentframe, getframeinfo
@@ -112,3 +114,46 @@ def bestk(
     # Only sorts an array of size k
     sort_inds = np.argsort(best_values)
     return best_values[sort_inds], best_inds[sort_inds]
+
+
+def t2Dto1D(A):
+    n, m = A.shape
+    B = np.zeros(int(n * (n - 1) / 2), dtype=np.uint8)
+    k = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            B[k] = A[i, j]
+            k += 1
+    return B
+
+
+def t1Dto2D(B):
+    m = B.shape[0]
+    n = int((1 + math.sqrt(1 + 8 * m)) / 2)
+    A = np.ones((n, n), dtype=np.uint8)
+    k = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            A[i, j] = B[k]
+            A[j, i] = B[k]
+            k += 1
+    return A
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c", "--config", help="YAML config file", type=str, required=True
+    )
+    args = parser.parse_args()
+    return args
+
+
+def hash2intarray(h):
+    b = [int(h[4 * i : 4 * (i + 1)], 16) for i in range(len(h) // 4)]
+    return np.asarray(b, dtype=np.int64)
+
+
+def intarray2hash(ia):
+    c = list(map(lambda x: "{0:#0{1}x}".format(x, 6).replace("0x", ""), ia))
+    return "".join(c)
