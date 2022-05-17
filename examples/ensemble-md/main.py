@@ -8,8 +8,7 @@ from radical.entk import AppManager, Pipeline, Stage, Task  # type: ignore[impor
 from deepdrivemd.config import BaseSettings, BaseStageConfig
 from deepdrivemd.utils import parse_args
 
-from md import OpenMMSimulationConfig
-from utils import OpenMMSimulationParameters
+from md import OpenMMSimulationConfig, OpenMMSimulationParameters
 
 
 class OpenMMEnsembleConfig(BaseSettings):
