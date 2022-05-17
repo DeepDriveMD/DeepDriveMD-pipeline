@@ -6,9 +6,10 @@ from typing import Optional
 import radical.utils as ru  # type: ignore[import]
 from radical.entk import AppManager, Pipeline, Stage, Task  # type: ignore[import]
 from deepdrivemd.config import BaseSettings, BaseStageConfig
+from deepdrivemd.utils import parse_args
 
 from md import OpenMMSimulationConfig
-from utils import OpenMMSimulationParameters, parse_args
+from utils import OpenMMSimulationParameters
 
 
 class OpenMMEnsembleConfig(BaseSettings):

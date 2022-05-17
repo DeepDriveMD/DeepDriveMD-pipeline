@@ -4,8 +4,9 @@ import simtk.openmm.app as app  # type: ignore[import]
 import simtk.unit as u  # type: ignore[import]
 from mdtools.openmm.sim import configure_simulation  # type: ignore[import]
 from deepdrivemd.config import BaseSettings
+from deepdrivemd.utils import parse_args
 
-from utils import OpenMMSimulationParameters, parse_args
+from utils import OpenMMSimulationParameters
 
 
 class OpenMMSimulationConfig(BaseSettings):

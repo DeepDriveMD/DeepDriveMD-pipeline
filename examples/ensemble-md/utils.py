@@ -1,4 +1,3 @@
-import argparse
 from typing import Optional
 from deepdrivemd.config import BaseSettings
 
@@ -14,12 +13,3 @@ class OpenMMSimulationParameters(BaseSettings):
     dt_ps: float = 0.002
     temperature_kelvin: float = 310.0
     heat_bath_friction_coef: float = 1.0
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
