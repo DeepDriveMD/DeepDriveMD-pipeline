@@ -88,7 +88,8 @@ class AdiosReader:
     def __init__(
         self, fn: str, config: Path, stream_name: str, variables: List[StreamVariable]
     ):
-        """
+        """Initialize AdiosReader object.
+
         Parameters
         ----------
         fn: str
@@ -98,7 +99,6 @@ class AdiosReader:
         stream_name : str
             name of a stream in `adios.xml` file
         """
-
         print("config=", str(config))
         print("fn=", fn)
         print("stream_name=", stream_name)
@@ -115,7 +115,7 @@ class AdiosReader:
         self.connections = {0: (self.adios, self.io, self.stream)}
 
     def __del__(self):
-        """Destructor: clean the adios resources"""
+        """Destructor: clean the adios resources."""
         self.stream.Close()
         self.io.RemoveAllVariables()
         self.adios.RemoveAllIOs()
@@ -133,7 +133,6 @@ class AdiosReader:
         Dict[str, Union[np.array, str, int, float]]
             values for different variables whose names are used as keys
         """
-
         vvv = {}
         for v in self.variables:
             vvv[v.name] = (v.dtype, v.structure)
@@ -156,7 +155,7 @@ class AdiosReader:
 
 
 class Streams:
-    """The class keeps `lastN` steps from each aggregator
+    """The class keeps `lastN` steps from each aggregator.
 
     Attributes
     ----------
@@ -184,7 +183,8 @@ class Streams:
         lastN: int = 2000,
         batch: int = 10000,
     ):
-        """
+        """Initialize Streams object.
+
         Parameters
         ----------
         files : List[str]
@@ -200,7 +200,6 @@ class Streams:
         batch : int
              up to how many steps to read from each adios file at a time (call of `next()`)
         """
-
         self.variables = variables
         self.vnames = list(map(lambda x: x.name, variables))
 
@@ -223,14 +222,13 @@ class Streams:
     def next(
         self,
     ) -> Dict[str, Union[np.array, int, float, str]]:
-        """Provide `lastN` steps from each aggregator
+        """Provide `lastN` steps from each aggregator.
 
         Returns
         -------
         Dict[str, Union[np.array, int, float, str]]
             values for the the variables whose names are used as keys
         """
-
         lastN = self.lastN
         batch = self.batch
         for fn in self.readers:

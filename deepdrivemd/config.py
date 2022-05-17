@@ -1,4 +1,4 @@
-# Schema of the YAML experiment file
+"""Schema of the YAML experiment file"""
 import json
 from pathlib import Path
 from typing import List, Optional, Type, TypeVar

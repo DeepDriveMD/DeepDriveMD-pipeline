@@ -8,6 +8,7 @@ flake8
 pytest
 isort
 pre-commit
+pydocstyle
 twine
 
 # Documentation requirements

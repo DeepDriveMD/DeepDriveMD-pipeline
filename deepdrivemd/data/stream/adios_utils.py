@@ -1,3 +1,5 @@
+"""Utility functions for ADIOS2."""
+
 from typing import Dict, Tuple
 
 import adios2
@@ -7,7 +9,7 @@ from deepdrivemd.data.stream.enumerations import DataStructure
 
 
 class AdiosStreamStepRW:
-    """Read/Write step by step adios stream using Full API
+    """Read/Write step by step adios stream using Full API.
 
     Attributes
     ----------
@@ -29,7 +31,7 @@ class AdiosStreamStepRW:
         ],
         variables: Dict[str, Tuple[type, DataStructure]],
     ):
-        """Constructor.
+        """Initialize :code:`AdiosStreamStepRW` object.
 
         Parameters
         ----------
@@ -106,7 +108,6 @@ class AdiosStreamStepRW:
              meaning that the step writing is done; otherwise, terminating the step should be done
              outside of the method
         """
-
         vnames = list(variables.keys())
 
         for v in vnames:

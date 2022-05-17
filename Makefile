@@ -18,9 +18,9 @@ format:
 
 .PHONY: lint
 lint:
-	flake8 deepdrivemd/ test/
-	$(isort) --check-only --df
 	$(black) --check --diff
+	flake8 deepdrivemd/ test/
+	pydocstyle deepdrivemd/
 
 .PHONY: mypy
 mypy:
