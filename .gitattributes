@@ -1,2 +1,2 @@
 # To ignore jupyter line counts
-*.ipynb linguist-documentation
+*.ipynb linguist-vendored
