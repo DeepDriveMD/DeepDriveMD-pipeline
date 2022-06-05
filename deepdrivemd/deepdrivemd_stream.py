@@ -263,7 +263,7 @@ if __name__ == "__main__":
     appman.resource_desc = {
         "resource": cfg.resource,
         "queue": cfg.queue,
-        "schema": cfg.schema_,
+        "access_schema": cfg.schema_,
         "walltime": cfg.walltime_min,
         "project": cfg.project,
         "cpus": cfg.cpus_per_node * cfg.hardware_threads_per_cpu * num_nodes,
