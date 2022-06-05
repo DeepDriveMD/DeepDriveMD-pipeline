@@ -8,7 +8,7 @@ max_iteration: 4
 cpus_per_node: 20
 gpus_per_node: 8
 hardware_threads_per_cpu: 2
-experiment_directory: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/2nd_run
+experiment_directory: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/examples/brdiges2/2nd_run
 node_local_path: null
 molecular_dynamics_stage:
     pre_exec: 
@@ -38,8 +38,8 @@ molecular_dynamics_stage:
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
         pdb_file: set_by_deepdrivemd
-        initial_pdb_dir: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/bba
-        reference_pdb_file: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/experiment/bba/system/1FME-unfolded.pdb
+        initial_pdb_dir: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/data/bba
+        reference_pdb_file: /ocean/projects/mcb110096p/hrlee/git/DeepDriveMD-pipeline/data/bba/1FME-folded.pdb
         simulation_length_ns: 1.0
         report_interval_ps: 1.0
         dt_ps: 0.002
