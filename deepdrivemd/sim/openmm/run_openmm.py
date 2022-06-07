@@ -2,9 +2,8 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
-import simtk.openmm as omm  # type: ignore[import]
-import simtk.openmm.app as app  # type: ignore[import]
-import simtk.unit as u  # type: ignore[import]
+import openmm.unit as u # type: ignore[import]
+import openmm.app as app  # type: ignore[import]
 from mdtools.openmm.reporter import OfflineReporter  # type: ignore[import]
 from mdtools.openmm.sim import configure_simulation  # type: ignore[import]
 
@@ -115,7 +114,7 @@ class SimulationContext:
 
 
 def configure_reporters(
-    sim: omm.app.Simulation,
+    sim: "app.Simulation",
     ctx: SimulationContext,
     cfg: OpenMMConfig,
     report_steps: int,
@@ -158,12 +157,6 @@ def configure_reporters(
 
 def run_simulation(cfg: OpenMMConfig) -> None:
 
-    # openmm typed variables
-    dt_ps = cfg.dt_ps * u.picoseconds
-    report_interval_ps = cfg.report_interval_ps * u.picoseconds
-    simulation_length_ns = cfg.simulation_length_ns * u.nanoseconds
-    temperature_kelvin = cfg.temperature_kelvin * u.kelvin
-
     # Handle files
     with Timer("molecular_dynamics_SimulationContext"):
         ctx = SimulationContext(cfg)
@@ -175,10 +168,15 @@ def run_simulation(cfg: OpenMMConfig) -> None:
             top_file=ctx.top_file,
             solvent_type=cfg.solvent_type,
             gpu_index=0,
-            dt_ps=dt_ps,
-            temperature_kelvin=temperature_kelvin,
+            dt_ps=cfg.dt_ps,
+            temperature_kelvin=cfg.temperature_kelvin,
             heat_bath_friction_coef=cfg.heat_bath_friction_coef,
         )
+
+    # openmm typed variables
+    dt_ps = cfg.dt_ps * u.picoseconds
+    report_interval_ps = cfg.report_interval_ps * u.picoseconds
+    simulation_length_ns = cfg.simulation_length_ns * u.nanoseconds
 
     # Write all frames to a single HDF5 file
     frames_per_h5 = int(simulation_length_ns / report_interval_ps)
