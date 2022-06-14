@@ -1,6 +1,8 @@
 # Radical EnTK
 re.session*
 
+conda-env/
+
 # Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,visualstudiocode,visualstudio,pycharm,pycharm+all,pycharm+iml,pydev,macos,emacs,windows,linux
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,jupyternotebooks,visualstudiocode,visualstudio,pycharm,pycharm+all,pycharm+iml,pydev,macos,emacs,windows,linux
 

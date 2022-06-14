@@ -8,7 +8,6 @@ from typing import Dict
 import adios2
 import MDAnalysis
 import numpy as np
-import simtk.unit as u
 from MDAnalysis.analysis import distances, rms
 
 from deepdrivemd.utils import hash2intarray, timer
