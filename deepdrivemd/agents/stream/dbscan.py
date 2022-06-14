@@ -20,7 +20,7 @@ from cuml import DBSCAN as DBSCAN
 from mdlearn.nn.models.aae.point_3d_aae import AAE3d
 from numba import cuda
 from pathos.multiprocessing import ProcessingPool as Pool
-from simtk.openmm.app.pdbfile import PDBFile
+from openmm.app.pdbfile import PDBFile
 from sklearn.neighbors import LocalOutlierFactor
 from torchsummary import summary
 

@@ -70,9 +70,12 @@ class ContactMapReporter(object):
             if atom.name == self.cfg.openmm_selection[0]:
                 ca_indices.append(atom.index)
 
-        positions = np.array(state.getPositions().value_in_unit(u.angstrom)).astype(
-            np.float32
-        )
+        #positions = np.array(state.getPositions().value_in_unit(u.angstrom)).astype(
+        #    np.float32
+        #)
+
+        positions = state.getPositions(asNumpy=True).astype(np.float32)
+
 
         if self.cfg.compute_zcentroid:
             centroid = np.array(self.zcentroid(positions), dtype=np.float32)

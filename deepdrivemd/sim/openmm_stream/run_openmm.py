@@ -238,7 +238,8 @@ def prepare_simulation(  # noqa
         else:
             print("Generating velocities randomly")
             sim.context.setVelocitiesToTemperature(
-                cfg.temperature_kelvin * u.kelvin, random.randint(1, 10000)
+                # cfg.temperature_kelvin * u.kelvin, random.randint(1, 10000)
+                cfg.temperature_kelvin, random.randint(1, 10000)
             )
 
         return True, sim
@@ -258,6 +259,7 @@ def prepare_simulation(  # noqa
         with Timer("molecular_dynamics_configure_simulation"):
             dt_ps = cfg.dt_ps * u.picoseconds
             temperature_kelvin = cfg.temperature_kelvin * u.kelvin
+            print(temperature_kelvin); sys.stdout.flush()
             try:
                 del sim
             except Exception as e:
@@ -269,13 +271,14 @@ def prepare_simulation(  # noqa
                 top_file=ctx.top_file,
                 solvent_type=cfg.solvent_type,
                 gpu_index=0,
-                dt_ps=dt_ps,
-                temperature_kelvin=temperature_kelvin,
-                heat_bath_friction_coef=cfg.heat_bath_friction_coef,
+                dt_ps=cfg.dt_ps,
+                temperature_kelvin=cfg.temperature_kelvin,
+                heat_bath_friction_coef=cfg.heat_bath_friction_coef
                 # explicit_barostat="MonteCarloAnisotropicBarostat",  ### ifs
             )
             sim.context.setVelocitiesToTemperature(
-                cfg.temperature_kelvin * u.kelvin, random.randint(1, 10000)
+                #cfg.temperature_kelvin * u.kelvin, random.randint(1, 10000)
+                cfg.temperature_kelvin, random.randint(1, 10000)
             )
 
         with Timer("molecular_dynamics_configure_reporters"):
