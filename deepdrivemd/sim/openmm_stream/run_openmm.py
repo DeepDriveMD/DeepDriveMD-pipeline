@@ -228,7 +228,8 @@ def prepare_simulation(  # noqa
         with Timer("molecular_dynamics_configure_reporters"):
             configure_reporters(sim, cfg, cfg.report_steps, iteration)
 
-        sim.context.setPositions(positions / 10)
+        # TODO: See if this is causing the issue
+        # sim.context.setPositions(positions / 10)
 
         if random.random() < cfg.copy_velocities_p:
             print("Copying velocities from outliers")
