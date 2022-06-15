@@ -6,6 +6,19 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel
 
+import sys
+import subprocess
+
+
+DDMD="/".join(os.getenv('PWD').split("/")[:-3])
+PATH=os.getenv('PATH')
+USER=os.getenv('USER')
+LD_LIBRARY_PATH=os.getenv('LD_LIBRARY_PATH')
+PYTHONPATH=os.getenv('PYTHONPATH')
+PYTHON=subprocess.getstatusoutput('which python')[1]
+ADIOS2="/".join(subprocess.getstatusoutput('which bpls')[1].split("/")[:-2])
+CONDA="/".join(PYTHON.split("/")[:-2])
+
 
 class Header(BaseModel):
     title = "BBA integration test"
@@ -18,9 +31,9 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/p/gpfs1/yakushin/Outputs/19m"
+    experiment_directory = f"/p/gpfs1/{USER}/Outputs/19m"
     software_directory = (
-        "/usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd"
+        f"{DDMD}/deepdrivemd"
     )
     node_local_path: Path = None
     init_pdb_file = "/usr/workspace/cv_ddmd/yakushin/Integration1/data/BigMolecules/insRec_OM_region/system/prot.pdb"
@@ -36,10 +49,6 @@ class Header(BaseModel):
 header = Header()
 
 print(yaml.dump(header.dict()))
-
-pythonpath = os.getenv("PYTHONPATH")
-python = "/usr/workspace/cv_ddmd/conda1/powerai/bin/python"
-
 
 class CPUReqMD(BaseModel):
     processes = 1
@@ -100,17 +109,17 @@ pre_exec_md = [
     "unset PYTHONPATH",
     "module load gcc/7.3.1",
     ". /etc/profile.d/conda.sh",
-    "conda activate /usr/workspace/cv_ddmd/conda1/powerai",
+    f"conda activate {CONDA}",
     "export IBM_POWERAI_LICENSE_ACCEPT=yes",
     "module use /usr/workspace/cv_ddmd/software1/modules",
-    "module load adios2",
-    f"export PYTHONPATH={pythonpath}",
+    "module load adios2/2.8.1a",
+    f"export PYTHONPATH={PYTHONPATH}",
 ]
 
 
 class MD(BaseModel):
     pre_exec = pre_exec_md
-    executable = python
+    executable = PYTHON
     arguments = [f"{header.software_directory}/sim/openmm_stream/run_openmm.py"]
     cpu_reqs = cpu_req_md.dict()
     gpu_reqs = gpu_req_md.dict()
@@ -151,7 +160,7 @@ task_config_agg = TaskConfigAgg()
 
 class Aggregator(BaseModel):
     pre_exec = pre_exec_md
-    executable = python
+    executable = PYTHON
     arguments = [f"{header.software_directory}/aggregation/stream/aggregator.py"]
     cpu_reqs = cpu_req_md.dict()
     gpu_reqs = gpu_req_agg.dict()
@@ -207,7 +216,7 @@ task_config_ml = TaskConfigML()
 
 class ML(BaseModel):
     pre_exec = pre_exec_md
-    executable = python
+    executable = PYTHON
     arguments = [f"{header.software_directory}/models/keras_cvae_stream/train.py"]
     cpu_reqs = cpu_req_md.dict()
     gpu_reqs = gpu_req_md.dict()
@@ -254,7 +263,7 @@ task_config_agent = TaskConfigAgent()
 
 class Agent(BaseModel):
     pre_exec = pre_exec_md
-    executable = python
+    executable = PYTHON
     arguments = [f"{header.software_directory}/agents/stream/dbscan.py"]
     cpu_reqs = cpu_req_agent.dict()
     gpu_reqs = gpu_req_md.dict()
