@@ -6,7 +6,8 @@ import shutil
 import subprocess
 import sys
 import time
-from typing import Dict, Union, Tuple
+from pathlib import Path
+from typing import Dict, Union, Optional
 
 import adios2
 import numpy as np
@@ -50,21 +51,20 @@ def configure_reporters(
     """
 
 
-def next_outlier(
-    cfg: OpenMMConfig, sim: "app.Simulation"
-) -> Dict[str, Union[int, float, str, np.ndarray]]:
+def next_outlier(cfg: OpenMMConfig) -> Optional[Dict[str, Union[Path, int]]]:
     """Get the next outlier to use as an initial state.
 
     Parameters
     ----------
     cfg : OpenMMConfig
-    sim : "app.Simulation"
 
     Returns
     -------
-    Dict[str, Union[np.array, str, int, float, None]]
-        path to pdb file with positions, path to numpy file with velocities, rmsd, md5sum, etc. depending on configuration.
-        The key describes what is returned: "positions_pdb", "velocities_npy", "rmsd", "md5", "ligand".
+    Optional[Dict[str, Union[Path, int]]]
+        path to pdb file with positions, path to numpy file with 
+        velocities, and optionally the ligand id. The key describes 
+        what is returned: "positions_npy", "velocities_npy", "ligand".
+        Or None, if no outliers are found.
 
     """
 
@@ -75,23 +75,24 @@ def next_outlier(
 
     while True:
         try:
-            # cfg.lock.acquire()
             with open(cfg.pickle_db, "rb") as f:
                 db = pickle.load(f)
+
             md5 = db.sorted_index[cfg.task_idx]
             rmsd = db.dictionary[md5]
-            # positions_pdb = cfg.outliers_dir / f"{md5}.pdb"
-            positions_pdb = cfg.outliers_dir / f"p_{md5}.npy"
+
+            positions_npy = cfg.outliers_dir / f"p_{md5}.npy"
             velocities_npy = cfg.outliers_dir / f"v_{md5}.npy"
 
-            shutil.copy(positions_pdb, cfg.current_dir)
+            shutil.copy(positions_npy, cfg.current_dir)
             shutil.copy(velocities_npy, cfg.current_dir)
             shutil.copy(cfg.pickle_db, cfg.current_dir)
+
             if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
                 task = cfg.outliers_dir / f"{md5}.txt"
                 shutil.copy(task, cfg.current_dir)
                 copied_task = cfg.current_dir / f"{md5}.txt"
-            # cfg.lock.release()
+
         except Exception as e:
             print("=" * 30)
             print(e)
@@ -108,17 +109,12 @@ def next_outlier(
     with open(cfg.current_dir / "rmsd.txt", "w") as f:
         f.write(f"{rmsd}\n")
 
-    # positions_pdb = cfg.current_dir / f"{md5}.pdb"
-    # velocities_npy = cfg.current_dir / f"{md5}.npy"
-
-    positions_pdb = cfg.current_dir / f"p_{md5}.npy"
+    positions_npy = cfg.current_dir / f"p_{md5}.npy"
     velocities_npy = cfg.current_dir / f"v_{md5}.npy"
 
     outputs = {
-        "positions_pdb": positions_pdb,
+        "positions_npy": positions_npy,
         "velocities_npy": velocities_npy,
-        "rmsd": rmsd,
-        "md5": md5,
     }
 
     if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
@@ -132,7 +128,7 @@ def next_outlier(
 
 # TODO: flake8 says this function is too complex. Needs refactor.
 def prepare_simulation(  # noqa
-    cfg: OpenMMConfig, iteration: int, sim: "app.Simulation"
+    cfg: OpenMMConfig, iteration: int, sim: Optional["app.Simulation"]
 ) ->"app.Simulation":
     """Replace positions and, with `cfg.copy_velocities_p` probability, velocities
     of the current simulation state from an outlier
@@ -143,8 +139,8 @@ def prepare_simulation(  # noqa
         Configuration specifying simulation parameters.
     iteration : int
         Iteration of simulation process.
-    sim: "app.Simulation"
-        Current simulation state.
+    sim: Optional["app.Simulation"]
+        Current simulation state, or None if no simulation is initialized.
 
     Returns
     -------
@@ -156,26 +152,23 @@ def prepare_simulation(  # noqa
     cfg.current_dir = sim_dir
     print("In prepare_simulation cfg.current_dir = ", str(cfg.current_dir))
 
-    if sim is None:
-        outlier = None
-    else:
-        outlier = next_outlier(cfg, sim)
+    outlier = None if sim is None else next_outlier(cfg)
 
     if outlier is not None:
         print("There are outliers")
 
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-            positions_pdb, velocities_npy, ligand = (
-                outlier["positions_pdb"],
+            positions_npy, velocities_npy, ligand = (
+                outlier["positions_npy"],
                 outlier["velocities_npy"],
                 outlier["ligand"],
             )
             print("ligand=", ligand)
             init_multi_ligand(cfg, ligand)
         else:
-            positions_pdb, velocities_npy = (
-                outlier["positions_pdb"],
-                outlier["velocities_npy"],
+            positions_npy, velocities_npy = (
+                outlier["positions_npy"],
+                outlier["velocities_npy"]
             )
 
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
@@ -190,31 +183,28 @@ def prepare_simulation(  # noqa
 
         while True:
             try:
-                # import parmed as pmd (would go at the top)
-                # positions = pmd.load_file(str(positions_pdb)).positions
-                positions = np.load(str(positions_pdb))
+                positions = np.load(str(positions_npy))
                 print("positions.shape = ", positions.shape)
                 print("positions = ", positions)
-                # positions = pmd.load_file(ctx.top_file, xyz=str(positions_pdb)).positions
                 velocities = np.load(str(velocities_npy))
                 break
             except Exception as e:
                 print("Exception ", e)
-                print(f"Waiting for {positions_pdb} and {velocities_npy}")
+                print(f"Waiting for {positions_npy} and {velocities_npy}")
                 time.sleep(5)
 
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
             with Timer("molecular_dynamics_configure_simulation"):
-                print("positions_pdb = ", positions_pdb)
+                print("positions_npy = ", positions_npy)
                 print("ctx.top_file = ", ctx.top_file)
-                # cfg.pdb_file = str(positions_pdb)
+
                 try:
                     del sim
                 except Exception as e:
                     print(e)
 
                 sim = configure_simulation(
-                    pdb_file=ctx.pdb_file,  # str(positions_pdb),  # ctx.pdb_file,
+                    pdb_file=ctx.pdb_file,
                     top_file=ctx.top_file,
                     solvent_type=cfg.solvent_type,
                     gpu_index=0,
