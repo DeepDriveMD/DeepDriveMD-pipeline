@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import sys
 import time
-from typing import Dict, Union
+from typing import Dict, Union, Tuple
 
 import adios2
 import numpy as np
@@ -22,7 +22,7 @@ from deepdrivemd.utils import Timer, parse_args
 
 
 def configure_reporters(
-    sim: app.simulation.Simulation,
+    sim: "app.Simulation",
     cfg: OpenMMConfig,
     report_steps: int,
     iteration: int = 0,
@@ -51,14 +51,14 @@ def configure_reporters(
 
 
 def next_outlier(
-    cfg: OpenMMConfig, sim: app.simulation.Simulation
+    cfg: OpenMMConfig, sim: "app.Simulation"
 ) -> Dict[str, Union[int, float, str, np.ndarray]]:
     """Get the next outlier to use as an initial state.
 
     Parameters
     ----------
     cfg : OpenMMConfig
-    sim : app.simulation.Simulation
+    sim : "app.Simulation"
 
     Returns
     -------
@@ -132,21 +132,24 @@ def next_outlier(
 
 # TODO: flake8 says this function is too complex. Needs refactor.
 def prepare_simulation(  # noqa
-    cfg: OpenMMConfig, iteration: int, sim: app.simulation.Simulation
-) -> bool:
+    cfg: OpenMMConfig, iteration: int, sim: "app.Simulation"
+) ->"app.Simulation":
     """Replace positions and, with `cfg.copy_velocities_p` probability, velocities
     of the current simulation state from an outlier
 
     Parameters
     ----------
     cfg : OpenMMConfig
+        Configuration specifying simulation parameters.
     iteration : int
-    sim: app.simulation.Simulation
+        Iteration of simulation process.
+    sim: "app.Simulation"
+        Current simulation state.
 
     Returns
     -------
-    bool
-         True if there is an outlier, False - otherwise
+    "app.Simulation"
+        The updated simulation object.
     """
     sim_dir = cfg.output_path / str(iteration)
     sim_dir.mkdir(exist_ok=True)
@@ -228,9 +231,6 @@ def prepare_simulation(  # noqa
         with Timer("molecular_dynamics_configure_reporters"):
             configure_reporters(sim, cfg, cfg.report_steps, iteration)
 
-        # TODO: See if this is causing the issue
-        # sim.context.setPositions(positions / 10)
-
         if random.random() < cfg.copy_velocities_p:
             print("Copying velocities from outliers")
             sim.context.setVelocities(velocities)
@@ -240,7 +240,7 @@ def prepare_simulation(  # noqa
                 cfg.temperature_kelvin * u.kelvin, random.randint(1, 10000)
             )
 
-        return True, sim
+        return sim
     else:
         print("There are no outliers")
 
@@ -278,7 +278,7 @@ def prepare_simulation(  # noqa
         with Timer("molecular_dynamics_configure_reporters"):
             configure_reporters(sim, cfg, cfg.report_steps, iteration)
 
-        return False, sim
+        return sim
 
 
 def init_input(cfg: OpenMMConfig):
@@ -329,7 +329,7 @@ def run_simulation(cfg: OpenMMConfig):
     cfg.report_steps = report_steps
     print("report_steps = ", report_steps)
 
-    _, sim = prepare_simulation(cfg, 0, None)
+    sim = prepare_simulation(cfg, 0, None)
 
     # Infinite simulation loop
     for iteration in itertools.count(0):
@@ -342,7 +342,7 @@ def run_simulation(cfg: OpenMMConfig):
 
         subprocess.getstatusoutput(f"touch {str(cfg.current_dir)}/done")
 
-        _, sim = prepare_simulation(cfg, iteration + 1, sim)
+        sim = prepare_simulation(cfg, iteration + 1, sim)
 
 
 def adios_configuration(cfg: OpenMMConfig):
