@@ -102,7 +102,7 @@ class ContactMapReporter:
         )
 
     def report(self, simulation, state):
-        """Computes contact maps, md5 sum of positions, rmsd to the reference state and records them into `_adios_stream`"""
+        """Computes contact maps, md5 sum of positions, rmsd to the reference state and records them into an ADIOS stream."""
         timer("reporting", 1)
         # TODO: Probably don't need to get the positions again
         stateA = simulation.context.getState(getPositions=True, getVelocities=True)
@@ -118,11 +118,6 @@ class ContactMapReporter:
             natoms += 1
             if atom.name == self.cfg.openmm_selection[0]:
                 ca_indices.append(atom.index)
-
-        if self.cfg.compute_zcentroid:
-            centroid = np.array(self.zcentroid(positions), dtype=np.float32)
-            print(f"centroid = {centroid}")
-            sys.stdout.flush()
 
         m = hashlib.sha512()
         m.update(positions.tostring())
