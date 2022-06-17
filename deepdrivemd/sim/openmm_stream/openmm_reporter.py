@@ -1,19 +1,65 @@
-import datetime
+from datetime import datetime
 import hashlib
 import sys
-
-# from deepdrivemd.utils import t2Dto1D
 from typing import Dict
 
 import adios2
 import MDAnalysis
 import numpy as np
 from MDAnalysis.analysis import distances, rms
+from deepdrivemd.config import BaseSettings
 
 from deepdrivemd.utils import hash2intarray, timer
 
+class ADIOSBPConfig(BaseSettings):
+    name: str
+    mode: str
+    config_file: str
+    io_in_config_file: str
 
-class ContactMapReporter(object):
+class StreamReporter:
+    def __init__(self, sst_stream: "adios2.adios2.File", bp_file_config: ADIOSBPConfig) -> None:
+        self._sst_stream = sst_stream
+        self._bp_file = adios2.open(**bp_file_config.dict())
+        self._step = 0
+
+    def __del__(self):
+        self._bp_file.close()
+
+    # TODO: This function could go in a ADIOS class
+    def _write_adios_step(self, stream: "adios2.adios2.File", output: Dict[str, np.ndarray]) -> None:
+        for k, v in output.items():
+            stream.write(
+                k, v, list(v.shape), [0] * len(v.shape), list(v.shape)
+            )
+        stream.end_step()
+
+    def format_scalar(self, x: int, dtype: np.dtype) -> np.ndarray:
+        return  np.array([x], dtype=dtype)
+
+    def write_adios_step(self, output: Dict[str, np.ndarray]) -> None:
+        """Write a step to the ADIOS SST stream and the BP file.
+
+        Parameters
+        ----------
+        output : Dict[str, np.ndarray]
+             key - adios column name to which to write a value of the dictionary
+             representing one step
+
+        """
+        output["step"] = self.format_scalar(self._step, np.int32)
+        self._write_adios_step(self._sst_stream, output)
+
+        # Write gpstime to the BP file
+        gpstime = int(datetime.now().timestamp())
+        output["gpstime"] = self.format_scalar(gpstime, np.int32)
+        self._write_adios_step(self._bp_file, output)
+        self._step += 1
+
+
+# TODO: It may make sense to expose a more generic reporter interface to handle the
+#       various data fields that users may want e.g. rmsd, contact map, etc.
+class ContactMapReporter:
     """Periodically reports the results of the openmm simulation"""
 
     def __init__(self, reportInterval, cfg):
@@ -21,9 +67,6 @@ class ContactMapReporter(object):
         print(cfg)
         print(f"report interval = {reportInterval}")
         print("ContactMapRepoter constructor")
-        self._adios_stream = cfg._adios_stream
-
-        self.step = 0
         self.cfg = cfg
 
         if cfg.compute_zcentroid or cfg.compute_rmsd:
@@ -37,16 +80,13 @@ class ContactMapReporter(object):
                 self.cfg.mda_selection
             ).positions.copy()
 
-        self._adios_file = adios2.open(
+        adios_file_config = ADIOSBPConfig(
             name=str(self.cfg.current_dir) + "/trajectory.bp",
             mode="w",
             config_file=str(cfg.adios_xml_file),
-            io_in_config_file="Trajectory",
+            io_in_config_file="Trajectory"
         )
-
-    def __del__(self):
-        print("ContactMapRepoter destructor")
-        self._adios_file.close()
+        self.stream = StreamReporter(cfg._adios_stream, adios_file_config)
 
     def describeNextReport(self, simulation):
         steps = self._reportInterval - simulation.currentStep % self._reportInterval
@@ -60,8 +100,14 @@ class ContactMapReporter(object):
     def report(self, simulation, state):
         """Computes contact maps, md5 sum of positions, rmsd to the reference state and records them into `_adios_stream`"""
         timer("reporting", 1)
-        step = self.step
+        # TODO: Probably don't need to get the positions again
         stateA = simulation.context.getState(getPositions=True, getVelocities=True)
+        positions = state.getPositions(asNumpy=True).astype(np.float32)
+        velocities = stateA.getVelocities(asNumpy=True)
+        velocities = np.array(
+            [[x[0]._value, x[1]._value, x[2]._value] for x in velocities]
+        ).astype(np.float32)
+
         ca_indices = []
         natoms = 0
         for atom in simulation.topology.atoms():
@@ -69,23 +115,10 @@ class ContactMapReporter(object):
             if atom.name == self.cfg.openmm_selection[0]:
                 ca_indices.append(atom.index)
 
-        #positions = np.array(state.getPositions().value_in_unit(u.angstrom)).astype(
-        #    np.float32
-        #)
-
-        positions = state.getPositions(asNumpy=True).astype(np.float32)
-
-
         if self.cfg.compute_zcentroid:
             centroid = np.array(self.zcentroid(positions), dtype=np.float32)
             print(f"centroid = {centroid}")
             sys.stdout.flush()
-
-        velocities = stateA.getVelocities(asNumpy=True)
-
-        velocities = np.array(
-            [[x[0]._value, x[1]._value, x[2]._value] for x in velocities]
-        ).astype(np.float32)
 
         m = hashlib.sha512()
         m.update(positions.tostring())
@@ -107,18 +140,11 @@ class ContactMapReporter(object):
             contact_map = distances.contact_matrix(
                 positions_ca, cutoff=self.cfg.threshold, returntype="numpy", box=None
             ).astype("uint8")
-            # contact_map = t2Dto1D(contact_map)
-            # contact_map = np.packbits(contact_map)
-
-        step = np.array([step], dtype=np.int32)
-        gpstime = np.array([int(datetime.datetime.now().timestamp())], dtype=np.int32)
 
         output = {
             "md5": md5,
-            "step": step,
             "positions": positions,
             "velocities": velocities,
-            "gpstime": gpstime,
         }
 
         if self.cfg.model == "cvae":
@@ -127,45 +153,21 @@ class ContactMapReporter(object):
             output["point_cloud"] = point_cloud
 
         if self.cfg.compute_zcentroid:
-            output["zcentroid"] = centroid
+            zcentroid = self.zcentroid(positions)
+            output["zcentroid"] = self.stream.format_scalar(zcentroid, np.float32)
 
         if self.cfg.compute_rmsd:
             reference_positions = self.rmsd_positions[:d].copy()
             rmsd = rms.rmsd(positions_ca, reference_positions, superposition=True)
-            rmsd = np.array([rmsd], dtype=np.float32)
-            output["rmsd"] = rmsd
+            output["rmsd"] = self.stream.format_scalar(rmsd, np.float32)
 
         if (
             hasattr(self.cfg, "multi_ligand_table")
             and self.cfg.multi_ligand_table.is_file()
         ):
-            output["ligand"] = np.array([self.cfg.ligand], dtype=np.int32)
-            output["natoms"] = np.array([natoms], dtype=np.int32)
+            output["ligand"] = self.stream.format_scalar(self.cfg.ligand, np.int32)
+            output["natoms"] = self.stream.format_scalar(natoms, np.int32)
 
-        self.write_adios_step(output)
+        self.stream.write_adios_step(output)
         timer("reporting", -1)
-        self.step += 1
 
-    def write_adios_step(self, output: Dict[str, np.ndarray]):
-        """Write a step into `_adios_stream`
-
-        Parameters
-        ----------
-        output : Dict[str, np.ndarray]
-             key - adios column name to which to write a value of the dictionary
-             representing one step
-
-        """
-        for k, v in output.items():
-            if k == "gpstime":
-                continue
-            self._adios_stream.write(
-                k, v, list(v.shape), [0] * len(v.shape), list(v.shape)
-            )
-        self._adios_stream.end_step()
-
-        for k, v in output.items():
-            self._adios_file.write(
-                k, v, list(v.shape), [0] * len(v.shape), list(v.shape)
-            )
-        self._adios_file.end_step()
