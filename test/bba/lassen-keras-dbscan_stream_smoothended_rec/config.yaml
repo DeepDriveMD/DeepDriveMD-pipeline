@@ -273,7 +273,6 @@ molecular_dynamics_stage:
     lock: set_by_deepdrivemd
     mda_selection: protein and name CA
     model: cvae
-    next_outlier_policy: 1
     node_local_path: set_by_deepdrivemd
     openmm_selection:
     - CA

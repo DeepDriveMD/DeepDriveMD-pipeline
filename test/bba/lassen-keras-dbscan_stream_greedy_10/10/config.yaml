@@ -256,7 +256,6 @@ molecular_dynamics_stage:
     initial_pdb_dir: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_input
     lock: set_by_deepdrivemd
     mda_selection: protein and name CA
-    next_outlier_policy: 1
     node_local_path: set_by_deepdrivemd
     openmm_selection:
     - CA

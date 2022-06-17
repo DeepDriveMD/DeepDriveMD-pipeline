@@ -284,7 +284,6 @@ molecular_dynamics_stage:
     lock: set_by_deepdrivemd
     mda_selection: protein and name CA
     model: aae
-    next_outlier_policy: 1
     node_local_path: /tmp/
     openmm_selection:
     - CA

@@ -278,7 +278,6 @@ molecular_dynamics_stage:
     mda_selection: protein and name CA
     model: cvae
     multi_ligand_table: /usr/workspace/cv_ddmd/yakushin/Integration1/data/ml/ml_table.csv
-    next_outlier_policy: 1
     node_local_path: set_by_deepdrivemd
     openmm_selection:
     - CA
