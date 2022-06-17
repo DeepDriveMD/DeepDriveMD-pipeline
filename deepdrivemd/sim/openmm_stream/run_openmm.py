@@ -173,9 +173,9 @@ def prepare_simulation(  # noqa
 
         while True:
             try:
-                positions = np.load(str(positions_npy))
+                positions = np.load(positions_npy)
                 print("positions.shape = ", positions.shape)
-                velocities = np.load(str(velocities_npy))
+                velocities = np.load(velocities_npy)
                 break
             except Exception as exc:
                 print("Exception ", exc)
