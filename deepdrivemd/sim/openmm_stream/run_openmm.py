@@ -156,25 +156,15 @@ def prepare_simulation(  # noqa
 
     if outlier is not None:
         print("There are outliers")
+        positions_npy, velocities_npy = outlier["positions_npy"], outlier["velocities_npy"]
 
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-            positions_npy, velocities_npy, ligand = (
-                outlier["positions_npy"],
-                outlier["velocities_npy"],
-                outlier["ligand"],
-            )
+            ligand = outlier["ligand"]
             print("ligand=", ligand)
             init_multi_ligand(cfg, ligand)
-        else:
-            positions_npy, velocities_npy = (
-                outlier["positions_npy"],
-                outlier["velocities_npy"]
-            )
 
-        if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
             with Timer("molecular_dynamics_SimulationContext"):
                 print("cfg.pdb_file = ", cfg.pdb_file)
-                print("cfg.top_file1 = ", cfg.top_file1)
                 ctx = SimulationContext(cfg)
                 print("ctx = ", ctx)
                 print("dir(ctx) = ", dir(ctx))
@@ -185,11 +175,10 @@ def prepare_simulation(  # noqa
             try:
                 positions = np.load(str(positions_npy))
                 print("positions.shape = ", positions.shape)
-                print("positions = ", positions)
                 velocities = np.load(str(velocities_npy))
                 break
-            except Exception as e:
-                print("Exception ", e)
+            except Exception as exc:
+                print("Exception ", exc)
                 print(f"Waiting for {positions_npy} and {velocities_npy}")
                 time.sleep(5)
 
