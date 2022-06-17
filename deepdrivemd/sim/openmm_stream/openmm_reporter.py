@@ -20,6 +20,10 @@ class ADIOSBPConfig(BaseSettings):
 class StreamReporter:
     def __init__(self, sst_stream: "adios2.adios2.File", bp_file_config: ADIOSBPConfig) -> None:
         self._sst_stream = sst_stream
+
+        # TODO: BP file is used to write trajectory and other data to disk
+        #       for long term storage. We should consider writing to standard
+        #       formats such as DCD files instead.
         self._bp_file = adios2.open(**bp_file_config.dict())
         self._step = 0
 
