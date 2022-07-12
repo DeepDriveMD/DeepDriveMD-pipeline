@@ -116,9 +116,10 @@ def wait_for_model(cfg: OutlierDetectionConfig) -> str:
     while True:
         if os.path.exists(cfg.best_model):
             break
-        print(f"No model {cfg.best_model}, sleeping")
-        sys.stdout.flush()
-        time.sleep(cfg.timeout2)
+        if(os.getenv('DDMD_DEBUG') == None):
+            print(f"No model {cfg.best_model}, sleeping")
+            sys.stdout.flush()
+            time.sleep(cfg.timeout2)
     return cfg.best_model
 
 
@@ -752,11 +753,13 @@ def main(cfg: OutlierDetectionConfig):
             try:
                 agg_input = mystreams.next()
             except:  # noqa TODO: flake8 - should not have a bar except
-                print("Sleeping for input")
-                time.sleep(60)
+                if(os.getenv('DDMD_DEBUG') == None):
+                    print("Sleeping for input")
+                    time.sleep(60)
                 continue
             if len(agg_input[list(agg_input.keys())[0]]) < 10:
-                time.sleep(30)
+                if(os.getenv('DDMD_DEBUG') == None):
+                    time.sleep(30)
             else:
                 break
 
@@ -823,7 +826,8 @@ def main(cfg: OutlierDetectionConfig):
         with Timer("outlier_publish"):
             publish(tmp_dir, published_dir)
 
-        time.sleep(random.randint(250, 350))
+        if(os.getenv('DDMD_DEBUG') == None):
+            time.sleep(random.randint(250, 350))
 
         with Timer("outlier_read"):
             agg_input = mystreams.next()

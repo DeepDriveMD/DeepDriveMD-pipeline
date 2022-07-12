@@ -32,12 +32,14 @@ def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
         sys.stdout.flush()
         if len(bpfiles) == cfg.num_agg:
             break
-        print(f"Waiting for {cfg.num_agg} agg_4ml.bp files")
-        time.sleep(cfg.timeout1)
+        if(os.getenv('DDMD_DEBUG') == None):
+            print(f"Waiting for {cfg.num_agg} agg_4ml.bp files")
+            time.sleep(cfg.timeout1)
 
     print(f"bpfiles = {bpfiles}")
 
-    time.sleep(60 * 5)
+
+    time.sleep(5*60)
 
     """
     # Wait for enough time steps in each bp file
@@ -85,9 +87,10 @@ def next_input(
                 cm_data_input = streams.next()["contact_map"]
                 break
             except:  # noqa TODO: flake8 - should not have a bar except
-                print("Sleeping for input to become readable")
-                sys.stdout.flush()
-                time.sleep(60)
+                if(os.getenv('DDMD_DEBUG') == None):
+                    print("Sleeping for input to become readable")
+                    sys.stdout.flush()
+                    time.sleep(60)
                 continue
     cm_data_input = np.expand_dims(cm_data_input, axis=-1)
 

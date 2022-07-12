@@ -33,7 +33,7 @@ def configure_reporters(
     print("type(sim) = ", type(sim))
     print("type(cfg) = ", type(cfg))
 
-    """
+    '''
     log_file = os.path.dirname(ctx.log_file) + f"/{iteration}/" + os.path.basename(ctx.log_file)
     sim.reporters.append(
         app.StateDataReporter(
@@ -47,7 +47,7 @@ def configure_reporters(
             totalEnergy=True,
         )
     )
-    """
+    '''
 
 
 def next_outlier(

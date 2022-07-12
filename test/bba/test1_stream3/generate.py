@@ -11,6 +11,7 @@ import subprocess
 
 DDMD="/".join(os.getenv('PWD').split("/")[:-3])
 PATH=os.getenv('PATH')
+USER=os.getenv('USER')
 LD_LIBRARY_PATH=os.getenv('LD_LIBRARY_PATH')
 PYTHONPATH=os.getenv('PYTHONPATH')
 PYTHON=subprocess.getstatusoutput('which python')[1]
@@ -28,7 +29,7 @@ class Header(BaseModel):
     cpus_per_node = 40
     gpus_per_node = 4
     hardware_threads_per_cpu = 4
-    experiment_directory = "/p/gpfs1/yakushin/Outputs/3mm"
+    experiment_directory = f"/p/gpfs1/{USER}/Outputs/3mm"
     software_directory = (
         f"{DDMD}/deepdrivemd"
     )
