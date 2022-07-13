@@ -86,7 +86,7 @@ $ bpls /p/gpfs1/yakushin/Outputs/3/molecular_dynamics_runs/stage0000/task0000/4/
 	velocities, rmsd to the folded state, reporting step in the simulation (here it is from 0 to 99).
       <li>To convert those trajectories into npy format, using 4 nodes, 10-minute walltime, do:<br>
 	<ul>
-	  <li>cd $DDMD/postproduction
+	  <li>cd $DDMD/postproduction_stream
 	  <li>nohup ./run_positions.py 3 4 10 > positions_3.log 2>&1 &
 	  <li>Here 3 corresponds to the output directory for the run: /p/gpfs1/yakushin/Outputs/3
 	  <li>Running the above command creates positions.npy in each directory where trajectory.bp is found
@@ -99,8 +99,8 @@ $ bpls /p/gpfs1/yakushin/Outputs/3/molecular_dynamics_runs/stage0000/task0000/4/
       <li>python loss_real1.py -s re.session.lassen709.yakushin.019150.0009 -p 0 -t 13<br>
 	provided that the log file for the machine learning task is in /p/gpfs1/yakushin/radical.pilot.sandbox/re.session.lassen709.yakushin.019150.0009/pilot.0000/task.0013/task.0013.out
 	<ul>
-	  <li>The corresponding *.csv file will be in /p/gpfs1/yakushin/Outputs/3/postproduction/losses.csv
-	  <li>The loss curves can be plotted by with $DDMD/postproduction/loss.ipynb
+	  <li>The corresponding *.csv file will be in /p/gpfs1/yakushin/Outputs/3/postproduction_stream/losses.csv
+	  <li>The loss curves can be plotted by with $DDMD/postproduction_stream/loss.ipynb
 	</ul>
       <li>For AAE case, the logs are written in a different format and can be parsed with
 	<ul>
@@ -110,22 +110,29 @@ $ bpls /p/gpfs1/yakushin/Outputs/3/molecular_dynamics_runs/stage0000/task0000/4/
     </ul>
     <h2>Gantt charts</h2>
     <ul>
-      <li>To parse log files in order to generate gantt charts, run from postproduction directory:<br>
+      <li>To parse log files in order to generate gantt charts, run from postproduction_stream directory:<br>
 	nohup ./run_timers.sh output_dir nodes walltime session pilot exclude > timers.log 2>&1 &<br>
 	where output_dir - subdirectory of /p/gpfs1/yakushin/Outputs, nodes - number of nodes to use (the job is submitted to the cluster),
 	walltime - maximum walltime, session - log session like re.session.lassen709.yakushin.019150.0009, pilot - typically 0, exclude - what tasks to exclude (for example, it is not interesting to see timing
 	for aggregators and it takes a lot of time to parse the corresponding logs so you can exclude those by using 120-129 as exclude (currently it is dumb and just parses one range)
-      <li>An example of the notebook to plot gantt charts: postproduction/gantt_rmsd_streaming.ipynb
+      <li>An example of the notebook to plot gantt charts: postproduction_stream/gantt_rmsd_streaming.ipynb
     </ul>
     <h2>Embeddings</h2>
     <ul>
-      <li>To generate embedding files, run from the postproduction directory:<br>
+      <li>To generate embedding files, run from the postproduction_stream directory:<br>
       nohup ./run_emb.sh > emb.log outputdir nodes walltime zcentroid 2>&1 &<br>
       where outputdir - subdirectory of /p/gpfs1/yakushin/Outputs/ where job outputs are stored, nodes - number of nodes to use (the job is submitted to the cluster), walltime - up to how much time to run the job, zcentroid - 1 or 0
       depending on whether you want to calculate zcentroid or not.
-      <li>An example notebook to plot embeddings: postproduction/plot_tsne.ipynb
+      <li>An example notebook to plot embeddings: postproduction_stream/plot_tsne.ipynb
     </ul>
-	
+
+    <h2>Positions</h2>
+    <ul>
+      <li>To generate positions in numpy format, run from the postproduction_stream directory:<br>
+	nohup ./run_positions.sh output_dir nodes walltime > positions.log 2>&1 &
+      <li>To collect the results into a single file, run from /p/gpfs1/yakushin/Outputs directory:<br>
+	/path/postproduction_stream/archive.sh outputdir<br>
+    </ul>
     <h1>How to install software dependencies for DDMD-S on lassen</h1>
 
     <ul>
