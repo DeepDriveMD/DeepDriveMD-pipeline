@@ -212,8 +212,6 @@ $ bpls /p/gpfs1/yakushin/Outputs/3/molecular_dynamics_runs/stage0000/task0000/4/
 	  <li>Comment numpy,h5py lines in setup.cfg
 	  <li>pip install -e .
 	</ul>
-      <li>Restore broken opencv (which package broke it?):<br>
-	conda install -c https://public.dhe.ibm.com/ibmdl/export/pub/software/server/ibm-ai/conda opencv=3.4.8
       <li>pip install torchsummary
       <li>You might need to modify the corresponding generate.py files for your path and rerun it: python generate.py > config.yaml. While running generate.py script, you need to be in the environment of the program
 	since a lot of things, like python path, is picked up from the environment.
