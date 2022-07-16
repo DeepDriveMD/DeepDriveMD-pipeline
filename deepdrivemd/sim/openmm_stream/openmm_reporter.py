@@ -1,10 +1,15 @@
+from abc import ABC, abstractmethod
 from datetime import datetime
 import hashlib
 import sys
-from typing import Dict
+from typing import TYPE_CHECKING, Dict
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 import adios2
 import MDAnalysis
+import openmm.app as app
 import numpy as np
 from MDAnalysis.analysis import distances, rms
 from deepdrivemd.config import BaseSettings
@@ -60,6 +65,29 @@ class StreamReporter:
         self._write_adios_step(self._bp_file, output)
         self._step += 1
 
+class OpenMMReporter(ABC):
+    @abstractmethod
+    def report(self, simulation: app.Simulation, state: "app.State", positions: "npt.ArrayLike", velocities: "npt.ArrayLike"):
+        """Report a quantity of interest."""
+
+class PositionReporter:
+    def report(self, simulation: app.Simulation, state: "app.State", positions: "npt.ArrayLike", velocities: "npt.ArrayLike"):
+        """Report positions."""
+        return {"positions": positions}
+
+class VelocityReporter:
+    def report(self, simulation: app.Simulation, state: "app.State", positions: "npt.ArrayLike", velocities: "npt.ArrayLike"):
+        """Report velocities."""
+        return {"velocities": velocities}
+
+class MD5Reporter:
+    def report(self, simulation: app.Simulation, state: "app.State", positions: "npt.ArrayLike", velocities: "npt.ArrayLike"):
+        """Report md5 sum of positions."""
+        m = hashlib.sha512()
+        m.update(positions.tostring())
+        md5 = m.hexdigest()
+        md5 = hash2intarray(md5)
+        return {"md5": md5}
 
 # TODO: It may make sense to expose a more generic reporter interface to handle the
 #       various data fields that users may want e.g. rmsd, contact map, etc.
@@ -101,13 +129,14 @@ class ContactMapReporter:
             positions[self.heavy_atoms_indices, 2], weights=self.heavy_atoms_masses
         )
 
-    def report(self, simulation, state):
+    def report(self, simulation: app.Simulation, state: "app.State") -> None:
         """Computes contact maps, md5 sum of positions, rmsd to the reference state and records them into an ADIOS stream."""
         timer("reporting", 1)
         # TODO: Probably don't need to get the positions again
         stateA = simulation.context.getState(getPositions=True, getVelocities=True)
         positions = state.getPositions(asNumpy=True).astype(np.float32)
         velocities = stateA.getVelocities(asNumpy=True)
+        # TODO: This line is probably not necessary, given that the velocities are already an np.array
         velocities = np.array(
             [[x[0]._value, x[1]._value, x[2]._value] for x in velocities]
         ).astype(np.float32)
