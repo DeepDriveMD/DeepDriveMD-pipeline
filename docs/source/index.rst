@@ -77,3 +77,6 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+:doc:`How to use DeepDriveMD-S on lassen@LLNL with the existing installation of dependencies <pages/ddmd1>` 
