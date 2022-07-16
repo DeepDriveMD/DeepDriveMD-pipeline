@@ -80,7 +80,6 @@ def next_outlier(
                 db = pickle.load(f)
             md5 = db.sorted_index[cfg.task_idx]
             rmsd = db.dictionary[md5]
-            # positions_pdb = cfg.outliers_dir / f"{md5}.pdb"
             positions_pdb = cfg.outliers_dir / f"p_{md5}.npy"
             velocities_npy = cfg.outliers_dir / f"v_{md5}.npy"
 
@@ -107,9 +106,6 @@ def next_outlier(
 
     with open(cfg.current_dir / "rmsd.txt", "w") as f:
         f.write(f"{rmsd}\n")
-
-    # positions_pdb = cfg.current_dir / f"{md5}.pdb"
-    # velocities_npy = cfg.current_dir / f"{md5}.npy"
 
     positions_pdb = cfg.current_dir / f"p_{md5}.npy"
     velocities_npy = cfg.current_dir / f"v_{md5}.npy"
@@ -201,14 +197,13 @@ def prepare_simulation(  # noqa
             with Timer("molecular_dynamics_configure_simulation"):
                 print("positions_pdb = ", positions_pdb)
                 print("ctx.top_file = ", ctx.top_file)
-                # cfg.pdb_file = str(positions_pdb)
                 try:
                     del sim
                 except Exception as e:
                     print(e)
 
                 sim = configure_simulation(
-                    pdb_file=ctx.pdb_file,  # str(positions_pdb),  # ctx.pdb_file,
+                    pdb_file=ctx.pdb_file,
                     top_file=ctx.top_file,
                     solvent_type=cfg.solvent_type,
                     gpu_index=0,
@@ -224,9 +219,6 @@ def prepare_simulation(  # noqa
 
         with Timer("molecular_dynamics_configure_reporters"):
             configure_reporters(sim, cfg, cfg.report_steps, iteration)
-
-        # TODO: See if this is causing the issue
-        # sim.context.setPositions(positions / 10)
 
         if random.random() < cfg.copy_velocities_p:
             print("Copying velocities from outliers")

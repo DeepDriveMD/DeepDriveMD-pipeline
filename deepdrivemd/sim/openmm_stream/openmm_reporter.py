@@ -1,8 +1,6 @@
 import datetime
 import hashlib
 import sys
-
-# from deepdrivemd.utils import t2Dto1D
 from typing import Dict
 
 import adios2
@@ -69,10 +67,6 @@ class ContactMapReporter(object):
             if atom.name == self.cfg.openmm_selection[0]:
                 ca_indices.append(atom.index)
 
-        #positions = np.array(state.getPositions().value_in_unit(u.angstrom)).astype(
-        #    np.float32
-        #)
-
         positions = state.getPositions(asNumpy=True).astype(np.float32)
 
 
@@ -107,8 +101,6 @@ class ContactMapReporter(object):
             contact_map = distances.contact_matrix(
                 positions_ca, cutoff=self.cfg.threshold, returntype="numpy", box=None
             ).astype("uint8")
-            # contact_map = t2Dto1D(contact_map)
-            # contact_map = np.packbits(contact_map)
 
         step = np.array([step], dtype=np.int32)
         gpstime = np.array([int(datetime.datetime.now().timestamp())], dtype=np.int32)
