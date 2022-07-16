@@ -79,4 +79,6 @@ Indices and tables
 * :ref:`search`
 
 
-:doc:`How to use DeepDriveMD-S on lassen@LLNL with the existing installation of dependencies <pages/ddmd1>` 
+* :doc:`How to use DeepDriveMD-S on lassen@LLNL with the existing installation of dependencies <pages/ddmd1>` 
+
+* :doc:`How to install software dependencies for DeepDrive-S on lassen@LLNL <pages/ddmd2>`
