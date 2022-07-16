@@ -15,7 +15,7 @@ Run
      module use /usr/workspace/cv_ddmd/software1/modules
      module load adios2
 
-   Usually I source something like :doc:`powerai.sh <pages/powerai3.sh>`.
+   Usually I source something like `powerai.sh <https://github.com/DeepDriveMD/DeepDriveMD-pipeline/blob/develop/bin/powerai.sh>`_ .
 #. Download DeepDriveMD from github::
 
      mkdir /usr/workspace/cv_ddmd/$USER
