@@ -187,12 +187,9 @@ def prepare_simulation(  # noqa
 
         while True:
             try:
-                # import parmed as pmd (would go at the top)
-                # positions = pmd.load_file(str(positions_pdb)).positions
                 positions = np.load(str(positions_pdb))
                 print("positions.shape = ", positions.shape)
                 print("positions = ", positions)
-                # positions = pmd.load_file(ctx.top_file, xyz=str(positions_pdb)).positions
                 velocities = np.load(str(velocities_npy))
                 break
             except Exception as e:

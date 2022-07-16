@@ -83,12 +83,20 @@ autodoc_mock_imports = [
     "adios2",
     "tensorflow",
     "simtk.openmm",
+    "openmm",
     "cupy",
     "cuml",
     "numba",
+    "pandas",
+    "h5py",
+    "sklearn",
+    "wandb",
     "torch",
     "torchsummary",
     "mdlearn",
+    "mdtools",
+    "molecules",
+    "MDAnalysis",
 ]
 
 html_context = {

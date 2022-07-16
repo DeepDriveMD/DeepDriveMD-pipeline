@@ -1,5 +1,5 @@
 ======================================================================================
-How to use DeepDriveMD-S on lassen@LLNL with the existing installation of dependencies 
+How to use DeepDriveMD-S on Lassen@LLNL with the existing installation of dependencies 
 ======================================================================================
 
 ---
@@ -15,17 +15,11 @@ Run
      module use /usr/workspace/cv_ddmd/software1/modules
      module load adios2
 
-   Usually I source something like `powerai.sh <https://github.com/DeepDriveMD/DeepDriveMD-pipeline/blob/develop/bin/powerai.sh>`_ .
-#. Download DeepDriveMD from github::
-
-     mkdir /usr/workspace/cv_ddmd/$USER
-     cd /usr/workspace/cv_ddmd/$USER
-     git clone git@github.com:DeepDriveMD/DeepDriveMD-pipeline.git
-
+   Usually I source something like `powerai.sh <https://github.com/DeepDriveMD/DeepDriveMD-pipeline/blob/develop/bin/powerai.sh>`_.
+     
 #. For convenience, let us define::
 
      export DDMD="/usr/workspace/cv_ddmd/$USER/DeepDriveMD-pipeline"
-     alias cdddmd="cd $DDMD"
 
 #. To run various preconfigured examples::
 
@@ -56,7 +50,8 @@ Run
 #. The configuration files for the above cases can be found by appending ``$DDMD`` with ``test/bba/DIR``
    where ``DIR`` is listed in the ``Makefile``. For example, for run1, the path is ``$DDMD/test/bba/test1_stream``.
 
-#. The main configuration file is ``generate.py`` that is edited to generate a yaml file::
+#. DeepDriveMD is configured using a YAML file, we edit ``generate.py`` to generate the YAML file (make sure to activate 
+   the conda environment before running this)::
 
      python generate.py > config.yaml
 
@@ -64,17 +59,17 @@ Run
 
 #. ``adios_sim.xml`` controls the communication over the network between a simulation and an aggregator.
 
-#. ``adios_agg_4ml.xml`` controls the communication over the network between an aggregator a machine learning.
+#. ``adios_agg_4ml.xml`` controls the communication over the network between an aggregator and training.
 
-#. ``adios_agg.xml`` controls the communication over the network between an aggregator and an outlier search.
+#. ``adios_agg.xml`` controls the communication over the network between an aggregator and inference.
 
 #. Notice that ``bin/run.sh`` command sets up authorization in this line::
 
      source /usr/workspace/cv_ddmd/.radical/auth
 
    For the content of this file for a particular cluster, ask Radical developers.
-   In this file various environmental variables are set, such as RMQ_HOSTNAME, RMQ_PASSWORD, ...,
-   mongodb_host, ..., RADICAL_PILOT_DBURL, ...,  that allow Radical Ensemble Toolkit to
+   In this file various environmental variables are set, such as RMQ_HOSTNAME, RMQ_PASSWORD,
+   mongodb_host, RADICAL_PILOT_DBURL, ..., that allow Radical Ensemble Toolkit to
    communicate with the corresponding servers.
 
 -------

@@ -1,6 +1,6 @@
-======================================================================================
-How to install software dependencies for DeepDrive-S on lassen@LLNL
-======================================================================================
+=====================================================================
+How to install software dependencies for DeepDriveMD-S on Lassen@LLNL
+=====================================================================
 
 #. Set up the environment for Anaconda::
 
@@ -62,7 +62,6 @@ How to install software dependencies for DeepDrive-S on lassen@LLNL
 
 #. Miscellaneous dependencies::
 
-     pip install parmed
      pip install pathos
      pip install mdanalysis==1.0.0
      pip install opentsne
@@ -82,22 +81,12 @@ How to install software dependencies for DeepDrive-S on lassen@LLNL
 
      git clone git@github.com:braceal/MD-tools.git
      cd MD-tools
-     git checkout update/openmm-7.7
      pip install -e .
 
 #. Install DeepDriveMD::
 
+     mkdir /usr/workspace/cv_ddmd/$USER
+     cd /usr/workspace/cv_ddmd/$USER
      git clone git@github.com:DeepDriveMD/DeepDriveMD-pipeline.git
      cd DeepDriveMD-pipeline
-     git checkout develop
-     Comment out numpy,h5py lines in setup.cfg
      pip install -e .
-
-#. You might need to modify the corresponding ``generate.py`` files for your path and rerun it::
-
-     python generate.py > config.yaml.
-
-
-#. While running ``generate.py`` script, you need to be in the environment of the program
-   since a lot of things, like python path, is picked up from the environment.
-
