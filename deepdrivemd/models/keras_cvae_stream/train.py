@@ -38,35 +38,8 @@ def wait_for_input(cfg: KerasCVAEModelConfig) -> List[str]:
 
     print(f"bpfiles = {bpfiles}")
 
-
     time.sleep(5*60)
 
-    """
-    # Wait for enough time steps in each bp file
-    while True:
-        enough = True
-        for bp in bpfiles:
-            com = f"bpls {bp}"
-            a = subprocess.getstatusoutput(com)
-            if a[0] != 0:
-                enough = False
-                print(f"Waiting, a = {a}, {bp}")
-                break
-            try:
-                steps = int(a[1].split("\n")[0].split("*")[0].split(" ")[-1])
-            except Exception as e:
-                print("Exception ", e)
-                steps = 0
-                enough = False
-            if steps < cfg.min_step_increment:
-                enough = False
-                print(f"Waiting, steps = {steps}, {bp}"); sys.stdout.flush()
-                break
-        if enough:
-            break
-        else:
-            time.sleep(cfg.timeout2)
-    """
     return bpfiles
 
 
@@ -153,7 +126,6 @@ def main(cfg: KerasCVAEModelConfig):
         config=cfg.adios_xml_agg_4ml,
         batch=cfg.read_batch,
         stream_name="AggregatorOutput4ml",
-        # change for different aggregators
     )
 
     # Infinite loop of CVAE training

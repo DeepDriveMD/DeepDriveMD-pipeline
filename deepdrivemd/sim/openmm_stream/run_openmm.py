@@ -30,26 +30,6 @@ def configure_reporters(
     cfg.reporter = ContactMapReporter(report_steps, cfg)
     sim.reporters.append(cfg.reporter)
 
-    print("type(sim) = ", type(sim))
-    print("type(cfg) = ", type(cfg))
-
-    '''
-    log_file = os.path.dirname(ctx.log_file) + f"/{iteration}/" + os.path.basename(ctx.log_file)
-    sim.reporters.append(
-        app.StateDataReporter(
-            log_file,
-            report_steps,
-            step=True,
-            time=True,
-            speed=True,
-            potentialEnergy=True,
-            temperature=True,
-            totalEnergy=True,
-        )
-    )
-    '''
-
-
 def next_outlier(
     cfg: OpenMMConfig, sim: app.simulation.Simulation
 ) -> Dict[str, Union[int, float, str, np.ndarray]]:
@@ -75,7 +55,6 @@ def next_outlier(
 
     while True:
         try:
-            # cfg.lock.acquire()
             with open(cfg.pickle_db, "rb") as f:
                 db = pickle.load(f)
             md5 = db.sorted_index[cfg.task_idx]
@@ -90,7 +69,6 @@ def next_outlier(
                 task = cfg.outliers_dir / f"{md5}.txt"
                 shutil.copy(task, cfg.current_dir)
                 copied_task = cfg.current_dir / f"{md5}.txt"
-            # cfg.lock.release()
         except Exception as e:
             print("=" * 30)
             print(e)
