@@ -19,6 +19,14 @@ class ContactMapReporter(object):
         print(cfg)
         print(f"report interval = {reportInterval}")
         print("ContactMapRepoter constructor")
+        
+        """
+        ADIOS stream is opened outside of this class so that
+        it can be created and destroyed without affecting the connection
+        to the ADIOS stream. Reinitializing this class is necessary for
+        the multi-ligand case.
+        """
+        
         self._adios_stream = cfg._adios_stream
 
         self.step = 0
@@ -35,6 +43,18 @@ class ContactMapReporter(object):
                 self.cfg.mda_selection
             ).positions.copy()
 
+
+        """
+        This ADIOS file stores trajectory for the given simulation run from
+        a particular initial conditions.
+        There is one ADIOS file for each simulation run and therefore
+        opening and closing this file in this class is OK since
+        this class is created for each simulation run as well.
+        The data from this file is not used during the run by other
+        components (which get their data via network), this file is only needed
+        if one wants to get positions in postproduction.
+        """
+ 
         self._adios_file = adios2.open(
             name=str(self.cfg.current_dir) + "/trajectory.bp",
             mode="w",
@@ -148,6 +168,8 @@ class ContactMapReporter(object):
              representing one step
 
         """
+
+        # Sending data via network to the aggregator
         for k, v in output.items():
             if k == "gpstime":
                 continue
@@ -156,6 +178,7 @@ class ContactMapReporter(object):
             )
         self._adios_stream.end_step()
 
+        # Saving trajectories to BP file
         for k, v in output.items():
             self._adios_file.write(
                 k, v, list(v.shape), [0] * len(v.shape), list(v.shape)
