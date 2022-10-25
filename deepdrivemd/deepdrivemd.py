@@ -1,4 +1,3 @@
-import argparse
 import itertools
 import os
 import shutil
@@ -10,6 +9,7 @@ from radical.entk import AppManager, Pipeline, Stage, Task  # type: ignore[impor
 
 from deepdrivemd.config import BaseStageConfig, ExperimentConfig
 from deepdrivemd.data.api import DeepDriveMD_API
+from deepdrivemd.utils import parse_args
 
 
 def generate_task(cfg: BaseStageConfig) -> Task:
@@ -235,15 +235,6 @@ class PipelineManager:
         return stage
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
-
-
 if __name__ == "__main__":
 
     args = parse_args()
@@ -265,18 +256,25 @@ if __name__ == "__main__":
             "Invalid RMQ environment. Please see README.md for configuring environment."
         )
 
-    # Calculate total number of nodes required. Assumes 1 MD job per GPU
-    # TODO: fix this assumption for NAMD
-    num_full_nodes, extra_gpus = divmod(
-        cfg.molecular_dynamics_stage.num_tasks, cfg.gpus_per_node
-    )
-    extra_node = int(extra_gpus > 0)
-    num_nodes = max(1, num_full_nodes + extra_node)
+    # Calculate total number of nodes required.
+    # If gpus_per_node is 0, then we assume that the CPU is used for
+    # simulation, in which case we request a node per simulation task.
+    # Otherwise, we assume that each simulation task uses a single GPU.
+    if cfg.gpus_per_node == 0:
+        num_nodes = cfg.molecular_dynamics_stage.num_tasks
+    else:
+        num_nodes, extra_gpus = divmod(
+            cfg.molecular_dynamics_stage.num_tasks, cfg.gpus_per_node
+        )
+        # If simulations don't pack evenly onto nodes, add an extra node
+        num_nodes += int(extra_gpus > 0)
+
+    num_nodes = max(1, num_nodes)
 
     appman.resource_desc = {
         "resource": cfg.resource,
         "queue": cfg.queue,
-        "schema": cfg.schema_,
+        "access_schema": cfg.schema_,
         "walltime": cfg.walltime_min,
         "project": cfg.project,
         "cpus": cfg.cpus_per_node * cfg.hardware_threads_per_cpu * num_nodes,

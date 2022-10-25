@@ -294,16 +294,18 @@ class DeepDriveMD_API:
     def get_topology(
         initial_pdb_dir: PathLike, pdb_file: PathLike, suffix: str = ".top"
     ) -> Optional[Path]:
-        r"""Get the topology file for the system.
+        """Get the topology file for the system.
 
-        Parse `pdb_file` for the system name and then retrieve
-        the topology file from the `initial_pdb_dir` or return None
-        if the system doesn't have a topology.
+        Parse :obj:`pdb_file` for the system name and then retrieve the
+        topology file from the correct subdirectory, given by the system
+        name, in the `initial_pdb_dir` directory or return None if the
+        system doesn't have a topology.
 
         Parameters
         ----------
         initial_pdb_dir : Union[str, Path]
-            Initial data directory passed containing PDBs and optional topologies.
+            Initial data directory passed containing system subdirectories
+            with PDBs and optional topologies.
         pdb_file : Union[str, Path]
             The PDB file to parse. Can be absolute path, relative path, or filename.
         suffix : str
@@ -313,7 +315,6 @@ class DeepDriveMD_API:
         -------
         Optional[Path]
             The path to the topology file, or None if system has no topology.
-
         """
         # pdb_file: /path/to/pdb/<system-name>__<everything-else>.pdb
         # top_file: initial_pdb_dir/<system-name>/*<suffix>

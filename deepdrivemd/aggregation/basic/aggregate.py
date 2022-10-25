@@ -1,4 +1,3 @@
-import argparse
 from typing import TYPE_CHECKING, Dict, List
 
 if TYPE_CHECKING:
@@ -9,6 +8,7 @@ import numpy as np
 
 from deepdrivemd.aggregation.basic.config import BasicAggegation
 from deepdrivemd.data.api import DeepDriveMD_API
+from deepdrivemd.utils import parse_args
 
 
 def concatenate_last_n_h5(cfg: BasicAggegation) -> None:  # noqa
@@ -93,15 +93,6 @@ def concatenate_last_n_h5(cfg: BasicAggegation) -> None:  # noqa
     # Clean up
     fout.flush()
     fout.close()
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
-    )
-    args = parser.parse_args()
-    return args
 
 
 if __name__ == "__main__":
