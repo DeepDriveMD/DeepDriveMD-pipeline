@@ -8,7 +8,7 @@ max_iteration: 20
 cpus_per_node: 40
 gpus_per_node: 4
 hardware_threads_per_cpu: 4
-experiment_directory: /p/gpfs1/brace3/runs/ddmd_production_runs/smoothened_receptor_ddmd_run-0
+experiment_directory: /p/gpfs1/brace3/runs/ddmd_production_runs/smoothened_receptor_ddmd_run-1
 node_local_path: /tmp
 molecular_dynamics_stage:
     pre_exec:
@@ -41,7 +41,7 @@ molecular_dynamics_stage:
         solvent_type: explicit
         top_suffix: .top
         simulation_length_ns: 2.0
-        report_interval_ps: 10.0
+        report_interval_ps: 5.0
         dt_ps: 0.002
         temperature_kelvin: 300.0
         heat_bath_friction_coef: 1.0
@@ -217,7 +217,7 @@ agent_stage:
         num_extrinsic_outliers: 120
         intrinsic_score: dbscan_lof_outlier
         extrinsic_score: null
-        n_traj_frames: 200
+        n_traj_frames: 500
         n_most_recent_h5_files: 120
         k_random_old_h5_files: 120
         sklearn_num_jobs: -1
