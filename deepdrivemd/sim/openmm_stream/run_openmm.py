@@ -11,8 +11,8 @@ from typing import Dict, Union
 import adios2
 import numpy as np
 import pandas as pd
-import simtk.openmm as omm
-import simtk.unit as u
+import openmm.unit as u
+import openmm.app as app
 from mdtools.openmm.sim import configure_simulation
 
 from deepdrivemd.sim.openmm.run_openmm import SimulationContext
@@ -22,7 +22,7 @@ from deepdrivemd.utils import Timer, parse_args
 
 
 def configure_reporters(
-    sim: omm.app.simulation.Simulation,
+    sim: app.simulation.Simulation,
     cfg: OpenMMConfig,
     report_steps: int,
     iteration: int = 0,
@@ -30,35 +30,15 @@ def configure_reporters(
     cfg.reporter = ContactMapReporter(report_steps, cfg)
     sim.reporters.append(cfg.reporter)
 
-    print("type(sim) = ", type(sim))
-    print("type(cfg) = ", type(cfg))
-
-    """
-    log_file = os.path.dirname(ctx.log_file) + f"/{iteration}/" + os.path.basename(ctx.log_file)
-    sim.reporters.append(
-        omm.app.StateDataReporter(
-            log_file,
-            report_steps,
-            step=True,
-            time=True,
-            speed=True,
-            potentialEnergy=True,
-            temperature=True,
-            totalEnergy=True,
-        )
-    )
-    """
-
-
 def next_outlier(
-    cfg: OpenMMConfig, sim: omm.app.simulation.Simulation
-) -> Dict[str, Union[int, float, str, np.array]]:
+    cfg: OpenMMConfig, sim: app.simulation.Simulation
+) -> Dict[str, Union[int, float, str, np.ndarray]]:
     """Get the next outlier to use as an initial state.
 
     Parameters
     ----------
     cfg : OpenMMConfig
-    sim : omm.app.simulation.Simulation
+    sim : app.simulation.Simulation
 
     Returns
     -------
@@ -75,12 +55,10 @@ def next_outlier(
 
     while True:
         try:
-            # cfg.lock.acquire()
             with open(cfg.pickle_db, "rb") as f:
                 db = pickle.load(f)
             md5 = db.sorted_index[cfg.task_idx]
             rmsd = db.dictionary[md5]
-            # positions_pdb = cfg.outliers_dir / f"{md5}.pdb"
             positions_pdb = cfg.outliers_dir / f"p_{md5}.npy"
             velocities_npy = cfg.outliers_dir / f"v_{md5}.npy"
 
@@ -91,7 +69,6 @@ def next_outlier(
                 task = cfg.outliers_dir / f"{md5}.txt"
                 shutil.copy(task, cfg.current_dir)
                 copied_task = cfg.current_dir / f"{md5}.txt"
-            # cfg.lock.release()
         except Exception as e:
             print("=" * 30)
             print(e)
@@ -107,9 +84,6 @@ def next_outlier(
 
     with open(cfg.current_dir / "rmsd.txt", "w") as f:
         f.write(f"{rmsd}\n")
-
-    # positions_pdb = cfg.current_dir / f"{md5}.pdb"
-    # velocities_npy = cfg.current_dir / f"{md5}.npy"
 
     positions_pdb = cfg.current_dir / f"p_{md5}.npy"
     velocities_npy = cfg.current_dir / f"v_{md5}.npy"
@@ -132,7 +106,7 @@ def next_outlier(
 
 # TODO: flake8 says this function is too complex. Needs refactor.
 def prepare_simulation(  # noqa
-    cfg: OpenMMConfig, iteration: int, sim: omm.app.simulation.Simulation
+    cfg: OpenMMConfig, iteration: int, sim: app.simulation.Simulation
 ) -> bool:
     """Replace positions and, with `cfg.copy_velocities_p` probability, velocities
     of the current simulation state from an outlier
@@ -141,7 +115,7 @@ def prepare_simulation(  # noqa
     ----------
     cfg : OpenMMConfig
     iteration : int
-    sim: omm.app.simulation.Simulation
+    sim: app.simulation.Simulation
 
     Returns
     -------
@@ -187,12 +161,9 @@ def prepare_simulation(  # noqa
 
         while True:
             try:
-                # import parmed as pmd (would go at the top)
-                # positions = pmd.load_file(str(positions_pdb)).positions
                 positions = np.load(str(positions_pdb))
                 print("positions.shape = ", positions.shape)
                 print("positions = ", positions)
-                # positions = pmd.load_file(ctx.top_file, xyz=str(positions_pdb)).positions
                 velocities = np.load(str(velocities_npy))
                 break
             except Exception as e:
@@ -202,23 +173,20 @@ def prepare_simulation(  # noqa
 
         if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
             with Timer("molecular_dynamics_configure_simulation"):
-                dt_ps = cfg.dt_ps * u.picoseconds
-                temperature_kelvin = cfg.temperature_kelvin * u.kelvin
                 print("positions_pdb = ", positions_pdb)
                 print("ctx.top_file = ", ctx.top_file)
-                # cfg.pdb_file = str(positions_pdb)
                 try:
                     del sim
                 except Exception as e:
                     print(e)
 
                 sim = configure_simulation(
-                    pdb_file=ctx.pdb_file,  # str(positions_pdb),  # ctx.pdb_file,
+                    pdb_file=ctx.pdb_file,
                     top_file=ctx.top_file,
                     solvent_type=cfg.solvent_type,
                     gpu_index=0,
-                    dt_ps=dt_ps,
-                    temperature_kelvin=temperature_kelvin,
+                    dt_ps=cfg.dt_ps,
+                    temperature_kelvin=cfg.temperature_kelvin,
                     heat_bath_friction_coef=cfg.heat_bath_friction_coef,
                 )
         else:
@@ -229,8 +197,6 @@ def prepare_simulation(  # noqa
 
         with Timer("molecular_dynamics_configure_reporters"):
             configure_reporters(sim, cfg, cfg.report_steps, iteration)
-
-        sim.context.setPositions(positions / 10)
 
         if random.random() < cfg.copy_velocities_p:
             print("Copying velocities from outliers")
@@ -256,8 +222,6 @@ def prepare_simulation(  # noqa
             print("dir(ctx) = ", dir(ctx))
 
         with Timer("molecular_dynamics_configure_simulation"):
-            dt_ps = cfg.dt_ps * u.picoseconds
-            temperature_kelvin = cfg.temperature_kelvin * u.kelvin
             try:
                 del sim
             except Exception as e:
@@ -269,9 +233,9 @@ def prepare_simulation(  # noqa
                 top_file=ctx.top_file,
                 solvent_type=cfg.solvent_type,
                 gpu_index=0,
-                dt_ps=dt_ps,
-                temperature_kelvin=temperature_kelvin,
-                heat_bath_friction_coef=cfg.heat_bath_friction_coef,
+                dt_ps=cfg.dt_ps,
+                temperature_kelvin=cfg.temperature_kelvin,
+                heat_bath_friction_coef=cfg.heat_bath_friction_coef
                 # explicit_barostat="MonteCarloAnisotropicBarostat",  ### ifs
             )
             sim.context.setVelocitiesToTemperature(

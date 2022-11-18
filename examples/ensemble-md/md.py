@@ -1,7 +1,7 @@
 import random
 from typing import Optional
-import simtk.openmm.app as app  # type: ignore[import]
-import simtk.unit as u  # type: ignore[import]
+import openmm.app as app  # type: ignore[import]
+import openmm.unit as u  # type: ignore[import]
 from mdtools.openmm.sim import configure_simulation  # type: ignore[import]
 from deepdrivemd.config import BaseSettings
 from deepdrivemd.utils import parse_args
@@ -37,7 +37,6 @@ def run_simulation(cfg: OpenMMSimulationConfig) -> None:
 
     # openmm typed variables
     dt_ps = cfg.params.dt_ps * u.picoseconds
-    temperature_kelvin = cfg.params.temperature_kelvin * u.kelvin
     report_interval_ps = cfg.params.report_interval_ps * u.picoseconds
     # If the simulation length is None, then we default to 10 and
     # implement logic below to run indefinitely.
@@ -56,8 +55,8 @@ def run_simulation(cfg: OpenMMSimulationConfig) -> None:
         top_file=cfg.input_top_file,
         solvent_type=cfg.params.solvent_type,
         gpu_index=0,
-        dt_ps=dt_ps,
-        temperature_kelvin=temperature_kelvin,
+        dt_ps=cfg.params.dt_ps,
+        temperature_kelvin=cfg.params.temperature_kelvin,
         heat_bath_friction_coef=cfg.params.heat_bath_friction_coef,
     )
 

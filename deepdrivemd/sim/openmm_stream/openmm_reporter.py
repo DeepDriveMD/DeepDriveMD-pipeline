@@ -1,14 +1,11 @@
 import datetime
 import hashlib
 import sys
-
-# from deepdrivemd.utils import t2Dto1D
 from typing import Dict
 
 import adios2
 import MDAnalysis
 import numpy as np
-import simtk.unit as u
 from MDAnalysis.analysis import distances, rms
 
 from deepdrivemd.utils import hash2intarray, timer
@@ -22,6 +19,14 @@ class ContactMapReporter(object):
         print(cfg)
         print(f"report interval = {reportInterval}")
         print("ContactMapRepoter constructor")
+        
+        """
+        ADIOS stream is opened outside of this class so that
+        it can be created and destroyed without affecting the connection
+        to the ADIOS stream. Reinitializing this class is necessary for
+        the multi-ligand case.
+        """
+        
         self._adios_stream = cfg._adios_stream
 
         self.step = 0
@@ -38,6 +43,18 @@ class ContactMapReporter(object):
                 self.cfg.mda_selection
             ).positions.copy()
 
+
+        """
+        This ADIOS file stores trajectory for the given simulation run from
+        a particular initial conditions.
+        There is one ADIOS file for each simulation run and therefore
+        opening and closing this file in this class is OK since
+        this class is created for each simulation run as well.
+        The data from this file is not used during the run by other
+        components (which get their data via network), this file is only needed
+        if one wants to get positions in postproduction.
+        """
+ 
         self._adios_file = adios2.open(
             name=str(self.cfg.current_dir) + "/trajectory.bp",
             mode="w",
@@ -70,9 +87,8 @@ class ContactMapReporter(object):
             if atom.name == self.cfg.openmm_selection[0]:
                 ca_indices.append(atom.index)
 
-        positions = np.array(state.getPositions().value_in_unit(u.angstrom)).astype(
-            np.float32
-        )
+        positions = state.getPositions(asNumpy=True).astype(np.float32)
+
 
         if self.cfg.compute_zcentroid:
             centroid = np.array(self.zcentroid(positions), dtype=np.float32)
@@ -105,8 +121,6 @@ class ContactMapReporter(object):
             contact_map = distances.contact_matrix(
                 positions_ca, cutoff=self.cfg.threshold, returntype="numpy", box=None
             ).astype("uint8")
-            # contact_map = t2Dto1D(contact_map)
-            # contact_map = np.packbits(contact_map)
 
         step = np.array([step], dtype=np.int32)
         gpstime = np.array([int(datetime.datetime.now().timestamp())], dtype=np.int32)
@@ -154,6 +168,8 @@ class ContactMapReporter(object):
              representing one step
 
         """
+
+        # Sending data via network to the aggregator
         for k, v in output.items():
             if k == "gpstime":
                 continue
@@ -162,6 +178,7 @@ class ContactMapReporter(object):
             )
         self._adios_stream.end_step()
 
+        # Saving trajectories to BP file
         for k, v in output.items():
             self._adios_file.write(
                 k, v, list(v.shape), [0] * len(v.shape), list(v.shape)

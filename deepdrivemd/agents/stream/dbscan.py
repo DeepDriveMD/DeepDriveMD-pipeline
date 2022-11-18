@@ -20,7 +20,7 @@ from cuml import DBSCAN as DBSCAN
 from mdlearn.nn.models.aae.point_3d_aae import AAE3d
 from numba import cuda
 from pathos.multiprocessing import ProcessingPool as Pool
-from simtk.openmm.app.pdbfile import PDBFile
+from openmm.app.pdbfile import PDBFile
 from sklearn.neighbors import LocalOutlierFactor
 from torchsummary import summary
 
@@ -116,9 +116,10 @@ def wait_for_model(cfg: OutlierDetectionConfig) -> str:
     while True:
         if os.path.exists(cfg.best_model):
             break
-        print(f"No model {cfg.best_model}, sleeping")
-        sys.stdout.flush()
-        time.sleep(cfg.timeout2)
+        if(os.getenv('DDMD_DEBUG') == None):
+            print(f"No model {cfg.best_model}, sleeping")
+            sys.stdout.flush()
+            time.sleep(cfg.timeout2)
     return cfg.best_model
 
 
@@ -251,7 +252,6 @@ def outliers_from_latent(
     db_label = db.labels_.to_array()
     print("unique labels = ", np.unique(db_label))
     outlier_list = np.where(db_label == -1)
-    # clear_gpu()
     return outlier_list
 
 
@@ -334,18 +334,7 @@ def write_pdb_frame(
     )
     sys.stdout.flush()
 
-    """
-    import MDAnalysis as mda
-    with Timer("universe"):
-        mda_u = mda.Universe(str(original_pdb))
-    print(np.max(frame, axis=0) - np.min(frame, axis=0)); sys.stdout.flush()
-    mda_u.atoms.positions = frame
-
-    with Timer("write_pdb"):
-        mda_u.atoms.write(str(output_pdb_fn))
-    """
     np.save(str(output_pdb_fn), frame)
-
 
 def write_pdb_frame_2(
     frame: np.ndarray, original_pdb: Path, output_pdb_fn: str, ligand: int
@@ -611,15 +600,6 @@ def top_lof(
             print(e)
             outlier_list = list(filter(lambda x: x < len(cm_predict), outlier_list))
             projections = cm_predict[outlier_list]
-        """
-        print("type(projections)=", type(projections))
-        print("dir(projections)=", dir(projections))
-        print("projections=", projections)
-        projections = projections.cpu()
-        print("type(projections) = ", type(projections))
-        projections = projections.detach().numpy()
-        print("type(projections) = ", type(projections))
-        """
 
     lof_scores = run_lof(projections)
     print("lof_scores = ", lof_scores)
@@ -715,7 +695,6 @@ def main(cfg: OutlierDetectionConfig):
         adios_files_list = list(map(lambda x: x.replace(".sst", ""), adios_files_list))
 
     variable_list = [
-        # StreamContactMapVariable("contact_map", np.uint8, DataStructure.array),
         StreamVariable("positions", np.float32, DataStructure.array),
         StreamVariable("md5", str, DataStructure.string),
         StreamVariable("velocities", np.float32, DataStructure.array),
@@ -752,11 +731,13 @@ def main(cfg: OutlierDetectionConfig):
             try:
                 agg_input = mystreams.next()
             except:  # noqa TODO: flake8 - should not have a bar except
-                print("Sleeping for input")
-                time.sleep(60)
+                if(os.getenv('DDMD_DEBUG') == None):
+                    print("Sleeping for input")
+                    time.sleep(60)
                 continue
             if len(agg_input[list(agg_input.keys())[0]]) < 10:
-                time.sleep(30)
+                if(os.getenv('DDMD_DEBUG') == None):
+                    time.sleep(30)
             else:
                 break
 
@@ -785,7 +766,6 @@ def main(cfg: OutlierDetectionConfig):
                 or len(outlier_list[0]) < cfg.num_sim
             ):
                 print("Not using outliers")
-                # clear_gpu()
                 if cfg.compute_rmsd:
                     print("Using best rmsd states")
                     outlier_list = [select_best(cfg, agg_input)]
@@ -823,7 +803,8 @@ def main(cfg: OutlierDetectionConfig):
         with Timer("outlier_publish"):
             publish(tmp_dir, published_dir)
 
-        time.sleep(random.randint(250, 350))
+        if(os.getenv('DDMD_DEBUG') == None):
+            time.sleep(random.randint(250, 350))
 
         with Timer("outlier_read"):
             agg_input = mystreams.next()
@@ -915,17 +896,6 @@ def read_lastN(  # noqa
         variable_lists[vl] = np.vstack(variable_lists[vl])
         print(len(variable_lists[vl]))
 
-    """
-    variable_lists["contact_map"] = np.array(
-        list(
-            map(
-                lambda x: t1Dto2D(np.unpackbits(x.astype("uint8"))),
-                list(variable_lists["contact_map"]),
-            )
-        )
-    )
-    """
-
     if not variable_lists:
         return {}
 
@@ -992,62 +962,6 @@ def project_mini(cfg: OutlierDetectionConfig, trajectory: str):
 
     with open(output_path / "embeddings_model.npy", "wb") as f:
         np.save(f, embeddings)
-
-
-"""
-
-def project_mini(cfg: OutlierDetectionConfig):
-    # with Timer("wait_for_input"):
-    #    adios_files_list = wait_for_input(cfg)
-
-    ddd = os.path.dirname(cfg.agg_dir)
-
-    adios_files_list = glob.glob(
-        f"{ddd}/molecular_dynamics_runs/stage0000/task0*/*/trajectory.bp"
-    )
-
-    adios_files_list = glob.glob(f"{ddd}/aggregation_runs/stage0000/task0*/agg.bp")
-
-    with Timer("wait_for_model"):
-        model_path = str(wait_for_model(cfg))
-        print("model_path = ", model_path)
-
-    lastN = cfg.project_lastN
-
-    # Create output directories
-    dirs(cfg)
-
-    for i, bp in enumerate(adios_files_list):
-        print(f"i={i}, bp={bp}")
-        sys.stdout.flush()
-        agg_input = read_lastN([bp], lastN)
-
-        if hasattr(cfg, "compute_zcentroid") and cfg.compute_zcentroid:
-            zcentroid = agg_input["zcentroid"]
-            with open(cfg.output_path / f"zcentroid_{i}.npy", "wb") as f:
-                np.save(f, zcentroid)
-
-        if cfg.compute_rmsd:
-            rmsds = agg_input["rmsds"]
-            with open(cfg.output_path / f"rmsd_{i}.npy", "wb") as f:
-                np.save(f, rmsds)
-
-        if hasattr(cfg, "multi_ligand_table") and cfg.multi_ligand_table.is_file():
-            ligand = agg_input["ligand"]
-            sim = agg_input["dirs"]
-            for j in range(len(ligand)):
-                print(f"ligand[{j}] = {ligand[j]}")
-                if ligand[j] == -1:
-                    ligand[j] = int(sim[j])
-            with open(cfg.output_path / f"ligand_{i}.npy", "wb") as f:
-                np.save(f, ligand)
-
-        with Timer("project_predict"):
-            embeddings_cvae = predict(cfg, model_path, agg_input, batch_size=64)
-        with open(cfg.output_path / f"embeddings_cvae_{i}.npy", "wb") as f:
-            np.save(f, embeddings_cvae)
-
-"""
 
 
 def project(cfg: OutlierDetectionConfig):
@@ -1120,26 +1034,18 @@ def project_tsne_2D(cfg: OutlierDetectionConfig):
     tsne2 = TSNE(n_components=2)
     emb = []
     rmsds = []
-    # ligands = []
     embs = glob.glob(str(cfg.output_path) + "/embeddings_cvae_*.npy")
     for i in range(len(embs)):
         with open(cfg.output_path / f"embeddings_cvae_{i}.npy", "rb") as f:
             emb.append(np.load(f))
         with open(cfg.output_path / f"rmsd_{i}.npy", "rb") as f:
             rmsds.append(np.load(f))
-        """
-        with open(cfg.output_path / f"ligand_{i}.npy", "rb") as f:
-            ligands.append(np.load(f))
-        """
+
     embeddings_cvae = np.concatenate(emb)
     RMSDS = np.concatenate(rmsds)
     with open(cfg.output_path / "rmsds.npy", "wb") as f:
         np.save(f, RMSDS)
-    """
-    LIGANDS = np.concatenate(ligands)
-    with open(cfg.output_path / "ligands.npy", "wb") as f:
-        np.save(f, LIGANDS)
-    """
+
     with Timer("project_TSNE_2D"):
         tsne_embeddings2 = tsne2.fit_transform(embeddings_cvae)
 

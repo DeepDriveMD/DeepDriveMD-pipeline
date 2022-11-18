@@ -9,7 +9,11 @@ from deepdrivemd.data.stream.enumerations import DataStructure
 
 
 class AdiosStreamStepRW:
-    """Read/Write step by step adios stream using Full API.
+    """Read/Write step by step adios stream using Full API. Full API is needed not to block if some
+    adios stream does not have data yet: check the status of the adios stream, if the next simulation step
+    is not available there yet, go to the next stream and revisit the current stream later.
+    The status can only be checked in Full ADIOS API. High level API can only read in blocking or
+    non-blocking way.
 
     Attributes
     ----------
@@ -65,13 +69,10 @@ class AdiosStreamStepRW:
         if not (status == adios2.StepStatus.OK):
             return False
 
-        # print(self.variables)
-
         for v in self.variables:
             vname = "var_" + v
             dname = "d_" + v
             dtype = self.variables[v][0]
-            # print("vname = ", vname); import sys; sys.stdout.flush()
             structure_type = self.variables[v][1]
             setattr(self, vname, io.InquireVariable(v))
             if structure_type == DataStructure.scalar:

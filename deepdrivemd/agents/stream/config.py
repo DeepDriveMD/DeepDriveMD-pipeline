@@ -76,18 +76,6 @@ class OutlierDetectionConfig(AgentTaskConfig):
     model: str = "cvae"
     num_points: int = 539
     num_features: int = 0
-    """
-    encoder_bias: bool = True
-    encoder_relu_slope: float = 0.0
-    encoder_filters: List[int] = [64, 128, 256, 256, 512]
-    encoder_kernels: List[int] = [5, 5, 3, 1, 1]
-    decoder_bias: bool = True
-    decoder_relu_slope: float = 0.0
-    decoder_affine_widths: List[int] = [64, 128, 512, 1024]
-    discriminator_bias: bool = True
-    discriminator_relu_slope: float = 0.0
-    discriminator_affine_widths: List[int] = [512, 128, 64]
-    """
 
 
 if __name__ == "__main__":
