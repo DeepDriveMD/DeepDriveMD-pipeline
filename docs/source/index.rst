@@ -61,6 +61,22 @@ Installation with `pip` and a *minimal set of dependencies*:
    cd deepdrivemd
    pip install -e .
 
+Running DeepDriveMD-S
+---------------------
+We have tested support for DeepDriveMD-S on the `Lassen`_ supercomputer at `Lawrence Livermore National Laboratory`_.
+Please follow the instructions linked below for installation and usage.
+
+.. _Lassen: https://hpc.llnl.gov/hardware/compute-platforms/lassen
+.. _Lawrence Livermore National Laboratory: https://www.llnl.gov
+
+.. toctree::
+   :maxdepth: 2
+
+   pages/ddmd-s-install
+   pages/ddmd-s-usage
+
+API Documentation
+-----------------
 .. toctree::
    :maxdepth: 3
 

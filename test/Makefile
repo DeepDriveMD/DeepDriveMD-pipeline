@@ -2,6 +2,8 @@ SHELL=/bin/bash
 
 run1:
 	../bin/run.sh test1_stream
+run1mm:
+	../bin/run.sh test1_stream3
 run2:
 	../bin/run.sh lassen-keras-dbscan_stream
 run3:	

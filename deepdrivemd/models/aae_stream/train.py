@@ -92,8 +92,6 @@ def next_input(
         num_workers=cfg.num_data_workers,
         drop_last=True,
         pin_memory=True,
-        #    persistent_workers=True,
-        #    prefetch_factor=cfg.prefetch_factor,
     )
 
     print("len(train_loader) = ", len(train_loader))
@@ -347,7 +345,6 @@ def main(cfg: Point3dAAEConfig):
         checkpoint_path = cfg.checkpoint_dir / "best.pt"
 
         if checkpoint_path.exists():
-            # shutil.move(str(checkpoint_path), str(cfg.published_model_dir))
             subprocess.getstatusoutput(
                 f"mv {checkpoint_path} {cfg.published_model_dir}/"
             )

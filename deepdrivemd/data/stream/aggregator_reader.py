@@ -1,4 +1,3 @@
-# from deepdrivemd.utils import t1Dto2D
 from pathlib import Path
 from typing import Dict, List, Union
 
@@ -62,8 +61,6 @@ class StreamContactMapVariable(StreamVariable):
 
     def next(self, ARW):
         var = getattr(ARW, "d_" + self.name)
-        # var = np.unpackbits(var)
-        # var = t1Dto2D(var)
         self.total.append(var)
 
 

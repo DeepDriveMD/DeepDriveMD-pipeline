@@ -16,19 +16,19 @@ queue: pbatch
 ref_pdb_file: /usr/workspace/cv_ddmd/yakushin/Integration1/data/bba/ddmd_reference/1FME.pdb
 resource: llnl.lassen
 schema_: local
-software_directory: /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd
+software_directory: /g/g15/yakushin/tmp2/tmp/DeepDriveMD-pipeline/deepdrivemd
 title: BBA integration test
 walltime_min: 720
 
 agent_stage:
   arguments:
-  - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/agents/stream/dbscan.py
+  - /g/g15/yakushin/tmp2/tmp/DeepDriveMD-pipeline/deepdrivemd/agents/stream/dbscan.py
   cpu_reqs:
     process_type: null
     processes: 1
     thread_type: OpenMP
     threads_per_process: 39
-  executable: /usr/workspace/cv_ddmd/conda1/powerai/bin/python
+  executable: /usr/workspace/cv_ddmd/conda3/powerai/bin/python
   gpu_reqs:
     process_type: null
     processes: 1
@@ -38,11 +38,11 @@ agent_stage:
   - unset PYTHONPATH
   - module load gcc/7.3.1
   - . /etc/profile.d/conda.sh
-  - conda activate /usr/workspace/cv_ddmd/conda1/powerai
+  - conda activate /usr/workspace/cv_ddmd/conda3/powerai
   - export IBM_POWERAI_LICENSE_ACCEPT=yes
   - module use /usr/workspace/cv_ddmd/software1/modules
-  - module load adios2
-  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
+  - module load adios2/2.8.1a
+  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2_061222/lib/python3.7/site-packages
   task_config:
     adios_xml_agg: set_by_deepdrivemd
     agg_dir: /p/gpfs1/yakushin/Outputs/16/aggregation_runs
@@ -110,13 +110,13 @@ agent_stage:
     use_outliers: false
 aggregation_stage:
   arguments:
-  - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/aggregation/stream/aggregator.py
+  - /g/g15/yakushin/tmp2/tmp/DeepDriveMD-pipeline/deepdrivemd/aggregation/stream/aggregator.py
   cpu_reqs:
     process_type: null
     processes: 1
     thread_type: OpenMP
     threads_per_process: 4
-  executable: /usr/workspace/cv_ddmd/conda1/powerai/bin/python
+  executable: /usr/workspace/cv_ddmd/conda3/powerai/bin/python
   gpu_reqs:
     process_type: null
     processes: 0
@@ -127,11 +127,11 @@ aggregation_stage:
   - unset PYTHONPATH
   - module load gcc/7.3.1
   - . /etc/profile.d/conda.sh
-  - conda activate /usr/workspace/cv_ddmd/conda1/powerai
+  - conda activate /usr/workspace/cv_ddmd/conda3/powerai
   - export IBM_POWERAI_LICENSE_ACCEPT=yes
   - module use /usr/workspace/cv_ddmd/software1/modules
-  - module load adios2
-  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
+  - module load adios2/2.8.1a
+  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2_061222/lib/python3.7/site-packages
   skip_aggregation: false
   task_config:
     adios_xml_agg: set_by_deepdrivemd
@@ -147,13 +147,13 @@ aggregation_stage:
     task_idx: 0
 machine_learning_stage:
   arguments:
-  - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/models/keras_cvae_stream/train.py
+  - /g/g15/yakushin/tmp2/tmp/DeepDriveMD-pipeline/deepdrivemd/models/keras_cvae_stream/train.py
   cpu_reqs:
     process_type: null
     processes: 1
     thread_type: OpenMP
     threads_per_process: 4
-  executable: /usr/workspace/cv_ddmd/conda1/powerai/bin/python
+  executable: /usr/workspace/cv_ddmd/conda3/powerai/bin/python
   gpu_reqs:
     process_type: null
     processes: 1
@@ -163,11 +163,11 @@ machine_learning_stage:
   - unset PYTHONPATH
   - module load gcc/7.3.1
   - . /etc/profile.d/conda.sh
-  - conda activate /usr/workspace/cv_ddmd/conda1/powerai
+  - conda activate /usr/workspace/cv_ddmd/conda3/powerai
   - export IBM_POWERAI_LICENSE_ACCEPT=yes
   - module use /usr/workspace/cv_ddmd/software1/modules
-  - module load adios2
-  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
+  - module load adios2/2.8.1a
+  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2_061222/lib/python3.7/site-packages
   task_config:
     adios_xml_agg: set_by_deepdrivemd
     adios_xml_agg_4ml: set_by_deepdrivemd
@@ -231,13 +231,13 @@ machine_learning_stage:
     use_model_checkpoint: true
 molecular_dynamics_stage:
   arguments:
-  - /usr/workspace/cv_ddmd/yakushin/Integration1/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py
+  - /g/g15/yakushin/tmp2/tmp/DeepDriveMD-pipeline/deepdrivemd/sim/openmm_stream/run_openmm.py
   cpu_reqs:
     process_type: null
     processes: 1
     thread_type: OpenMP
     threads_per_process: 4
-  executable: /usr/workspace/cv_ddmd/conda1/powerai/bin/python
+  executable: /usr/workspace/cv_ddmd/conda3/powerai/bin/python
   gpu_reqs:
     process_type: null
     processes: 1
@@ -248,11 +248,11 @@ molecular_dynamics_stage:
   - unset PYTHONPATH
   - module load gcc/7.3.1
   - . /etc/profile.d/conda.sh
-  - conda activate /usr/workspace/cv_ddmd/conda1/powerai
+  - conda activate /usr/workspace/cv_ddmd/conda3/powerai
   - export IBM_POWERAI_LICENSE_ACCEPT=yes
   - module use /usr/workspace/cv_ddmd/software1/modules
-  - module load adios2
-  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2/lib/python3.6/site-packages
+  - module load adios2/2.8.1a
+  - export PYTHONPATH=/p/gpfs1/yakushin/DDMD//entk_cvae_md/Outlier_search:/usr/workspace/cv_ddmd/software1/ADIOS2_061222/lib/python3.7/site-packages
   task_config:
     adios_xml_file: set_by_deepdrivemd
     adios_xml_sim: set_by_deepdrivemd
