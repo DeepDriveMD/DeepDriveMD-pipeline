@@ -21,7 +21,7 @@ import subprocess
 import MDAnalysis
 from pathlib import Path
 
-def make_nwchemrc(nwchem_top: PathLike) -> None:
+def make_nwchemrc(workdir: PathLike, nwchem_top: PathLike) -> None:
     '''
     Create an nwchemrc file if needed
 
@@ -32,23 +32,28 @@ def make_nwchemrc(nwchem_top: PathLike) -> None:
     '''
     if (Path("/etc/nwchemrc").is_file() or 
         Path("~/.nwchemrc").is_file() or
-        Path("./nwchemrc").is_file()):
+        Path(workdir.joinpath("nwchemrc")).is_file()):
         # The nwchemrc already exists, so we are done
         return
     if not nwchem_top:
-        nwchem_top = os.environ.get("NWCHEM_TOP")
+        nwchem_top = Path(os.environ.get("NWCHEM_TOP"))
+    else:
+        nwchem_top = Path(nwchem_top)
     if nwchem_top:
-        nwchem_data = nwchem_top+"/src/data"
+        nwchem_data = nwchem_top.joinpath("src/data")
     else:
         raise RuntimeError("make_nwchemrc: NWCHEM_TOP undefined")
-    fp = open("./nwchemrc","w")
+    fp = open(workdir.joinpath("nwchemrc"),"w")
     fp.write("ffield amber\n")
-    fp.write("amber_1 "+nwchem_data+"/amber_s/\n")
-    fp.write("amber_2 "+nwchem_data+"/amber_x/\n")
-    fp.write("amber_3 "+nwchem_data+"/amber_t/\n")
-    fp.write("amber_4 "+nwchem_data+"/amber_q/\n")
-    fp.write("amber_5 "+nwchem_data+"/amber_u/\n")
-    fp.write("spce    "+nwchem_data+"/solvents/spce.rst\n")
+    # We cannot use joinpath here as that would strip the trailing "/" off.
+    # In NWChem the trailing "/" indicates a directory instead of a file,
+    # i.e. "stuff" is a file whereas "stuff/" is a directory.
+    fp.write("amber_1 "+str(nwchem_data)+"/amber_s/\n")
+    fp.write("amber_2 "+str(nwchem_data)+"/amber_x/\n")
+    fp.write("amber_3 "+str(nwchem_data)+"/amber_t/\n")
+    fp.write("amber_4 "+str(nwchem_data)+"/amber_q/\n")
+    fp.write("amber_5 "+str(nwchem_data)+"/amber_u/\n")
+    fp.write("spce    "+str(nwchem_data)+"/solvents/spce.rst\n")
     fp.close()
 
 def run_nwchem(nwchem_top: PathLike) -> None:
@@ -133,23 +138,24 @@ def gen_input_minimize() -> None:
     fp.write("task md optimize\n")
     fp.close()
 
-def gen_input_dynamics(do_md: bool, md_dt_ps: float, md_time_ps: float, temperature_K: float) -> None:
+def gen_input_dynamics(do_md: bool, md_dt_ps: float, md_time_ns: float, temperature_K: float, report_interval_ps: float) -> None:
     '''
     Generate input for minimization
 
     do_md:         if True generate input for proper MD run
                    else generate input for equilibration
     md_dt_ps:      the time step in picoseconds
-    md_time_ps:    the simulation time (assumed in picoseconds)
+    md_time_ns:    the simulation time in nanoseconds
     temperature_K: the temperature in Kelvin
     '''
     if not md_dt_ps:
         raise RuntimeError("gen_input_dynamics: undefined timestep")
-    if not md_time_ps:
+    if not md_time_ns:
         raise RuntimeError("gen_input_dynamics: undefined simulation time")
     if not temperature_K:
         raise RuntimeError("gen_input_dynamics: undefined temperature")
-    numsteps = int(md_time_ps/md_dt_ps)+1
+    numsteps = max(int((md_time_ns*1000)/md_dt_ps),1)
+    nreport = max(int(report_interval_ps/md_dt_ps),1)
     fp = open("nwchemdat.nw","w")
     fp.write("echo\n")
     fp.write("start nwchemdat\n")
@@ -163,8 +169,13 @@ def gen_input_dynamics(do_md: bool, md_dt_ps: float, md_time_ps: float, temperat
         fp.write("  vreass 1 "+str(temperature_K)+" 0.5\n")
     fp.write("  step "+str(md_dt_ps)+" equil 0 data "+str(numsteps)+"\n")
     fp.write("  isotherm "+str(temperature_K)+" trelax 0.1\n")
+    # the Berendsen thermostat is susceptable to the flying ice cube syndrome
+    # suppress translational and rotational motion to avoid this.
+    fp.write("  update motion 100\n")
     fp.write("  print extra out6\n")
-    fp.write("  record rest "+str(numsteps)+" scoor 1 svelo 1 ascii\n")
+    fp.write("  record rest "+str(numsteps)+"\n")
+    if do_md:
+        fp.write("  record scoor "+str(nreport)+" ascii\n")
     fp.write("end\n")
     fp.write("task md dynamics\n")
     fp.close()
