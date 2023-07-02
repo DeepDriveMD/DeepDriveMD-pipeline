@@ -36,6 +36,8 @@ run10:
 	../bin/run.sh lassen-keras-dbscan_stream_multi-ligand
 run11:
 	../bin/run.sh lassen-keras-dbscan_stream_multi-ligand_120
+run12:
+	../bin/run.sh molecular_dynamics_workflow_nwchem_test
 clean:
 	rm -f *~ */*~
 	rm -rf __pycache__ */__pycache__ *.log */*/__pycache__ */*/*/__pycache__

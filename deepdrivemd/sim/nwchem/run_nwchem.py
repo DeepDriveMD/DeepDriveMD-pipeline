@@ -8,17 +8,19 @@ from mdtools.openmm.reporter import OfflineReporter  # type: ignore[import]
 from mdtools.openmm.sim import configure_simulation  # type: ignore[import]
 
 from deepdrivemd.data.api import DeepDriveMD_API
-from deepdrivemd.sim.openmm.config import OpenMMConfig
+from deepdrivemd.sim.nwchem.config import NWChemConfig
+from deepdrivemd.sim.nwchem import nwchem
 from deepdrivemd.utils import Timer, parse_args
 
 
 class SimulationContext:
-    def __init__(self, cfg: OpenMMConfig):
+    def __init__(self, cfg: NWChemConfig):
 
         self.cfg = cfg
         self.api = DeepDriveMD_API(cfg.experiment_directory)
         self._prefix = self.api.molecular_dynamics_stage.unique_name(cfg.output_path)
         self._top_file: Optional[Path] = None
+        self._rst_file: Optional[Path] = None
 
         # Use node local storage if available. Otherwise, write to output directory.
         if cfg.node_local_path is not None:
@@ -38,7 +40,7 @@ class SimulationContext:
 
     @property
     def traj_file(self) -> str:
-        return self._sim_prefix.with_suffix(".dcd").as_posix()
+        return self._sim_prefix.with_suffix(".trj").as_posix()
 
     @property
     def h5_prefix(self) -> str:
@@ -55,22 +57,28 @@ class SimulationContext:
         return self._top_file.as_posix()
 
     @property
+    def rst_file(self) -> Optional[str]:
+        if self._rst_file is None:
+            return None
+        return self._rst_file.as_posix()
+
+    @property
     def reference_pdb_file(self) -> Optional[str]:
         if self.cfg.reference_pdb_file is None:
             return None
         return self.cfg.reference_pdb_file.as_posix()
 
     def _init_workdir(self) -> None:
-        """Setup workdir and copy PDB/TOP files."""
+        """Setup workdir and copy RST/TOP files."""
 
         self.workdir.mkdir(exist_ok=True)
+        nwchem.make_nwchemrc(self.workdir,self.nwchem_top_dir)
 
         self._pdb_file = self._get_pdb_file()
+        self._rst_file = self._copy_rst_file()
+        self._top_file = self._copy_top_file()
 
-        if self.cfg.solvent_type == "explicit":
-            self._top_file = self._copy_top_file()
-        else:
-            self._top_file = None
+        self.workdir.chdir()
 
     def _get_pdb_file(self) -> Path:
         if self.cfg.pdb_file is not None:
@@ -131,7 +139,7 @@ def configure_reporters(
             frames_per_h5=frames_per_h5,
             wrap_pdb_file=ctx.pdb_file if cfg.wrap else None,
             reference_pdb_file=ctx.reference_pdb_file,
-            openmm_selection=cfg.openmm_selection,
+            nwchem_selection=cfg.nwchem_selection,
             mda_selection=cfg.mda_selection,
             threshold=cfg.threshold,
             contact_map=cfg.contact_map,
@@ -154,29 +162,64 @@ def configure_reporters(
         )
     )
 
+def configure_simulation(
+            pdb_file=ctx.pdb_file,
+            top_file=ctx.top_file,
+            solvent_type=cfg.solvent_type,
+            dt_ps=cfg.dt_ps,
+            temperature_kelvin=cfg.temperature_kelvin,
+            nwchem_topdir=cfg.nwchem_top_dir
+        ) -> None:
+    # Run prepare
+    nwchem.gen_input_prepare(pdb_file)
+    nwchem.run_nwchem(nwchem_topdir)
+    # Run minimization
+    nwchem.gen_input_minimize()
+    nwchem.run_nwchem(nwchem_topdir)
+    nwchem.replace_restart_file()
+    # Run equilibration (always needed as we resolvate the chemical system)
+    do_dynamics = False
+    time_ns = dt_ps
+    nwchem.gen_input_dynamics(do_dynamics,dt_ps,time_ns,temperature_kelvin,dt_ps)
+    nwchem.run_nwchem(nwchem_topdir)
 
-def run_simulation(cfg: OpenMMConfig) -> None:
+def run_steps(
+            dt_ps=cfg.dt_ps,
+            time_ns=ctx.simulation_length_ns,
+            report_ps=ctx.report_interval_ps,
+            temperature_k=cfg.temperature_kelvin,
+            nwchem_topdir=cfg.nwchem_top_dir
+        ) -> None:
+    do_dynamics = True
+    nwchem.gen_input_dynamics(do_dynamics,dt_ps,time_ns,temperature_k,report_ps)
+    nwchem.run_nwchem(nwchem_topdir)
+
+
+def run_simulation(cfg: NWChemConfig) -> None:
 
     # Handle files
     with Timer("molecular_dynamics_SimulationContext"):
         ctx = SimulationContext(cfg)
 
-    # Create openmm simulation object
+    # Create nwchem simulation object
     with Timer("molecular_dynamics_configure_simulation"):
         sim = configure_simulation(
             pdb_file=ctx.pdb_file,
             top_file=ctx.top_file,
             solvent_type=cfg.solvent_type,
-            gpu_index=0,
             dt_ps=cfg.dt_ps,
             temperature_kelvin=cfg.temperature_kelvin,
-            heat_bath_friction_coef=cfg.heat_bath_friction_coef,
+            nwchem_topdir=cfg.nwchem_top_dir
         )
 
     # openmm typed variables
     dt_ps = cfg.dt_ps * u.picoseconds
     report_interval_ps = cfg.report_interval_ps * u.picoseconds
     simulation_length_ns = cfg.simulation_length_ns * u.nanoseconds
+    #DEBUG
+    print("HVD: ps = ",u.picoseconds)
+    print("HVD: ns = ",u.nanoseconds)
+    #DEBUG
 
     # Write all frames to a single HDF5 file
     frames_per_h5 = int(simulation_length_ns / report_interval_ps)
@@ -191,7 +234,13 @@ def run_simulation(cfg: OpenMMConfig) -> None:
 
     # Run simulation for nsteps
     with Timer("molecular_dynamics_step"):
-        sim.step(nsteps)
+        run_steps(
+            dt_ps=cfg.dt_ps,
+            time_ns=ctx.simulation_length_ns,
+            report_ps=ctx.report_interval_ps,
+            temperature_k=cfg.temperature_kelvin,
+            nwchem_topdir=cfg.nwchem_top_dir
+        )
 
     # Move simulation data to persistent storage
     with Timer("molecular_dynamics_move_results"):
@@ -202,5 +251,5 @@ def run_simulation(cfg: OpenMMConfig) -> None:
 if __name__ == "__main__":
     with Timer("molecular_dynamics_stage"):
         args = parse_args()
-        cfg = OpenMMConfig.from_yaml(args.config)
+        cfg = NWChemConfig.from_yaml(args.config)
         run_simulation(cfg)

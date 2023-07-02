@@ -15,15 +15,22 @@ additional time frames.
 '''
 
 import nwchem
+import os
 import subprocess
+from pathlib import Path
 
 # You'll have to set the NWCHEM_TOP environment variable to tell where
 # NWChem lives. This location is installation dependent.
 nwchem_top = None
-test_pdb = "../../../data/1fme/system/1FME-unfolded.pdb"
+test_pdb = "../../../../data/bba/system/1FME-unfolded.pdb"
+test_path = Path("./test_dir")
+curr_path = Path("./")
+# Create directory for the test
+os.mkdir(test_path)
+os.chdir(test_path)
 # Setting the system up
 print("Set system up")
-nwchem.make_nwchemrc(nwchem_top)
+nwchem.make_nwchemrc(curr_path,nwchem_top)
 print(" - Prepare the system")
 nwchem.gen_input_prepare(test_pdb)
 nwchem.run_nwchem(nwchem_top)
@@ -33,16 +40,16 @@ nwchem.run_nwchem(nwchem_top)
 print(" - Replace restart file")
 nwchem.replace_restart_file()
 print(" - Run an equilibration simulation")
-nwchem.gen_input_dynamics(False,0.002,4.000,310.15)
+nwchem.gen_input_dynamics(False,0.002,0.004,310.15,0.2)
 nwchem.run_nwchem(nwchem_top)
 #subprocess.run(["cp","nwchemdat.out","equi.out"])
 # Run a MD short simulation
 print("Run a MD short simulation")
-nwchem.gen_input_dynamics(True,0.002,0.020,310.15)
+nwchem.gen_input_dynamics(True,0.002,0.000200,310.15,0.002)
 nwchem.run_nwchem(nwchem_top)
 #subprocess.run(["cp","nwchemdat.out","md_001.out"])
 print("Run a MD short simulation")
-nwchem.gen_input_dynamics(True,0.002,0.020,310.15)
+nwchem.gen_input_dynamics(True,0.002,0.000200,310.15,0.002)
 nwchem.run_nwchem(nwchem_top)
 #subprocess.run(["cp","nwchemdat.out","md_002.out"])
 # Convert the trajectory

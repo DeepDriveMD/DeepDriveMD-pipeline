@@ -7,25 +7,28 @@ from pydantic import root_validator
 from deepdrivemd.config import MolecularDynamicsTaskConfig
 
 
-class OpenMMConfig(MolecularDynamicsTaskConfig):
+class NWChemConfig(MolecularDynamicsTaskConfig):
     class MDSolvent(str, Enum):
         implicit = "implicit"
         explicit = "explicit"
 
-    solvent_type: MDSolvent = MDSolvent.implicit
-    top_suffix: Optional[str] = ".top"
-    simulation_length_ns: float = 10
-    report_interval_ps: float = 50
+    solvent_type: MDSolvent = MDSolvent.explicit
+    top_suffix: Optional[str] = ".top" # Topology suffix
+    rst_suffix: Optional[str] = ".rst" # Restart suffix
+    simulation_length_ns: float = 0.02
+    report_interval_ps: float = 0.2
     dt_ps: float = 0.002
     temperature_kelvin: float = 310.0
-    heat_bath_friction_coef: float = 1.0
+    #heat_bath_friction_coef: float = 1.0 # not available for Berendsen thermostat
     # Whether to wrap system, only implemented for nsp system
     # TODO: generalize this implementation.
     wrap: bool = False
     # Reference PDB file used to compute RMSD and align point cloud
     reference_pdb_file: Optional[Path]
-    # Atom selection for openmm
-    openmm_selection: List[str] = ["CA"]
+    # NWChem top directory (i.e. the top NWChem installation directory)
+    nwchem_top_dir: Optional[Path]
+    # Atom selection for nwchem
+    nwchem_selection: List[str] = ["CA"]
     # Atom selection for MDAnalysis
     mda_selection: str = "protein and name CA"
     # Distance threshold to use for computing contact (in Angstroms)
@@ -53,4 +56,4 @@ class OpenMMConfig(MolecularDynamicsTaskConfig):
 
 
 if __name__ == "__main__":
-    OpenMMConfig().dump_yaml("openmm_template.yaml")
+    NWChemConfig().dump_yaml("nwchem_template.yaml")

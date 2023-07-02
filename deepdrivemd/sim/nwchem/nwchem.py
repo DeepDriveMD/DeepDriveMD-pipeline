@@ -142,11 +142,13 @@ def gen_input_dynamics(do_md: bool, md_dt_ps: float, md_time_ns: float, temperat
     '''
     Generate input for minimization
 
-    do_md:         if True generate input for proper MD run
-                   else generate input for equilibration
-    md_dt_ps:      the time step in picoseconds
-    md_time_ns:    the simulation time in nanoseconds
-    temperature_K: the temperature in Kelvin
+    do_md:              if True generate input for proper MD run
+                        else generate input for equilibration
+    md_dt_ps:           the time step in picoseconds
+    md_time_ns:         the simulation time in nanoseconds
+    temperature_K:      the temperature in Kelvin
+    report_interval_ps: the time between writing the system coordinates
+                        to the trajectory file
     '''
     if not md_dt_ps:
         raise RuntimeError("gen_input_dynamics: undefined timestep")
@@ -154,6 +156,8 @@ def gen_input_dynamics(do_md: bool, md_dt_ps: float, md_time_ns: float, temperat
         raise RuntimeError("gen_input_dynamics: undefined simulation time")
     if not temperature_K:
         raise RuntimeError("gen_input_dynamics: undefined temperature")
+    if not report_interval_ps:
+        raise RuntimeError("gen_input_dynamics: undefined report interval")
     numsteps = max(int((md_time_ns*1000)/md_dt_ps),1)
     nreport = max(int(report_interval_ps/md_dt_ps),1)
     fp = open("nwchemdat.nw","w")

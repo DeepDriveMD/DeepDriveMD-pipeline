@@ -7,5 +7,6 @@ hostname
 
 radical-stack
  
-python  -m deepdrivemd.deepdrivemd_stream -c bba/$1/config.yaml
+#python  -m deepdrivemd.deepdrivemd_stream -c bba/$1/config.yaml
+python  -m deepdrivemd.deepdrivemd -c bba/$1/config.yaml
 
