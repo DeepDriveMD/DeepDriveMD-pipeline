@@ -124,7 +124,7 @@ class SimulationContext:
 def configure_reporters(
     sim: "app.Simulation",
     ctx: SimulationContext,
-    cfg: OpenMMConfig,
+    cfg: NWChemConfig,
     report_steps: int,
     frames_per_h5: int,
 ) -> None:
@@ -163,12 +163,12 @@ def configure_reporters(
     )
 
 def configure_simulation(
-            pdb_file=ctx.pdb_file,
-            top_file=ctx.top_file,
-            solvent_type=cfg.solvent_type,
-            dt_ps=cfg.dt_ps,
-            temperature_kelvin=cfg.temperature_kelvin,
-            nwchem_topdir=cfg.nwchem_top_dir
+            pdb_file,           # pdb_file=ctx.pdb_file,
+            top_file,           # top_file=ctx.top_file,
+            solvent_type,       # solvent_type=cfg.solvent_type,
+            dt_ps,              # dt_ps=cfg.dt_ps,
+            temperature_kelvin, # temperature_kelvin=cfg.temperature_kelvin,
+            nwchem_topdir       # nwchem_topdir=cfg.nwchem_top_dir
         ) -> None:
     # Run prepare
     nwchem.gen_input_prepare(pdb_file)
@@ -184,11 +184,11 @@ def configure_simulation(
     nwchem.run_nwchem(nwchem_topdir)
 
 def run_steps(
-            dt_ps=cfg.dt_ps,
-            time_ns=ctx.simulation_length_ns,
-            report_ps=ctx.report_interval_ps,
-            temperature_k=cfg.temperature_kelvin,
-            nwchem_topdir=cfg.nwchem_top_dir
+            dt_ps,         # dt_ps=cfg.dt_ps,
+            time_ns,       # time_ns=ctx.simulation_length_ns,
+            report_ps,     # report_ps=ctx.report_interval_ps,
+            temperature_k, # temperature_k=cfg.temperature_kelvin,
+            nwchem_topdir  # nwchem_topdir=cfg.nwchem_top_dir
         ) -> None:
     do_dynamics = True
     nwchem.gen_input_dynamics(do_dynamics,dt_ps,time_ns,temperature_k,report_ps)
