@@ -1,5 +1,5 @@
 title: NWChem 1FME workflow
-resource: crusher.olcf.ornl.gov
+resource: 'ornl.crusher'
 queue: batch
 schema_: local
 project: CHM136_crusher
