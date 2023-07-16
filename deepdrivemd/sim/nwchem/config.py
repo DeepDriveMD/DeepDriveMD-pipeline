@@ -17,6 +17,8 @@ class NWChemConfig(MolecularDynamicsTaskConfig):
     rst_suffix: Optional[str] = ".rst" # Restart suffix
     simulation_length_ns: float = 0.02
     report_interval_ps: float = 0.2
+    #simulation_length_ns: float = 0.0002
+    #report_interval_ps: float = 0.002
     dt_ps: float = 0.002
     temperature_kelvin: float = 310.0
     #heat_bath_friction_coef: float = 1.0 # not available for Berendsen thermostat
@@ -26,7 +28,7 @@ class NWChemConfig(MolecularDynamicsTaskConfig):
     # Reference PDB file used to compute RMSD and align point cloud
     reference_pdb_file: Optional[Path]
     # NWChem top directory (i.e. the top NWChem installation directory)
-    nwchem_top_dir: Optional[Path]
+    nwchem_top_dir: Optional[Path] = None
     # Atom selection for nwchem
     nwchem_selection: List[str] = ["CA"]
     # Atom selection for MDAnalysis
@@ -34,13 +36,15 @@ class NWChemConfig(MolecularDynamicsTaskConfig):
     # Distance threshold to use for computing contact (in Angstroms)
     threshold: float = 8.0
     # Write contact maps to HDF5
-    contact_map: bool = True
+    contact_map: bool = False
     # Write point clouds to HDF5
     point_cloud: bool = True
     # Write fraction of contacts to HDF5
-    fraction_of_contacts: bool = True
+    fraction_of_contacts: bool = False
     # Read outlier trajectory into memory while writing PDB file
     in_memory: bool = True
+    # Directory with the initial PDB file
+    initial_pdb_dir: Optional[Path] = None
 
     @root_validator()
     def explicit_solvent_requires_top_suffix(

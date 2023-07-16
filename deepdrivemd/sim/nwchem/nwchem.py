@@ -104,6 +104,8 @@ def gen_input_prepare(pdb: PathLike) -> None:
         raise RuntimeError("gen_input_prepare: no PDB file for structure")
     if not Path(pdb).is_file():
         raise RuntimeError("gen_input_prepare: PDB("+pdb+") is not a file")
+    # Need to copy the PDB file because NWChem accepts filenames of only 80 characters at most.
+    subprocess.run(["cp",str(pdb),"nwchemdat_input.pdb"])
     fp = open("nwchemdat.nw","w")
     fp.write("echo\n")
     fp.write("start nwchemdat\n")
@@ -113,7 +115,7 @@ def gen_input_prepare(pdb: PathLike) -> None:
     fp.write("  new_rst\n")
     # make a new topology file and sequence file
     fp.write("  new_top new_seq\n")
-    fp.write("  source "+pdb+"\n")
+    fp.write("  source nwchemdat_input.pdb\n")
     fp.write("  solvent name HOH model spce\n")
     fp.write("  solvate\n")
     fp.write("end\n")

@@ -1,16 +1,19 @@
 import shutil
+import os
 from pathlib import Path
 from typing import Optional
 
+import openmm
 import openmm.unit as u # type: ignore[import]
 import openmm.app as app  # type: ignore[import]
-from mdtools.openmm.reporter import OfflineReporter  # type: ignore[import]
-from mdtools.openmm.sim import configure_simulation  # type: ignore[import]
+from mdtools.nwchem.reporter import OfflineReporter  # type: ignore[import]
 
 from deepdrivemd.data.api import DeepDriveMD_API
 from deepdrivemd.sim.nwchem.config import NWChemConfig
 from deepdrivemd.sim.nwchem import nwchem
 from deepdrivemd.utils import Timer, parse_args
+
+import MDAnalysis
 
 
 class SimulationContext:
@@ -69,16 +72,14 @@ class SimulationContext:
         return self.cfg.reference_pdb_file.as_posix()
 
     def _init_workdir(self) -> None:
-        """Setup workdir and copy RST/TOP files."""
+        """Setup workdir and change into it."""
 
         self.workdir.mkdir(exist_ok=True)
-        nwchem.make_nwchemrc(self.workdir,self.nwchem_top_dir)
+        nwchem.make_nwchemrc(self.workdir,self.cfg.nwchem_top_dir)
 
         self._pdb_file = self._get_pdb_file()
-        self._rst_file = self._copy_rst_file()
-        self._top_file = self._copy_top_file()
 
-        self.workdir.chdir()
+        os.chdir(self.workdir)
 
     def _get_pdb_file(self) -> Path:
         if self.cfg.pdb_file is not None:
@@ -115,11 +116,33 @@ class SimulationContext:
         local_top_file = shutil.copy(top_file, self.workdir.joinpath(top_file.name))
         return Path(local_top_file)
 
+    def _copy_rst_file(self) -> Path:
+        assert self.cfg.rst_suffix is not None
+        # We can abuse get_topology to get the restart file, the only difference is the suffix
+        # Nevertheless, we might want to change the API.
+        rst_file = self.api.get_topology(
+            self.cfg.initial_pdb_dir, Path(self.pdb_file), self.cfg.rst_suffix
+        )
+        assert rst_file is not None
+        local_rst_file = shutil.copy(rst_file, self.workdir.joinpath(rst_file.name))
+        return Path(local_rst_file)
+
     def move_results(self) -> None:
+        '''
+        Move all files from the work directory to the output directory
+
+        With NWChem this seems a bad idea as the code generates a
+        number of scratch files. So this stores a lot of junk.
+        '''
         if self.workdir != self.cfg.output_path:
             for p in self.workdir.iterdir():
                 shutil.move(str(p), str(self.cfg.output_path.joinpath(p.name)))
 
+class Simulation:
+    def __init__(self,pdb_file):
+        self.pdb_file = Path(pdb_file)
+        self.reporters = []
+        self.topology = app.PDBFile(str(self.pdb_file)).topology
 
 def configure_reporters(
     sim: "app.Simulation",
@@ -139,7 +162,7 @@ def configure_reporters(
             frames_per_h5=frames_per_h5,
             wrap_pdb_file=ctx.pdb_file if cfg.wrap else None,
             reference_pdb_file=ctx.reference_pdb_file,
-            nwchem_selection=cfg.nwchem_selection,
+            openmm_selection=cfg.nwchem_selection,
             mda_selection=cfg.mda_selection,
             threshold=cfg.threshold,
             contact_map=cfg.contact_map,
@@ -168,32 +191,34 @@ def configure_simulation(
             solvent_type,       # solvent_type=cfg.solvent_type,
             dt_ps,              # dt_ps=cfg.dt_ps,
             temperature_kelvin, # temperature_kelvin=cfg.temperature_kelvin,
-            nwchem_topdir       # nwchem_topdir=cfg.nwchem_top_dir
+            nwchem_top_dir      # nwchem_top_dir=cfg.nwchem_top_dir
         ) -> None:
     # Run prepare
     nwchem.gen_input_prepare(pdb_file)
-    nwchem.run_nwchem(nwchem_topdir)
+    nwchem.run_nwchem(nwchem_top_dir)
     # Run minimization
     nwchem.gen_input_minimize()
-    nwchem.run_nwchem(nwchem_topdir)
+    nwchem.run_nwchem(nwchem_top_dir)
     nwchem.replace_restart_file()
     # Run equilibration (always needed as we resolvate the chemical system)
     do_dynamics = False
     time_ns = dt_ps
     nwchem.gen_input_dynamics(do_dynamics,dt_ps,time_ns,temperature_kelvin,dt_ps)
-    nwchem.run_nwchem(nwchem_topdir)
+    nwchem.run_nwchem(nwchem_top_dir)
 
 def run_steps(
             dt_ps,         # dt_ps=cfg.dt_ps,
             time_ns,       # time_ns=ctx.simulation_length_ns,
             report_ps,     # report_ps=ctx.report_interval_ps,
             temperature_k, # temperature_k=cfg.temperature_kelvin,
-            nwchem_topdir  # nwchem_topdir=cfg.nwchem_top_dir
+            nwchem_top_dir # nwchem_top_dir=cfg.nwchem_top_dir
         ) -> None:
     do_dynamics = True
     nwchem.gen_input_dynamics(do_dynamics,dt_ps,time_ns,temperature_k,report_ps)
-    nwchem.run_nwchem(nwchem_topdir)
-
+    nwchem.run_nwchem(nwchem_top_dir)
+    nwchem.gen_input_analysis()
+    nwchem.run_nwchem(nwchem_top_dir)
+    nwchem.fix_nwchem_xyz("nwchemdat_md.xyz")
 
 def run_simulation(cfg: NWChemConfig) -> None:
 
@@ -203,23 +228,19 @@ def run_simulation(cfg: NWChemConfig) -> None:
 
     # Create nwchem simulation object
     with Timer("molecular_dynamics_configure_simulation"):
-        sim = configure_simulation(
+        configure_simulation(
             pdb_file=ctx.pdb_file,
             top_file=ctx.top_file,
             solvent_type=cfg.solvent_type,
             dt_ps=cfg.dt_ps,
             temperature_kelvin=cfg.temperature_kelvin,
-            nwchem_topdir=cfg.nwchem_top_dir
+            nwchem_top_dir=cfg.nwchem_top_dir
         )
 
     # openmm typed variables
     dt_ps = cfg.dt_ps * u.picoseconds
     report_interval_ps = cfg.report_interval_ps * u.picoseconds
     simulation_length_ns = cfg.simulation_length_ns * u.nanoseconds
-    #DEBUG
-    print("HVD: ps = ",u.picoseconds)
-    print("HVD: ns = ",u.nanoseconds)
-    #DEBUG
 
     # Write all frames to a single HDF5 file
     frames_per_h5 = int(simulation_length_ns / report_interval_ps)
@@ -228,19 +249,53 @@ def run_simulation(cfg: NWChemConfig) -> None:
     # Number of steps to run each simulation
     nsteps = int(simulation_length_ns / dt_ps)
 
-    # Configure reporters to write output files
-    with Timer("molecular_dynamics_configure_reporters"):
-        configure_reporters(sim, ctx, cfg, report_steps, frames_per_h5)
-
     # Run simulation for nsteps
     with Timer("molecular_dynamics_step"):
         run_steps(
             dt_ps=cfg.dt_ps,
-            time_ns=ctx.simulation_length_ns,
-            report_ps=ctx.report_interval_ps,
+            time_ns=cfg.simulation_length_ns,
+            report_ps=cfg.report_interval_ps,
             temperature_k=cfg.temperature_kelvin,
-            nwchem_topdir=cfg.nwchem_top_dir
+            nwchem_top_dir=cfg.nwchem_top_dir
         )
+
+    # We to report on structures.
+    # OpenMM seems to write frames DCD files.
+    # The regular OffLineReporter seems to store data in HDF5 files
+    # NWChem can produce trajectory in CRD files, or XYZ files.
+    # The MDAnalysis module seems to be able to read TRJ files as well
+    # so the conventional NWChem trajectory files should also work?
+    # We still need to generate the HDF5 files though.
+    with Timer("molecular_dynamics_analysis"):
+        if not ctx.reference_pdb_file:
+            pdb_file = ctx.pdb_file
+        else:
+            pdb_file = ctx.reference_pdb_file
+        sim = Simulation(pdb_file)
+        sim.reporters.append(
+            OfflineReporter(
+                ctx.h5_prefix,
+                report_steps,
+                frames_per_h5=frames_per_h5,
+                wrap_pdb_file=ctx.pdb_file if cfg.wrap else None,
+                reference_pdb_file=ctx.reference_pdb_file,
+                openmm_selection=cfg.nwchem_selection,
+                mda_selection=cfg.mda_selection,
+                threshold=cfg.threshold,
+                contact_map=cfg.contact_map,
+                point_cloud=cfg.point_cloud,
+                fraction_of_contacts=cfg.fraction_of_contacts,
+            )
+        )
+        trj = MDAnalysis.Universe("nwchemdat_md.pdb","nwchemdat_md.xyz")
+        #pdb = MDAnalysis.Universe("nwchemdat_md.pdb","nwchemdat_md.pdb")
+        wrt = MDAnalysis.Writer("nwchemdat_md.dcd",trj.trajectory.n_atoms)
+        wrt.write(trj)
+        wrt.close()
+        trj.trajectory.rewind()
+        dcd = MDAnalysis.Universe("nwchemdat_md.dcd")
+        for ts in dcd.trajectory:
+            sim.reporters[0].report(sim,ts)
 
     # Move simulation data to persistent storage
     with Timer("molecular_dynamics_move_results"):
