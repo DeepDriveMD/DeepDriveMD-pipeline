@@ -43,7 +43,7 @@ class SimulationContext:
 
     @property
     def traj_file(self) -> str:
-        return self._sim_prefix.with_suffix(".trj").as_posix()
+        return self._sim_prefix.with_suffix(".dcd").as_posix()
 
     @property
     def h5_prefix(self) -> str:
@@ -289,11 +289,11 @@ def run_simulation(cfg: NWChemConfig) -> None:
         )
         trj = MDAnalysis.Universe("nwchemdat_md.pdb","nwchemdat_md.xyz")
         #pdb = MDAnalysis.Universe("nwchemdat_md.pdb","nwchemdat_md.pdb")
-        wrt = MDAnalysis.Writer("nwchemdat_md.dcd",trj.trajectory.n_atoms)
+        wrt = MDAnalysis.Writer(ctx.traj_file,trj.trajectory.n_atoms)
         wrt.write(trj)
         wrt.close()
         trj.trajectory.rewind()
-        dcd = MDAnalysis.Universe("nwchemdat_md.dcd")
+        dcd = MDAnalysis.Universe("nwchemdat_md.pdb",ctx.traj_file)
         for ts in dcd.trajectory:
             sim.reporters[0].report(sim,ts)
 
