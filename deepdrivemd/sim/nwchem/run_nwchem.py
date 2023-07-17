@@ -288,10 +288,11 @@ def run_simulation(cfg: NWChemConfig) -> None:
             )
         )
         trj = MDAnalysis.Universe("nwchemdat_md.pdb","nwchemdat_md.xyz")
-        #pdb = MDAnalysis.Universe("nwchemdat_md.pdb","nwchemdat_md.pdb")
-        wrt = MDAnalysis.Writer(ctx.traj_file,trj.trajectory.n_atoms)
-        wrt.write(trj)
-        wrt.close()
+        pdb = MDAnalysis.Universe("nwchemdat_md.pdb","nwchemdat_md.pdb")
+        solute = trj.select_atoms("all")
+        with MDAnalysis.Writer(ctx.traj_file,pdb.trajectory.n_atoms) as wrt:
+            for ts in trj.trajectory:
+                wrt.write(solute)
         trj.trajectory.rewind()
         dcd = MDAnalysis.Universe("nwchemdat_md.pdb",ctx.traj_file)
         for ts in dcd.trajectory:

@@ -218,8 +218,8 @@ def gen_input_analysis() -> None:
     fp.write("  write  1 nwchemdat_md.pdb\n")
     # Use a large number of frames here it will save only what there is
     fp.write("  frames 1 1000000 1\n")
-    #fp.write("  copy solute nwchemdat_md.xyz\n")
-    fp.write("  copy nwchemdat_md.xyz\n")
+    fp.write("  copy solute nwchemdat_md.xyz\n")
+    #fp.write("  copy nwchemdat_md.xyz\n")
     fp.write("end\n")
     fp.write("task analysis\n")
     fp.close()
