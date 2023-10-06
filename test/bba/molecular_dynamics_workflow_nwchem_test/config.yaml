@@ -3,7 +3,7 @@ resource: 'ornl.crusher'
 queue: batch
 schema_: local
 project: CHM136_crusher
-walltime_min: 360
+walltime_min: 60
 max_iteration: 4
 cpus_per_node: 64
 gpus_per_node: 4
@@ -36,6 +36,8 @@ molecular_dynamics_stage:
         pdb_file: set_by_deepdrivemd
         reference_pdb_file: /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/data/bba/1FME-folded.pdb
         initial_pdb_dir: /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/data/bba
+        contact_map: true
+        fraction_of_contacts: true
 aggregation_stage:
     pre_exec:
       - . /ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/activate
@@ -52,7 +54,7 @@ aggregation_stage:
         process_type: null
         threads_per_process: 0
         thread_type: null
-    skip_aggregation: false
+    skip_aggregation: true
     task_config:
         experiment_directory: set_by_deepdrivemd
         stage_idx: 0
@@ -84,6 +86,7 @@ machine_learning_stage:
         node_local_path: set_by_deepdrivemd
         model_tag: set_by_deepdrivemd
         init_weights_path: null
+        last_n_h5_files: 1
         conv_filter_shapes:
           - - 3
             - 3
@@ -148,6 +151,7 @@ model_selection_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
+        checkpoint_suffix: .h5
 agent_stage:
     pre_exec:
       - . /ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/activate
@@ -160,7 +164,7 @@ agent_stage:
         threads_per_process: 1
         thread_type: null
     gpu_reqs:
-        processes: 0
+        processes: 1
         process_type: null
         threads_per_process: 0
         thread_type: null
@@ -170,3 +174,5 @@ agent_stage:
         task_idx: 0
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
+        n_most_recent_h5_files: 1
+        num_points: 25

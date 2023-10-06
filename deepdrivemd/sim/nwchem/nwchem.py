@@ -56,7 +56,7 @@ def make_nwchemrc(workdir: PathLike, nwchem_top: PathLike) -> None:
     fp.write("spce    "+str(nwchem_data)+"/solvents/spce.rst\n")
     fp.close()
 
-def run_nwchem(nwchem_top: PathLike) -> None:
+def run_nwchem(nwchem_top: PathLike, tag: str) -> None:
     '''
     Run the NWChem executable in a system call
 
@@ -77,7 +77,7 @@ def run_nwchem(nwchem_top: PathLike) -> None:
         raise RuntimeError("run_nwchem: NWCHEM_TOP undefined")
     if not Path(nwchem_exe).is_file():
         raise RuntimeError("run_nwchem: NWCHEM_EXE("+nwchem_exe+") is not a file")
-    fp = open("nwchemdat.out","w")
+    fp = open("nwchemdat"+str(tag)+".out","w")
     subprocess.run([nwchem_exe,"nwchemdat.nw"],stdout=fp,stderr=subprocess.STDOUT)
     fp.close()
 
@@ -106,6 +106,7 @@ def gen_input_prepare(pdb: PathLike) -> None:
         raise RuntimeError("gen_input_prepare: PDB("+pdb+") is not a file")
     # Need to copy the PDB file because NWChem accepts filenames of only 80 characters at most.
     subprocess.run(["cp",str(pdb),"nwchemdat_input.pdb"])
+    fix_input_pdb("nwchemdat_input.pdb")
     fp = open("nwchemdat.nw","w")
     fp.write("echo\n")
     fp.write("start nwchemdat\n")
@@ -251,6 +252,72 @@ def fix_nwchem_xyz(xyz_file: PathLike) -> None:
         out_xyz.append(line.replace(","," "))
     fp = open(xyz_file,"w")
     fp.writelines(out_xyz)
+    fp.close()
+
+def fix_input_pdb(pdb_file: PathLike) -> None:
+    '''
+    Fix the input PDB files that MDAnalysis produces
+
+    The MDAnalysis package typically fails to read the CRYST1 line
+    in a PDB file. The package considers that this is not a problem
+    as most PDB file will list lattice vectors with lengths of 1.0
+    anyway. However, for MD programs this is often a problem as they
+    use the CRYST1 line to define the simulation box. A box of 
+    1 Angstrom cubed is way too small and causes calculations to fail
+    as the solute cannot be solvated in such a tiny box. 
+
+    This function addresses this problem by reading the PDB file,
+    finding the minimum and maximum x-, y-, and z-coordinates,
+    calculate the minimum box edges required, add 7.5 Angstrom
+    of padding and generates a cubic box of the largest edge length.
+    The CRYST1 line is then updated with these dimensions and the PDB
+    file saved.
+    '''
+    if not [ [Path(pdb_file).suffix == ".pdb"] or [Path(pdb_file).suffix == ".PDB"] ]:
+        return
+    fp = open(pdb_file,"r")
+    in_pdb = fp.readlines()
+    fp.close()
+    out_pdb = []
+    x_min =  1.0e12
+    x_max = -1.0e12
+    y_min =  1.0e12
+    y_max = -1.0e12
+    z_min =  1.0e12
+    z_max = -1.0e12
+    for line in in_pdb:
+        if line[:6] == "HETATM" or line[:6] == "ATOM  ":
+            x = float(line[30:38])
+            y = float(line[38:46])
+            z = float(line[46:54])
+            if x < x_min:
+                x_min = x
+            if x_max < x:
+                x_max = x
+            if y < y_min:
+                y_min = y
+            if y_max < y:
+                y_max = y
+            if z < z_min:
+                z_min = z
+            if z_max < z:
+                z_max = z
+    x_len = x_max - x_min
+    y_len = y_max - y_min
+    z_len = z_max - z_min
+    length = x_len
+    if y_len > length:
+        length = y_len
+    if z_len > length:
+        length = z_len
+    length += 7.5 # This length cubed is the final box size
+    for line in in_pdb:
+        if line[:6] == "CRYST1":
+            out_pdb.append(f"CRYST1{length:9.3f}{length:9.3f}{length:9.3f}  90.00  90.00  90.00 P 1           1\n")
+        else:
+            out_pdb.append(line)
+    fp = open(pdb_file,"w")
+    fp.writelines(out_pdb)
     fp.close()
 
 def read_trajectory(topology: PathLike, trajectory: PathLike) -> None:

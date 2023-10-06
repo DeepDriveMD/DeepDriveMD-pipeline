@@ -204,7 +204,7 @@ def main(
 
     # optimizers
     optimizer_hparams = OptimizerHyperparams(
-        name=cfg.optimizer_name, hparams={"lr": cfg.optimizer_lr}
+        name=cfg.optimizer_name, hparams={"learning_rate": cfg.optimizer_lr}
     )
 
     # Save hparams to disk and load initial weights and create virtual h5 file

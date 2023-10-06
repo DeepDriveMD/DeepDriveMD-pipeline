@@ -1,5 +1,7 @@
 import shutil
 import os
+import sys
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -195,16 +197,16 @@ def configure_simulation(
         ) -> None:
     # Run prepare
     nwchem.gen_input_prepare(pdb_file)
-    nwchem.run_nwchem(nwchem_top_dir)
+    nwchem.run_nwchem(nwchem_top_dir,"_prepare")
     # Run minimization
     nwchem.gen_input_minimize()
-    nwchem.run_nwchem(nwchem_top_dir)
+    nwchem.run_nwchem(nwchem_top_dir,"_minimize")
     nwchem.replace_restart_file()
     # Run equilibration (always needed as we resolvate the chemical system)
     do_dynamics = False
-    time_ns = dt_ps
+    time_ns = 2*dt_ps
     nwchem.gen_input_dynamics(do_dynamics,dt_ps,time_ns,temperature_kelvin,dt_ps)
-    nwchem.run_nwchem(nwchem_top_dir)
+    nwchem.run_nwchem(nwchem_top_dir,"_equilibrate")
 
 def run_steps(
             dt_ps,         # dt_ps=cfg.dt_ps,
@@ -215,14 +217,15 @@ def run_steps(
         ) -> None:
     do_dynamics = True
     nwchem.gen_input_dynamics(do_dynamics,dt_ps,time_ns,temperature_k,report_ps)
-    nwchem.run_nwchem(nwchem_top_dir)
+    nwchem.run_nwchem(nwchem_top_dir,"_dynamics")
     nwchem.gen_input_analysis()
-    nwchem.run_nwchem(nwchem_top_dir)
+    nwchem.run_nwchem(nwchem_top_dir,"_analysis")
     nwchem.fix_nwchem_xyz("nwchemdat_md.xyz")
 
 def run_simulation(cfg: NWChemConfig) -> None:
 
     # Handle files
+    max_retries = 3
     with Timer("molecular_dynamics_SimulationContext"):
         ctx = SimulationContext(cfg)
 
@@ -243,11 +246,12 @@ def run_simulation(cfg: NWChemConfig) -> None:
     simulation_length_ns = cfg.simulation_length_ns * u.nanoseconds
 
     # Write all frames to a single HDF5 file
-    frames_per_h5 = int(simulation_length_ns / report_interval_ps)
     # Steps between reporting DCD frames and logs
     report_steps = int(report_interval_ps / dt_ps)
     # Number of steps to run each simulation
     nsteps = int(simulation_length_ns / dt_ps)
+    # Number of frames to report in the HDF5 file, chosen to save all reported steps
+    frames_per_h5 = int(nsteps / report_steps)
 
     # Run simulation for nsteps
     with Timer("molecular_dynamics_step"):
@@ -259,13 +263,14 @@ def run_simulation(cfg: NWChemConfig) -> None:
             nwchem_top_dir=cfg.nwchem_top_dir
         )
 
-    # We to report on structures.
-    # OpenMM seems to write frames DCD files.
+    # We need to report on structures from the trajectory file.
+    # OpenMM seems to write frames DCD files, but NWChem cannot.
     # The regular OffLineReporter seems to store data in HDF5 files
     # NWChem can produce trajectory in CRD files, or XYZ files.
-    # The MDAnalysis module seems to be able to read TRJ files as well
-    # so the conventional NWChem trajectory files should also work?
-    # We still need to generate the HDF5 files though.
+    # The MDAnalysis module seems to be able to read XYZ files,
+    # and can write DCD files. The DCD file can be converted
+    # into HDF5 using what the regular OffLineReporter could
+    # do already.
     with Timer("molecular_dynamics_analysis"):
         if not ctx.reference_pdb_file:
             pdb_file = ctx.pdb_file
@@ -287,14 +292,23 @@ def run_simulation(cfg: NWChemConfig) -> None:
                 fraction_of_contacts=cfg.fraction_of_contacts,
             )
         )
-        trj = MDAnalysis.Universe("nwchemdat_md.pdb","nwchemdat_md.xyz")
-        pdb = MDAnalysis.Universe("nwchemdat_md.pdb","nwchemdat_md.pdb")
-        solute = trj.select_atoms("all")
-        with MDAnalysis.Writer(ctx.traj_file,pdb.trajectory.n_atoms) as wrt:
-            for ts in trj.trajectory:
-                wrt.write(solute)
-        trj.trajectory.rewind()
-        dcd = MDAnalysis.Universe("nwchemdat_md.pdb",ctx.traj_file)
+        pdb = MDAnalysis.Universe("nwchemdat_input.pdb","nwchemdat_input.pdb")
+        num_frames = 0
+        num_retries = 0
+        while num_frames < frames_per_h5 and num_retries < max_retries:
+            num_frames = 0
+            trj = MDAnalysis.Universe("nwchemdat_md.pdb","nwchemdat_md.xyz")
+            selection = f"bynum 1:{pdb.trajectory.n_atoms}"
+            solute = trj.select_atoms(selection)
+            with MDAnalysis.Writer(ctx.traj_file,pdb.trajectory.n_atoms) as wrt:
+                for ts in trj.trajectory:
+                    wrt.write(solute)
+                    num_frames += 1
+            trj.trajectory.close()
+            num_retries += 1
+        if num_frames < frames_per_h5 and not num_retries < max_retries:
+            raise IOError("Trajectory file nwchemdat_md.xyz corrupted")
+        dcd = MDAnalysis.Universe("nwchemdat_input.pdb",ctx.traj_file)
         for ts in dcd.trajectory:
             sim.reporters[0].report(sim,ts)
 

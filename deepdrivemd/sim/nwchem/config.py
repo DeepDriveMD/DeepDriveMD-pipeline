@@ -16,9 +16,7 @@ class NWChemConfig(MolecularDynamicsTaskConfig):
     top_suffix: Optional[str] = ".top" # Topology suffix
     rst_suffix: Optional[str] = ".rst" # Restart suffix
     simulation_length_ns: float = 0.02
-    report_interval_ps: float = 0.2
-    #simulation_length_ns: float = 0.0002
-    #report_interval_ps: float = 0.002
+    report_interval_ps: float = 0.02
     dt_ps: float = 0.002
     temperature_kelvin: float = 310.0
     #heat_bath_friction_coef: float = 1.0 # not available for Berendsen thermostat
