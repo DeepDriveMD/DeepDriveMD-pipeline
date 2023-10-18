@@ -227,7 +227,7 @@ def gen_input_analysis() -> None:
 
 def fix_nwchem_xyz(xyz_file: PathLike) -> None:
     '''
-    The NWChem MD Analysis module write broken XYZ files that need fixing
+    The NWChem MD Analysis module writes broken XYZ files that need fixing
 
     For the solute atoms the analysis module in nwchem writes:
 
@@ -241,6 +241,19 @@ def fix_nwchem_xyz(xyz_file: PathLike) -> None:
     I.e. there should be no commas.
     This function replaces all the commas with spaces to fix this
     issue.
+
+    Depending on the values of the coordinates NWChem may write the
+    coordinates in a funky Fortran way. E.g. the code may write
+
+        H -3.95 2*8.81
+
+    instead of 
+
+        H -3.95  8.81  8.81
+
+    I think even Fortran cannot read this data format.
+    This function also detects this "*"-notation and converts it
+    back to compliant XYZ.
     '''
     if not [ [Path(xyz_file).suffix == ".xyz"] or [Path(xyz_file).suffix == ".XYZ"] ]:
         return
@@ -249,7 +262,26 @@ def fix_nwchem_xyz(xyz_file: PathLike) -> None:
     fp.close()
     out_xyz = []
     for line in in_xyz:
-        out_xyz.append(line.replace(","," "))
+        # Fix any comma-s
+        line1 = line.replace(","," ")
+        # Fix any *-notation stuff
+        if "*" in line1:
+            tokens = line1.split()
+            # Keep the element symbol
+            line2 = tokens[0]
+            # Process the coordinates
+            for token in tokens[1:]:
+                if "*" in token:
+                    tokens2 = token.split("*")
+                    n = int(tokens2[0])
+                    for i in range(0,n):
+                        line2 = line2 + " " + tokens2[1]
+                else:
+                    line2 = line2 + " " + token
+            line2 = line2 + "\n"
+        else:
+            line2 = line1
+        out_xyz.append(line2)
     fp = open(xyz_file,"w")
     fp.writelines(out_xyz)
     fp.close()
