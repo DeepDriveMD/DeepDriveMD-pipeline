@@ -29,9 +29,10 @@ from tensorflow.keras.optimizers import RMSprop
 
 from deepdrivemd.utils import PathLike
 
-tf.config.experimental.set_lms_enabled(True)
-print("lms_enabled was executed")
-#print("HVD: get rid of LMS (Large Model Extensions) for now")
+if "set_lms_enabled" in dir(tf.config.experimental):
+    tf.config.experimental.set_lms_enabled(True)
+else:
+    print("Large Model Extensions (LMS) not available in this TensorFlow installation")
 
 # save history from log
 class LossHistory(Callback):  # type: ignore[misc]
