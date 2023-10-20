@@ -38,6 +38,8 @@ run11:
 	../bin/run.sh lassen-keras-dbscan_stream_multi-ligand_120
 run12:
 	../bin/run.sh molecular_dynamics_workflow_nwchem_test
+run13:
+	../bin/run.sh ../7cz4/ligand_binding_workflow_nwchem_test
 clean:
 	rm -f *~ */*~
 	rm -rf __pycache__ */__pycache__ *.log */*/__pycache__ */*/*/__pycache__
