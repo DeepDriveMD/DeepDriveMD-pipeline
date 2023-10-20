@@ -8,7 +8,8 @@ max_iteration: 4
 cpus_per_node: 64
 gpus_per_node: 4
 hardware_threads_per_cpu: 2
-experiment_directory: /ccs/home/hjjvd/DeepDriveMD/deepdrivemd_tests/bba_test/test_nwchem
+#experiment_directory: /ccs/home/hjjvd/DeepDriveMD/deepdrivemd_tests/bba_test/test_nwchem
+experiment_directory: /lustre/orion/scratch/hjjvd/chm136/test_nwchem
 node_local_path: null
 molecular_dynamics_stage:
     pre_exec: 
@@ -26,7 +27,7 @@ molecular_dynamics_stage:
         process_type: null
         threads_per_process: 0
         thread_type: null
-    num_tasks: 1
+    num_tasks: 4
     task_config:
         experiment_directory: set_by_deepdrivemd
         stage_idx: 0
