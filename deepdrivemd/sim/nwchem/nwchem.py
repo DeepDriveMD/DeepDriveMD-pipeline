@@ -17,6 +17,7 @@ so that ultimately we have only three phases:
 '''
 import os
 from os import PathLike
+import glob
 import subprocess
 import MDAnalysis
 from pathlib import Path
@@ -92,6 +93,31 @@ def replace_restart_file() -> None:
     '''
     if Path("nwchemdat_md.qrs").is_file():
         subprocess.run(["cp","nwchemdat_md.qrs","nwchemdat_md.rst"])
+
+def cp_ff_files(case_path: PathLike) -> None:
+    '''
+    Copy files that NWChem needs to interpret the PDB correctly
+
+    NWChem comes with datasets that specify the force field that is 
+    going to be used. However, in biology there are many different
+    molecules. The integrated datasets cannot accommodate every
+    possible molecule.
+
+    So for some cases you may need additional
+    force field parameters, fragment files, or segment files to 
+    tell the code how to type atoms and what force field parameters
+    to use. These files need to copied to the current working 
+    directory for the calculation to run.
+    '''
+    case_path_par = str(case_path.joinpath("*.par"))
+    case_path_frg = str(case_path.joinpath("*.frg"))
+    case_path_sgm = str(case_path.joinpath("*.sgm"))
+    filelist = glob.glob(case_path_par)
+    filelist.extend(glob.glob(case_path_frg))
+    filelist.extend(glob.glob(case_path_sgm))
+    for filename in filelist:
+        subprocess.run(["cp",str(filename),"."])
+
 
 def gen_input_prepare(pdb: PathLike) -> None:
     '''

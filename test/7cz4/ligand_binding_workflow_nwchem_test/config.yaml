@@ -119,12 +119,12 @@ machine_learning_stage:
           - 128
         epochs: 50
         final_shape:
-          - 28
-          - 28
+          - 179
+          - 179
           - 1
         initial_shape:
-          - 28
-          - 28
+          - 179
+          - 179
         latent_dim: 10
         max_loss: 100
         max_steps: 2000

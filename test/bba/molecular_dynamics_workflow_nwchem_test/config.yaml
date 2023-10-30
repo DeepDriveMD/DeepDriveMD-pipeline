@@ -35,7 +35,7 @@ molecular_dynamics_stage:
         output_path: set_by_deepdrivemd
         node_local_path: set_by_deepdrivemd
         pdb_file: set_by_deepdrivemd
-        reference_pdb_file: /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/data/bba/1FME-folded.pdb
+        reference_pdb_file: /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/data/bba/1FME-folded-nwchem.pdb
         initial_pdb_dir: /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/data/bba
         contact_map: true
         fraction_of_contacts: true

@@ -16,6 +16,7 @@ from deepdrivemd.sim.nwchem import nwchem
 from deepdrivemd.utils import Timer, parse_args
 
 import MDAnalysis
+import subprocess
 
 
 class SimulationContext:
@@ -188,6 +189,7 @@ def configure_reporters(
     )
 
 def configure_simulation(
+            init_pdb_dir,       # init_pdb_dir=ctx.init_pdb_dir,
             pdb_file,           # pdb_file=ctx.pdb_file,
             top_file,           # top_file=ctx.top_file,
             solvent_type,       # solvent_type=cfg.solvent_type,
@@ -196,6 +198,7 @@ def configure_simulation(
             nwchem_top_dir      # nwchem_top_dir=cfg.nwchem_top_dir
         ) -> None:
     # Run prepare
+    nwchem.cp_ff_files(init_pdb_dir)
     nwchem.gen_input_prepare(pdb_file)
     nwchem.run_nwchem(nwchem_top_dir,"_prepare")
     # Run minimization
@@ -232,6 +235,7 @@ def run_simulation(cfg: NWChemConfig) -> None:
     # Create nwchem simulation object
     with Timer("molecular_dynamics_configure_simulation"):
         configure_simulation(
+            init_pdb_dir=cfg.initial_pdb_dir.joinpath("system"),
             pdb_file=ctx.pdb_file,
             top_file=ctx.top_file,
             solvent_type=cfg.solvent_type,
@@ -311,6 +315,10 @@ def run_simulation(cfg: NWChemConfig) -> None:
         dcd = MDAnalysis.Universe("nwchemdat_input.pdb",ctx.traj_file)
         for ts in dcd.trajectory:
             sim.reporters[0].report(sim,ts)
+        # At this moment nwchemdat_md.pdb contain all atoms, i.e. solute and solvent
+        # for the outlier detection we just want the solute atoms. Fix this
+        # by overwriting nwchemdat_md.pdb with the input PDB file.
+        subprocess.run(["cp","nwchemdat_input.pdb","nwchemdat_md.pdb"])
 
     # Move simulation data to persistent storage
     with Timer("molecular_dynamics_move_results"):

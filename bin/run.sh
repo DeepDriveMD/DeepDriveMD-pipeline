@@ -23,5 +23,5 @@ radical-stack
 export HDF5_USE_FILE_LOCKING="FALSE"
  
 #python  -m deepdrivemd.deepdrivemd_stream -c bba/$1/config.yaml
-python  -m deepdrivemd.deepdrivemd -c bba/$1/config.yaml
+python  -m deepdrivemd.deepdrivemd -c $1/config.yaml
 
