@@ -28,9 +28,9 @@ class NWChemConfig(MolecularDynamicsTaskConfig):
     # NWChem top directory (i.e. the top NWChem installation directory)
     nwchem_top_dir: Optional[Path] = None
     # Atom selection for nwchem
-    nwchem_selection: List[str] = ["CA", "PA", "PB", "C5", "C1'", "C3'", "C5'", "C1D", "C3D", "C5D"]
+    nwchem_selection: List[str] = ["CA", "PA", "PB", "C4", "C5", "C1'", "C3'", "C5'", "C1D", "C3D", "C5D"]
     # Atom selection for MDAnalysis
-    mda_selection: str = "(name CA) or (name PA) or (name PB) or (name C5) or (name C1') or (name C3') or (name C5') or (name C1D) or (name C3D) or (name C5D)"
+    mda_selection: str = "(name CA) or (name PA) or (name PB) or (name C4) or (name C5) or (name C1') or (name C3') or (name C5') or (name C1D) or (name C3D) or (name C5D)"
     # Distance threshold to use for computing contact (in Angstroms)
     threshold: float = 8.0
     # Write contact maps to HDF5
