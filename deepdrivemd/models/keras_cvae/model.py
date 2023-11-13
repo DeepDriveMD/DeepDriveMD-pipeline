@@ -29,8 +29,10 @@ from tensorflow.keras.optimizers import RMSprop
 
 from deepdrivemd.utils import PathLike
 
-tf.config.experimental.set_lms_enabled(True)
-print("lms_enabled was executed")
+if "set_lms_enabled" in dir(tf.config.experimental):
+    tf.config.experimental.set_lms_enabled(True)
+else:
+    print("Large Model Extensions (LMS) not available in this TensorFlow installation")
 
 # save history from log
 class LossHistory(Callback):  # type: ignore[misc]
@@ -256,7 +258,10 @@ class CVAE(object):
 
         # build model
         self.model = Model(self.input, self.output)
-        self.optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0)
+        # Decay is a deprecated argument and no longer valid.
+        # lr is a deprecated argument and should be replaced by learning_rate
+        #self.optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0)
+        self.optimizer = RMSprop(learning_rate=0.001, rho=0.9, epsilon=1e-08)
         # KLD loss
         self.model.add_loss(
             -0.5

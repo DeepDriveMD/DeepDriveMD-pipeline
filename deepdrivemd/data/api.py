@@ -232,10 +232,31 @@ class DeepDriveMD_API:
     def get_initial_pdbs(initial_pdb_dir: PathLike) -> List[Path]:
         r"""Return a list of PDB paths from the `initial_pdb_dir`.
 
+        For example if the directory `/mary` contains:
+
+        `/mary/`
+            `louise.pdb`
+            `jane/`
+                `carol.pdb`
+                `jennifer.pdb`
+            `sandra/`
+                `monique.pdb`
+                `eileen/`
+                    `eveline.pdb`
+
+        and if `intial_pdb_dir == "/mary"` then this function will return
+
+        `[/mary/jane/carol.pdb,/mary/jane/jennifer.pdb,/mary/sandra/monique.pdb]`
+
+        but not `/mary/louise.pdb` nor `/mary/sandra/eileen/eveline.pdb`.
+
+
         Parameters
         ----------
         initial_pdb_dir : Union[str, Path]
             Initial data directory passed containing PDBs and optional topologies.
+            The PDB files returned are the ones residing in the subdirectories
+            of this directory.
 
         Returns
         -------
