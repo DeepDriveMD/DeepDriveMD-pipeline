@@ -1,9 +1,9 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 import numpy
 import h5py
 import tensorflow as tf
-from argparse import ArgumentParser
+import argparse
 from pathlib import Path
 from deepdrivemd.models.keras_cvae.config import KerasCVAEModelConfig
 from deepdrivemd.models.keras_cvae.model import CVAE
@@ -15,12 +15,21 @@ def parse_args():
 
     The relevant information is provided in the source code.
     '''
-    description = '''
-    Extract_data pulls data from the HDF5 files that DeepDriveMD generated
-    and stores it in a format suitable for visualization with the Matplotlib
-    library.
+    describe = '''
+Extract_data pulls data from the HDF5 files that DeepDriveMD generated
+and stores it in a format suitable for visualization with the Matplotlib
+library.'''
+    example = '''
+example:
+
+   ./extract_data.py \\
+           ./machine_learning_runs/stage0008/task0000/stage0008_task0000.yaml \\
+           ./machine_learning_runs/stage0008/task0000/checkpoint/epoch-50-20231108-132138.h5 \\
+           ./molecular_dynamics_runs "4,1" data_points.csv
     '''
-    parser = ArgumentParser(description=description)
+    parser = argparse.ArgumentParser(description=describe,
+                                     epilog=example,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("config",help="The YAML file containing the machine learning model configuration")
     parser.add_argument("model",help="The file containing the HDF5 machine learning model")
     parser.add_argument("data_path",help="The path below which the HFD5 time step files live")
