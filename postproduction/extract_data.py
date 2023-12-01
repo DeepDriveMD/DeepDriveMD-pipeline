@@ -26,6 +26,13 @@ example:
            ./machine_learning_runs/stage0008/task0000/stage0008_task0000.yaml \\
            ./machine_learning_runs/stage0008/task0000/checkpoint/epoch-50-20231108-132138.h5 \\
            ./molecular_dynamics_runs "4,1" data_points.csv
+
+    In this case the file data_points.csv will contain lines with the contents:
+
+           <latent_space_dimension_4>, <latent_space_dimension_1>, <RMSD>
+
+    for every structure in the generate trajectories. You can also ask for 3 latent space
+    coordinates.
     '''
     parser = argparse.ArgumentParser(description=describe,
                                      epilog=example,
