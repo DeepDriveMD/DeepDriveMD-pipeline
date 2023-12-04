@@ -32,16 +32,17 @@ def plot_data(args):
         x = data.iloc[:,0]
         y = data.iloc[:,1]
         c = data.iloc[:,2]
-        ax.scatter(x,y,c=c,cmap='coolwarm')
+        ax.scatter(x,y,c=c,cmap='gist_rainbow')
     elif ncol == 4:
         ax = fig.add_subplot(projection='3d')
         x = data.iloc[:,0]
         y = data.iloc[:,1]
         z = data.iloc[:,2]
         c = data.iloc[:,3]
-        ax.scatter(x,y,z,c=c,cmap='coolwarm')
+        ax.scatter(x,y,z,c=c,cmap='gist_rainbow')
     fig.show()
-    fig.waitforbuttonpress(timeout=-1)
+    while not fig.waitforbuttonpress(timeout=-1):
+        pass
 
 if __name__ == "__main__":
     args = parse_args()
