@@ -90,6 +90,14 @@ With this data we proceed to:
   3. Add the data to the plot
   4. Show or save the plot
 
+## Visualizing performance data
+
+DeepDriveMD executes the workflow using the RADICAL-Cybertools. These tools
+both execute the workflow but also collect performance related data and store
+those data in the "client sandbox". I have pulled a Python script together
+based on Mikhail Titov's Jupyter Notebook "radical-plotting.ipynb" and 
+called it (unimaginatively) `radical-plotting.py`.
+
 ## References
 
 <A name="bhowmik-2018">[Bhowmik 2018]</A>
