@@ -18,6 +18,7 @@ values. Then visualize this data.'''
                                      epilog=example,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("csv_file",help="The CSV file name")
+    parser.add_argument("--image",help="The name of the image file")
     return parser.parse_args()
 
 def plot_data(args):
@@ -41,9 +42,14 @@ def plot_data(args):
         c = data.iloc[:,3]
         img = ax.scatter(x,y,z,c=c,cmap='gist_rainbow')
     fig.colorbar(img)
-    fig.show()
-    while not fig.waitforbuttonpress(timeout=-1):
-        pass
+    if args.image == None:
+        fig.show()
+        while not fig.waitforbuttonpress(timeout=-1):
+            pass
+        plt.close(fig)
+    else:
+        fig.savefig(args.image)
+        plt.close(fig)
 
 if __name__ == "__main__":
     args = parse_args()
