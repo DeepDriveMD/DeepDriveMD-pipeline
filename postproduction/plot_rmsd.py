@@ -18,6 +18,7 @@ values. Then visualize this data.'''
                                      epilog=example,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("csv_file",help="The CSV file name")
+    parser.add_argument("--image",help="The name of the image file")
     return parser.parse_args()
 
 def plot_data(args):
@@ -32,17 +33,23 @@ def plot_data(args):
         x = data.iloc[:,0]
         y = data.iloc[:,1]
         c = data.iloc[:,2]
-        ax.scatter(x,y,c=c,cmap='gist_rainbow')
+        img = ax.scatter(x,y,c=c,cmap='gist_rainbow')
     elif ncol == 4:
         ax = fig.add_subplot(projection='3d')
         x = data.iloc[:,0]
         y = data.iloc[:,1]
         z = data.iloc[:,2]
         c = data.iloc[:,3]
-        ax.scatter(x,y,z,c=c,cmap='gist_rainbow')
-    fig.show()
-    while not fig.waitforbuttonpress(timeout=-1):
-        pass
+        img = ax.scatter(x,y,z,c=c,cmap='gist_rainbow')
+    fig.colorbar(img)
+    if args.image == None:
+        fig.show()
+        while not fig.waitforbuttonpress(timeout=-1):
+            pass
+        plt.close(fig)
+    else:
+        fig.savefig(args.image)
+        plt.close(fig)
 
 if __name__ == "__main__":
     args = parse_args()

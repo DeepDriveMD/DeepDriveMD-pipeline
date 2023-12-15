@@ -17,11 +17,12 @@ import radical.utils           as ru
 from radical.analytics.utils import to_latex
 
 import subprocess
+import argparse
 
 subprocess.run(["rm","-rf","~/.radical/analytics/cache"])
 
-fm.fontManager.addfont(
-    fm.findSystemFonts(os.path.join(os.getcwd(), './fonts'))[0])
+#fm.fontManager.addfont(
+#    fm.findSystemFonts(os.path.join(os.getcwd(), './fonts'))[0])
 
 plt.style.use(ra.get_mplstyle('radical_mpl'))
 mpl.rcParams['text.usetex'] = False
@@ -78,8 +79,8 @@ def init_session(sid):
 
     data['sid'] = sid
     data['pid'] = data['pilot'].uid
-    data['smt'] = os.environ.get('RADICAL_SMT', 1) or
-                  data['pilot'].cfg['resource_details']['rm_info']['threads_per_core']
+    data['smt'] = (os.environ.get('RADICAL_SMT', 1) or
+                   data['pilot'].cfg['resource_details']['rm_info']['threads_per_core'])
     return data
 
 def print_metrics(data):
@@ -302,7 +303,7 @@ def plot_data3(data):
     
     fig, ax = plt.subplots(1,1, figsize=(7, 2))
     
-    pilot_starttime = data['pilot'].\\
+    pilot_starttime = data['pilot'].\
         timestamps(event={ru.EVENT: 'bootstrap_0_start'})[0]
     
     for e_name, e_range in events:
@@ -323,7 +324,7 @@ def plot_data3(data):
     plot_name = '%s.concurrency.png' % '.'.join(data['sid'].rsplit('.', 2)[1:])
     fig.savefig(os.path.join('.', plot_name))
 
-def argsparse():
+def parse_args():
     """
     Get the session id from the command line arguments.
     """
@@ -334,7 +335,7 @@ Plot the RADICAL-Cybertool performance data.'''
     parser.add_argument("sid",help="The session name of the workflow run")
     return parser.parse_args()
 
-if ____ == "__main__":
+if __name__ == "__main__":
     args = parse_args()
     data = init_session(args.sid)
     try: print_metrics(data)
