@@ -1,0 +1,30 @@
+start 1hp8_1_h_dat
+memory total 8192 mb global 3072 mb
+
+geometry geometry noprint
+  load 1hp8_1_h.pdb
+end
+
+basis "ao basis"
+  * library cc-pVTZ
+end
+
+basis "cd basis"
+  * library cc-pVTZ-ri
+end
+
+cosmo
+  do_cosmo_ks  false
+  do_cosmo_yk  false
+  do_cosmo_smd true
+  solvent water
+end
+
+dft
+  print "quadrature"
+  #direct
+  xc scan
+  adft
+end
+
+task dft gradient
