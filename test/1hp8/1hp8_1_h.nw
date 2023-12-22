@@ -22,9 +22,11 @@ end
 
 dft
   print "quadrature"
+  #maxiter 100
+  #convergence lshift 0.75
   #direct
   xc scan
-  adft
+  #adft - does not work, energies oscilate and never converge
 end
 
 task dft gradient
