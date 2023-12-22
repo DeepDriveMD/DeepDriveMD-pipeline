@@ -21,12 +21,12 @@ cosmo
 end
 
 dft
-  print "quadrature"
-  #maxiter 100
-  #convergence lshift 0.75
-  #direct
+  #print "quadrature"
+  noprint "final vectors analysis"
+  maxiter 100
   xc scan
   #adft - does not work, energies oscilate and never converge
+  mulliken
 end
 
 task dft gradient
