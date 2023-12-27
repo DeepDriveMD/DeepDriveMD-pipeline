@@ -26,8 +26,8 @@ subprocess.run(["rm","-rf","~/.radical/analytics/cache"])
 
 plt.style.use(ra.get_mplstyle('radical_mpl'))
 mpl.rcParams['text.usetex'] = False
-mpl.rcParams['font.serif']  = ['Nimbus Roman Becker No9L']
-mpl.rcParams['font.family'] = 'serif'
+#mpl.rcParams['font.serif']  = ['Nimbus Roman Becker No9L']
+#mpl.rcParams['font.family'] = 'serif'
 
 DURATIONS = {
     'boot'        : [{ru.EVENT: 'bootstrap_0_start'},
@@ -102,9 +102,10 @@ def plot_data1(data):
     sid = data['sid']
     pid = data['pid']
 
-    rtype_info = {'cpu': {'label': 'Number of CPU cores',
-                          'formatter': lambda z, pos: int(z / data['smt'])},
-                  'gpu': {'label': 'Number of GPUs',
+    rtype_info = {'cpu': {'label': '# CPU cores',
+                          'formatter': None},
+                          #'formatter': lambda z, pos: int(z / data['smt'])},
+                  'gpu': {'label': '# GPUs',
                           'formatter': None}}
     
     exp = ra.Experiment([sid], stype='radical.pilot')
@@ -120,7 +121,8 @@ def plot_data1(data):
     
     fig, axarr = plt.subplots(len(rtypes), 1, figsize=(7, 2 * len(rtypes)))
     
-    sub_label = 'a'
+    #sub_label = 'a'
+    sub_label = ''
     legend = None
     for idx, rtype in enumerate(rtypes):
     
@@ -152,17 +154,19 @@ def plot_data1(data):
                 rtype_info[rtype]['formatter']))
     
         if len(rtypes) > 1:
-            ax.set_xlabel('(%s)' % sub_label, labelpad=10)
-        ax.set_ylabel(to_latex(rtype_info[rtype]['label']), fontsize=11)
-        ax.set_title(' ')  # placeholder
+            ax.set_xlabel('(%s)' % sub_label)
+            #ax.set_xlabel('(%s)' % sub_label, labelpad=10)
+        #ax.set_ylabel(to_latex(rtype_info[rtype]['label']), fontsize=11)
+        ax.set_ylabel(rtype_info[rtype]['label'])
+        #ax.set_title(' ')  # placeholder
     
-        sub_label = chr(ord(sub_label) + 1)
+        #sub_label = chr(ord(sub_label) + 1)
     
     fig.legend(legend, [m[0] for m in METRICS],
                loc='upper center',
                bbox_to_anchor=(0.5, 1.03),
                ncol=len(METRICS))
-    fig.text(0.5, 0.05, 'Time (s)', ha='center')
+    fig.text(0.5, 0.008, 'Time (s)', ha='center')
     
     #plt.tight_layout()
     plt.show()
@@ -276,18 +280,24 @@ def plot_data2(data):
         ax.yaxis.set_major_locator(
             mticker.MaxNLocator(3, steps=[5, 10]))
     
-        ax.set_ylabel('%s (%%)' % rtype.upper(), fontsize=12)
+        #ax.set_ylabel('%s (%%)' % rtype.upper(), fontsize=12)
+        ax.set_ylabel('%s (%%)' % rtype.upper())
     
         for ax in fig.get_axes():
             ax.label_outer()
     
+    #fig.legend(
+    #    patches, legend, loc='upper center', ncol=6,
+    #    bbox_to_anchor=(0.5, 1.035),
+    #    fancybox=True, shadow=True, fontsize=11)
     fig.legend(
         patches, legend, loc='upper center', ncol=6,
         bbox_to_anchor=(0.5, 1.035),
-        fancybox=True, shadow=True, fontsize=11)
-    fig.text(0.5, 0.008, 'Time (s)', ha='center', size=11)
+        fancybox=True, shadow=True)
+    #fig.text(0.5, 0.008, 'Time (s)', ha='center', size=11)
+    fig.text(0.5, 0.008, 'Time (s)', ha='center')
     
-    plt.tight_layout()
+    #plt.tight_layout()
     plt.show()
     
     plot_name = '%s.ru.stack.png' % '.'.join(data['sid'].rsplit('.', 2)[1:])
@@ -312,14 +322,21 @@ def plot_data3(data):
                 [e[1] for e in time_series],
                 label=ra.to_latex(e_name), lw=1)
     
+    #fig.legend([e[0] for e in events],
+    #           loc='upper center',
+    #           bbox_to_anchor=(0.75, 1.0),
+    #           ncol=2, fontsize=10)
+    #ax.set_ylabel(to_latex('Number of tasks'), fontsize=11)
+    #fig.text(0.5, 0.008, 'Time (s)', ha='center', size=11)
     fig.legend([e[0] for e in events],
                loc='upper center',
-               bbox_to_anchor=(0.75, 1.0),
-               ncol=2, fontsize=10)
-    ax.set_ylabel(to_latex('Number of tasks'), fontsize=11)
-    fig.text(0.5, 0.008, 'Time (s)', ha='center', size=11)
+               #bbox_to_anchor=(0.75, 1.0),
+               bbox_to_anchor=(0.45, 1.0),
+               ncol=2)
+    ax.set_ylabel(to_latex('Number of tasks'))
+    fig.text(0.5, 0.008, 'Time (s)', ha='center')
     
-    plt.tight_layout()
+    #plt.tight_layout()
     plt.show()
     plot_name = '%s.concurrency.png' % '.'.join(data['sid'].rsplit('.', 2)[1:])
     fig.savefig(os.path.join('.', plot_name))
