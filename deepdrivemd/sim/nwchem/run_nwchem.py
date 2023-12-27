@@ -319,6 +319,10 @@ def run_simulation(cfg: NWChemConfig) -> None:
         # for the outlier detection we just want the solute atoms. Fix this
         # by overwriting nwchemdat_md.pdb with the input PDB file.
         subprocess.run(["cp","nwchemdat_input.pdb","nwchemdat_md.pdb"])
+        # Each trajectory file is easily 700 MB in size, as we do not need this
+        # data after converting the trajectory to the DCD format we should get
+        # rid of this file.
+        subprocess.run(["rm","nwchemdat_md.xyz"])
 
     # Move simulation data to persistent storage
     with Timer("molecular_dynamics_move_results"):
