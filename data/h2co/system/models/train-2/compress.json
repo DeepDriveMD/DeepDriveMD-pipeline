@@ -1,0 +1,135 @@
+{
+    "model": {
+        "type_map": [
+            "c",
+            "h",
+            "o"
+        ],
+        "descriptor": {
+            "type": "se_e2_a",
+            "sel": [
+                4,
+                4,
+                4
+            ],
+            "rcut_smth": 3.0,
+            "rcut": 6.0,
+            "neuron": [
+                32,
+                32,
+                64,
+                128
+            ],
+            "axis_neuron": 16,
+            "activation_function": "tanh",
+            "resnet_dt": false,
+            "type_one_side": false,
+            "precision": "default",
+            "trainable": true,
+            "exclude_types": [],
+            "set_davg_zero": false
+        },
+        "fitting_net": {
+            "neuron": [
+                240,
+                240,
+                240
+            ],
+            "resnet_dt": true,
+            "type": "ener",
+            "numb_fparam": 0,
+            "numb_aparam": 0,
+            "activation_function": "tanh",
+            "precision": "default",
+            "trainable": true,
+            "rcond": null,
+            "atom_ener": [],
+            "use_aparam_as_mask": false
+        },
+        "data_stat_nbatch": 10,
+        "data_stat_protect": 0.01,
+        "data_bias_nsample": 10,
+        "srtab_add_bias": true,
+        "type": "standard",
+        "compress": {
+            "model_file": "model.pb",
+            "min_nbor_dist": 0.30611268695843163,
+            "table_config": [
+                5,
+                0.01,
+                0.1,
+                -1
+            ],
+            "type": "se_e2_a"
+        }
+    },
+    "learning_rate": {
+        "start_lr": 0.002,
+        "decay_steps": 500,
+        "scale_by_worker": "linear",
+        "type": "exp",
+        "stop_lr": 1e-08
+    },
+    "loss": {
+        "start_pref_e": 0.02,
+        "limit_pref_e": 1,
+        "start_pref_f": 1000,
+        "limit_pref_f": 1,
+        "start_pref_v": 0,
+        "limit_pref_v": 0,
+        "type": "ener",
+        "start_pref_ae": 0.0,
+        "limit_pref_ae": 0.0,
+        "start_pref_pf": 0.0,
+        "limit_pref_pf": 0.0,
+        "enable_atom_ener_coeff": false,
+        "start_pref_gf": 0.0,
+        "limit_pref_gf": 0.0,
+        "numb_generalized_coord": 0
+    },
+    "training": {
+        "disp_file": "lcurve.out",
+        "disp_freq": 2000,
+        "save_freq": 20000,
+        "save_ckpt": "model-compression/model.ckpt",
+        "validation_data": {
+            "systems": [
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/validate_mol_c1o1",
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/validate_mol_h1c1",
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/validate_mol_h1o1",
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/validate_mol_h2",
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/validate_mol_h2c1o1"
+            ],
+            "batch_size": "auto",
+            "set_prefix": "set",
+            "auto_prob": "prob_sys_size",
+            "sys_probs": null,
+            "numb_btch": 1
+        },
+        "training_data": {
+            "systems": [
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/training_mol_h1",
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/training_mol_c1",
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/training_mol_o1",
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/training_mol_c1o1",
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/training_mol_h2",
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/training_mol_h1c1",
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/training_mol_h1o1",
+                "/direct/sdcc+u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/deepmd/../../sim/nwchem/test_dir/training_mol_h2c1o1"
+            ],
+            "batch_size": "auto",
+            "set_prefix": "set",
+            "auto_prob": "prob_sys_size",
+            "sys_probs": null
+        },
+        "numb_steps": 200000,
+        "disp_training": true,
+        "time_training": true,
+        "profiling": false,
+        "profiling_file": "timeline.json",
+        "enable_profiler": false,
+        "tensorboard": false,
+        "tensorboard_log_dir": "log",
+        "tensorboard_freq": 1
+    }
+}

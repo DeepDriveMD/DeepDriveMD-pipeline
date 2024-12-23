@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -187,6 +188,9 @@ def main(
         num_features=cfg.num_features,
         encoder_filters=cfg.encoder_filters,
         encoder_kernel_sizes=cfg.encoder_kernel_sizes,
+        encoder_dilation=cfg.encoder_dilation,
+        encoder_padding=cfg.encoder_padding,
+        encoder_stride=cfg.encoder_stride,
         generator_filters=cfg.generator_filters,
         discriminator_filters=cfg.discriminator_filters,
         latent_dim=cfg.latent_dim,
@@ -204,7 +208,8 @@ def main(
 
     # optimizers
     optimizer_hparams = OptimizerHyperparams(
-        name=cfg.optimizer_name, hparams={"lr": cfg.optimizer_lr}
+        name=cfg.optimizer_name, 
+        hparams={"lr": cfg.optimizer_lr}
     )
 
     # Save hparams to disk and load initial weights and create virtual h5 file
@@ -231,21 +236,23 @@ def main(
         cfg.batch_size,
         model_hparams,
         optimizer_hparams,
-        gpu=(encoder_gpu, generator_gpu, discriminator_gpu),
+        #HVD gpu=(encoder_gpu, generator_gpu, discriminator_gpu),
+        gpu=None,
         init_weights=init_weights,
     )
 
-    enc_device = torch.device(f"cuda:{encoder_gpu}")
+    #HVD enc_device = torch.device(f"cuda:{encoder_gpu}")
     if comm_size > 1:
-        if (encoder_gpu == generator_gpu) and (encoder_gpu == discriminator_gpu):
-            aae.model = DDP(
-                aae.model, device_ids=[enc_device], output_device=enc_device
-            )
-        else:
+        #HVD if (encoder_gpu == generator_gpu) and (encoder_gpu == discriminator_gpu):
+        #HVD     aae.model = DDP(
+        #HVD         aae.model, device_ids=[enc_device], output_device=enc_device
+        #HVD     )
+        #HVD else:
             aae.model = DDP(aae.model, device_ids=None, output_device=None)
 
     # set global default device
-    torch.cuda.set_device(enc_device.index)
+    #HVD torch.cuda.set_device(enc_device.index)
+    torch.cuda.device(None)
 
     if comm_rank == 0:
         # Diplay model

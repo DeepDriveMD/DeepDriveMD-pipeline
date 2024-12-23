@@ -1,0 +1,35 @@
+echo
+
+title "h2o2_000000_dat"
+
+permanent_dir ./h2o2_000000_dat
+
+scratch_dir ./h2o2_000000_dat
+
+start h2o2_000000_dat
+
+geometry units angstrom nocenter noautosym noautoz
+  symmetry c1
+  H   6.14999780     6.22934439     6.47993244
+  O   6.15000234     7.02749362     7.03410455
+  O   6.15000200     6.35448589     8.34151561
+  H   6.14999786     7.15267611     8.89567734
+end
+
+basis noprint
+   * library cc-pvdz
+end
+
+dft
+  xc scan
+  mult 1
+  direct
+  maxiter 500
+  mulliken
+  noprint "final vectors analysis"
+end
+
+
+
+task dft gradient
+

@@ -18,7 +18,8 @@ class OutlierDetectionConfig(AgentTaskConfig):
     # Exrtrinsic scoring method
     extrinsic_score: Optional[str] = None
     # Number of frames in each trajectory/HDF5 file
-    n_traj_frames: int = 200
+    #n_traj_frames: int = 200
+    n_traj_frames: int = 1000 # This really should be established at runtime.
     # Select the n most recent HDF5 files for outlier search
     n_most_recent_h5_files: int = 10
     # Select k random HDF5 files from previous DeepDriveMD iterations for outlier search
@@ -27,10 +28,11 @@ class OutlierDetectionConfig(AgentTaskConfig):
     sklearn_num_jobs: int = -1
     # Machine learning model type
     model_type: str = "AAE3d"
+    #model_type: str = "keras_cvae"
     # Inference batch size for encoder forward pass
     inference_batch_size: int = 128
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def num_outliers_check(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         num_intrinsic_outliers = values["num_intrinsic_outliers"]
         num_extrinsic_outliers = values["num_extrinsic_outliers"]
@@ -40,7 +42,7 @@ class OutlierDetectionConfig(AgentTaskConfig):
             )
         return values
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def scoring_method_check(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         intrinsic_score = values.get("intrinsic_score")
         extrinsic_score = values.get("extrinsic_score")

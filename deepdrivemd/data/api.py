@@ -10,7 +10,15 @@ from deepdrivemd.utils import PathLike
 
 def glob_file_from_dirs(dirs: List[str], pattern: str) -> List[str]:
     """Return a list of all items matching `pattern` in multiple `dirs`."""
-    return [next(Path(d).glob(pattern)).as_posix() for d in dirs]
+    # Next raises a StopIteration exception when there are no more items in the list,
+    # this crashes the code.
+    #return [next(Path(d).glob(pattern)).as_posix() for d in dirs]
+    result = []
+    for d in dirs:
+        pattrn_files = Path(d).glob(pattern)
+        for pattrn_file in pattrn_files:
+            result.append(Path(pattrn_file).as_posix())
+    return result
 
 
 class Stage_API:
@@ -232,10 +240,31 @@ class DeepDriveMD_API:
     def get_initial_pdbs(initial_pdb_dir: PathLike) -> List[Path]:
         r"""Return a list of PDB paths from the `initial_pdb_dir`.
 
+        For example if the directory `/mary` contains:
+
+        `/mary/`
+            `louise.pdb`
+            `jane/`
+                `carol.pdb`
+                `jennifer.pdb`
+            `sandra/`
+                `monique.pdb`
+                `eileen/`
+                    `eveline.pdb`
+
+        and if `intial_pdb_dir == "/mary"` then this function will return
+
+        `[/mary/jane/carol.pdb,/mary/jane/jennifer.pdb,/mary/sandra/monique.pdb]`
+
+        but not `/mary/louise.pdb` nor `/mary/sandra/eileen/eveline.pdb`.
+
+
         Parameters
         ----------
         initial_pdb_dir : Union[str, Path]
             Initial data directory passed containing PDBs and optional topologies.
+            The PDB files returned are the ones residing in the subdirectories
+            of this directory.
 
         Returns
         -------

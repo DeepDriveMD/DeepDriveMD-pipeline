@@ -1,0 +1,42 @@
+echo
+
+title "c3h8_000000_dat"
+
+permanent_dir ./c3h8_000000_dat
+
+scratch_dir ./c3h8_000000_dat
+
+start c3h8_000000_dat
+
+geometry units angstrom nocenter noautosym noautoz
+  symmetry c1
+  H  -1.16100607    -0.60323800     1.24971765  
+  H  -0.55113316     1.05253272     1.47005852   
+  H   0.30536421    -0.31735289     2.21874442  
+  C  -0.24236441     0.00408499     1.31866458   
+  C   0.60501456    -0.14058466     0.06041653  
+  H   1.53167614     0.45197551     0.16903832   
+  H   0.92710499    -1.19218603    -0.04918331  
+  C  -0.13630927     0.29875874    -1.19643833   
+  H   0.48726073     0.18838128    -2.09774788   
+  H  -1.05149534    -0.29915061    -1.34599574  
+  H  -0.44175299     1.35678043    -1.12711126
+end
+
+basis noprint
+   * library cc-pvdz
+end
+
+dft
+  xc scan
+  mult 1
+  direct
+  maxiter 500
+  mulliken
+  noprint "final vectors analysis"
+end
+
+
+
+task dft gradient
+

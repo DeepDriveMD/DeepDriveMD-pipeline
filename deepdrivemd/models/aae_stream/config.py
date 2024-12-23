@@ -42,10 +42,10 @@ class Point3dAAEConfig(BaseSettings):
     # Pretrained model weights
     init_weights: Optional[str] = ""
     # AE (encoder/decoder) optimizer params
-    ae_optimizer: OptimizerConfig = OptimizerConfig(name="Adam", hparams={"lr": 0.0001})
+    ae_optimizer: OptimizerConfig = OptimizerConfig(name="Adam", hparams={"learning_rate": 0.0001})
     # Discriminator optimizer params
     disc_optimizer: OptimizerConfig = OptimizerConfig(
-        name="Adam", hparams={"lr": 0.0001}
+        name="Adam", hparams={"learning_rate": 0.0001}
     )
 
     # Model hyperparameters

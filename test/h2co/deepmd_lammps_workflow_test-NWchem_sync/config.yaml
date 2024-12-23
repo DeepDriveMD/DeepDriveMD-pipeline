@@ -1,0 +1,186 @@
+title: LAMMPS-DeePMD H2CO workflow
+resource: 'bnl.ic2'
+# On IC2 we use the CSI partition
+queue: csi
+schema_: local
+# On IC2 we use the CSIHPC account
+project: csihpc
+walltime_min: 360
+max_iteration: 10
+# Source: https://www.sdcc.bnl.gov/information/institutional-cluster-gen2
+cpus_per_node: 48
+gpus_per_node: 4
+hardware_threads_per_cpu: 1
+experiment_directory: /hpcgpfs01/work/csi/hvandam/DeepDriveMD-pipeline/test/h2co/deepmd_lammps_workflow_test-NWchem_sync/test_h2co
+node_local_path: null
+molecular_dynamics_stage:
+    pre_exec: 
+      - source /hpcgpfs01/work/csi/hvandam/pydeepmd-3.11/bin/activate
+    executable: '/hpcgpfs01/work/csi/hvandam/pydeepmd-3.11/bin/python3.11'
+    arguments:
+      - /hpcgpfs01/work/csi/hvandam/DeepDriveMD-pipeline/deepdrivemd/sim/lammps/run_lammps.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    num_tasks: 48
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        pdb_file: set_by_deepdrivemd
+        reference_pdb_file: /hpcgpfs01/work/csi/hvandam/DeepDriveMD-pipeline/data/h2co/h2co-folded.pdb
+        initial_pdb_dir: /hpcgpfs01/work/csi/hvandam/DeepDriveMD-pipeline/data/h2co
+        train_dir: /hpcgpfs01/work/csi/hvandam/DeepDriveMD-pipeline/data/h2co/system/models
+        contact_map: true
+        fraction_of_contacts: true
+aggregation_stage:
+    pre_exec:
+      - source /hpcgpfs01/work/csi/hvandam/pydeepmd-3.11/bin/activate
+    executable: '/hpcgpfs01/work/csi/hvandam/pydeepmd-3.11/bin/python3.11'
+    arguments:
+      - /hpcgpfs01/work/csi/hvandam/DeepDriveMD-pipeline/deepdrivemd/aggregation/basic/aggregate.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    skip_aggregation: true
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+machine_learning_stage:
+    pre_exec:
+      - source /hpcgpfs01/work/csi/hvandam/pydeepmd-3.11/bin/activate
+    executable: '/hpcgpfs01/work/csi/hvandam/pydeepmd-3.11/bin/python3.11'
+    arguments: 
+      - /hpcgpfs01/work/csi/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/aae/train.py
+      # The Keras API has changed so the script below currently does not work
+      #- /sdcc/u/hvandam/DeepDriveMD-pipeline/deepdrivemd/models/keras_cvae/train.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        # FIXME: Currently don't have GPU versions of PyTorch and TensorFlow installed
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    retrain_freq: 1
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        model_tag: set_by_deepdrivemd
+        init_weights_path: null
+        last_n_h5_files: 48
+        conv_filter_shapes:
+          - - 3
+            - 3
+          - - 3
+            - 3
+          - - 3
+            - 3
+          - - 3
+            - 3
+        conv_filters:
+          - 64
+          - 64
+          - 64
+          - 64
+        conv_layers: 4
+        conv_strides:
+          - - 1
+            - 1
+          - - 2
+            - 2
+          - - 1
+            - 1
+          - - 1
+            - 1
+        dense_dropouts:
+          - 0.4
+        dense_layers: 1
+        dense_neurons:
+          - 128
+        epochs: 50
+        final_shape:
+          - 28
+          - 28
+          - 1
+        initial_shape:
+          - 28
+          - 28
+        latent_dim: 10
+        max_loss: 100
+        max_steps: 2000
+        min_step_increment: 1000
+        shuffle: true
+model_selection_stage:
+    pre_exec:
+      - source /hpcgpfs01/work/csi/hvandam/pydeepmd-3.11/bin/activate
+    executable: '/hpcgpfs01/work/csi/hvandam/pydeepmd-3.11/bin/python3.11'
+    arguments:
+      - /hpcgpfs01/work/csi/hvandam/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select_model.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        checkpoint_suffix: .pt
+agent_stage:
+    pre_exec:
+      - source /hpcgpfs01/work/csi/hvandam/pydeepmd-3.11/bin/activate
+    executable: '/hpcgpfs01/work/csi/hvandam/pydeepmd-3.11/bin/python3.11'
+    arguments: 
+      - /hpcgpfs01/work/csi/hvandam/DeepDriveMD-pipeline/deepdrivemd/agents/lof/lof.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        n_most_recent_h5_files: 1
+        num_points: 25
+

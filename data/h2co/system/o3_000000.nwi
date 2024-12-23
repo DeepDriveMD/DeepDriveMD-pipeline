@@ -1,0 +1,33 @@
+echo
+
+title "o3_000000_dat"
+
+permanent_dir ./o3_000000_dat
+
+scratch_dir ./o3_000000_dat
+
+start o3_000000_dat
+
+geometry units angstrom nocenter noautosym noautoz
+  O   6.15400000     6.18339795     7.81488873
+  O   6.15400000     5.71243687     6.63901843
+  O   6.15400000     6.53316518     5.67409284
+end
+
+basis noprint
+   * library cc-pvdz
+end
+
+dft
+  xc scan
+  mult 1
+  direct
+  maxiter 500
+  mulliken
+  noprint "final vectors analysis"
+end
+
+
+
+task dft gradient
+

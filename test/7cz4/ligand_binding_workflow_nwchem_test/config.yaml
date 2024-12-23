@@ -1,0 +1,179 @@
+title: NWChem 7CZ4 workflow
+resource: 'ornl.crusher'
+queue: batch
+schema_: local
+project: CHM136_crusher
+walltime_min: 60
+max_iteration: 4
+cpus_per_node: 64
+gpus_per_node: 4
+hardware_threads_per_cpu: 2
+#experiment_directory: /ccs/home/hjjvd/DeepDriveMD/deepdrivemd_tests/bba_test/test_nwchem
+experiment_directory: /lustre/orion/scratch/hjjvd/chm136/test_nwchem
+node_local_path: null
+molecular_dynamics_stage:
+    pre_exec: 
+      - . /ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/activate
+    executable: '/ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/python'
+    arguments:
+      - /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/deepdrivemd/sim/nwchem/run_nwchem.py 
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    num_tasks: 4
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        pdb_file: set_by_deepdrivemd
+        reference_pdb_file: /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/data/7cz4/7CZ4-folded.pdb
+        initial_pdb_dir: /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/data/7cz4
+        contact_map: true
+        fraction_of_contacts: true
+aggregation_stage:
+    pre_exec:
+      - . /ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/activate
+    executable: '/ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/python'
+    arguments:
+      - /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/deepdrivemd/aggregation/basic/aggregate.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    skip_aggregation: true
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+machine_learning_stage:
+    pre_exec:
+      - . /ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/activate
+    executable: '/ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/python'
+    arguments: 
+      - /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/deepdrivemd/models/keras_cvae/train.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    retrain_freq: 1
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        model_tag: set_by_deepdrivemd
+        init_weights_path: null
+        last_n_h5_files: 1
+        conv_filter_shapes:
+          - - 3
+            - 3
+          - - 3
+            - 3
+          - - 3
+            - 3
+          - - 3
+            - 3
+        conv_filters:
+          - 64
+          - 64
+          - 64
+          - 64
+        conv_layers: 4
+        conv_strides:
+          - - 1
+            - 1
+          - - 2
+            - 2
+          - - 1
+            - 1
+          - - 1
+            - 1
+        dense_dropouts:
+          - 0.4
+        dense_layers: 1
+        dense_neurons:
+          - 128
+        epochs: 50
+        final_shape:
+          - 180
+          - 180
+          - 1
+        initial_shape:
+          - 180
+          - 180
+        latent_dim: 10
+        max_loss: 100
+        max_steps: 2000
+        min_step_increment: 1000
+        shuffle: true
+model_selection_stage:
+    pre_exec:
+      - . /ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/activate
+    executable: '/ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/python'
+    arguments:
+      - /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/deepdrivemd/selection/latest/select_model.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 0
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        checkpoint_suffix: .h5
+agent_stage:
+    pre_exec:
+      - . /ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/activate
+    executable: '/ccs/home/hjjvd/DeepDriveMD/pydeepdrivemd/bin/python'
+    arguments: 
+      - /ccs/home/hjjvd/DeepDriveMD/DeepDriveMD-pipeline/deepdrivemd/agents/lof/lof.py
+    cpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 1
+        thread_type: null
+    gpu_reqs:
+        processes: 1
+        process_type: null
+        threads_per_process: 0
+        thread_type: null
+    task_config:
+        experiment_directory: set_by_deepdrivemd
+        stage_idx: 0
+        task_idx: 0
+        output_path: set_by_deepdrivemd
+        node_local_path: set_by_deepdrivemd
+        n_most_recent_h5_files: 1
+        num_points: 25

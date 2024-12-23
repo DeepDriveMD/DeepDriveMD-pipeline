@@ -32,7 +32,7 @@ def concatenate_last_n_h5(cfg: BasicAggegation) -> None:  # noqa
         print(f"Collected {len(files)} h5 files.")
 
     # Open output file
-    fout = h5py.File(cfg.output_path, "w", libver="latest")
+    fout = h5py.File(cfg.output_path / "aggregate.h5", "w", libver="latest")
 
     # Initialize data buffers
     data: Dict[str, List["npt.ArrayLike"]] = {x: [] for x in fields}
@@ -74,7 +74,10 @@ def concatenate_last_n_h5(cfg: BasicAggegation) -> None:  # noqa
         shape = concat_dset.shape  # type: ignore[union-attr]
         chunkshape = (1,) + shape[1:]
         # Create dataset
-        if concat_dset.dtype != np.object:  # type: ignore[union-attr, attr-defined]
+        # Note: Aliases of built-in data types are now deprecated in Numpy:
+        #       https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+        #       Not sure where that leaves np.float128, np.int16, etc.
+        if concat_dset.dtype != object:  # type: ignore[union-attr, attr-defined]
             if np.any(np.isnan(concat_dset)):
                 raise ValueError("NaN detected in concat_dset.")
             dset = fout.create_dataset(

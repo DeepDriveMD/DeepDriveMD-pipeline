@@ -15,7 +15,8 @@ class AAEModelConfig(MachineLearningTaskConfig):
     # Name of the fraction of contacts data in the HDF5 file.
     fnc_name: str = "fnc"
     # Number of input points in point cloud
-    num_points: int = 3375
+    #num_points: int = 3375 #DEBUG
+    num_points: int = 5
     # Number of features per point in addition to 3D coordinates
     num_features: int = 0
     # Number of epochs to train during first iteration
@@ -38,6 +39,12 @@ class AAEModelConfig(MachineLearningTaskConfig):
     encoder_filters: List[int] = [64, 128, 256, 256, 512]
     # Encoder kernel sizes
     encoder_kernel_sizes: List[int] = [5, 5, 3, 1, 1]
+    # Encoder dilation
+    encoder_dilation: List[int] = [1, 1, 1, 1, 1]
+    # Encoder padding
+    encoder_padding: List[int] = [2, 2, 0, 0, 0]
+    # Encoder stride
+    encoder_stride: List[int] = [1, 2, 1, 1, 1]
     # Generator filter sizes
     generator_filters: List[int] = [64, 128, 512, 1024]
     # Discriminator filter sizes
@@ -68,7 +75,7 @@ class AAEModelConfig(MachineLearningTaskConfig):
     # String which specifies from where to feed the dataset. Valid choices are `storage` and `cpu-memory`.
     dataset_location: str = "storage"
     # Project name for wandb logging
-    wandb_project_name: Optional[str]
+    wandb_project_name: Optional[str] = None
 
 
 if __name__ == "__main__":

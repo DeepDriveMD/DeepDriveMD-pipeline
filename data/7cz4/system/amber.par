@@ -1,0 +1,14 @@
+This is the AMBER96 user defined parameter file for NWChem 3.2 and ARGOS 7.0
+Electrostatic 1-4 scaling factor     0.833333
+Relative dielectric constant     1.000000
+Parameters epsilon R*
+Atoms
+Cross
+Bonds
+Angles
+OH   -CT   -OS      1.91114 4.18400E+02 hvd201026 copy N*-CT-OS
+OH   -CT   -H2      1.91114 4.18400E+02 hvd201026 copy H2-CT-OS
+Proper dihedrals
+Improper dihedrals
+Atom types
+End

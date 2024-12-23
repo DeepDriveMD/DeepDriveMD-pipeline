@@ -1,0 +1,33 @@
+echo
+
+title "c1o2_000000_dat"
+
+permanent_dir ./c1o2_000000_dat
+
+scratch_dir ./c1o2_000000_dat
+
+start c1o2_000000_dat
+
+geometry units angstrom nocenter noautosym noautoz
+  O   6.15400000     5.95518785     7.86072084
+  C   6.15400000     6.14301715     6.70933349
+  O   6.15400000     6.33079500     5.55794566
+end
+
+basis noprint
+   * library cc-pvdz
+end
+
+dft
+  xc scan
+  mult 1
+  direct
+  maxiter 500
+  mulliken
+  noprint "final vectors analysis"
+end
+
+
+
+task dft gradient
+

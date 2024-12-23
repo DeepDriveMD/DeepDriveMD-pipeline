@@ -246,10 +246,11 @@ if __name__ == "__main__":
     # Create Application Manager
     try:
         appman = AppManager(
-            hostname=os.environ["RMQ_HOSTNAME"],
-            port=int(os.environ["RMQ_PORT"]),
-            username=os.environ["RMQ_USERNAME"],
-            password=os.environ["RMQ_PASSWORD"],
+            # All deprecated:
+            #hostname=os.environ["RMQ_HOSTNAME"],
+            #port=int(os.environ["RMQ_PORT"]),
+            #username=os.environ["RMQ_USERNAME"],
+            #password=os.environ["RMQ_PASSWORD"],
         )
     except KeyError:
         raise ValueError(

@@ -1,0 +1,33 @@
+echo
+
+title "h1_000000_dat"
+
+permanent_dir ./h1_000000_dat
+
+scratch_dir ./h1_000000_dat
+
+start h1_000000_dat
+
+geometry units angstrom nocenter noautosym noautoz
+  symmetry c1
+  H  6.1500000000000004e+00 6.9409999999999998e+00 8.30995915
+end
+
+basis noprint
+   * library cc-pvdz
+end
+
+dft
+  xc scan
+  mult 2
+  rodft
+  direct
+  maxiter 500
+  mulliken
+  noprint "final vectors analysis"
+end
+
+
+
+task dft gradient
+
